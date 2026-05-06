@@ -14,46 +14,28 @@ defined( 'ABSPATH' ) || exit;
  * Return the anonymised IP used as the transient key.
  * IPv4: last octet zeroed. IPv6: last 80 bits zeroed.
  *
- * SECURITY FIX (v1.4.5):
- * The previous implementation trusted HTTP_CF_CONNECTING_IP and
- * HTTP_X_FORWARDED_FOR unconditionally. Both headers are set by the CLIENT
- * and can be forged freely on any server not sitting behind a verified proxy.
- * An attacker could send "X-Forwarded-For: 1.2.3.4" with each request to
- * rotate their apparent IP, completely bypassing rate limiting.
- *
- * Fix: default to REMOTE_ADDR only, which is the actual TCP connection IP
- * and cannot be forged. Site admins running behind Cloudflare or a trusted
- * reverse proxy can use the 'wpfa_rate_limit_ip_headers' filter to add
- * additional headers — but ONLY after verifying that REMOTE_ADDR belongs to
- * the trusted proxy infrastructure.
- *
- * Source: developer.wordpress.org/reference/functions/wp_get_server_protocol/
- *         OWASP IP Address Spoofing via HTTP Headers
+ * FIX (v1.4.18): Default header order updated for Cloudflare deployments.
+ * HTTP_CF_CONNECTING_IP is only present when the request passes through
+ * Cloudflare — absent on direct connections, so REMOTE_ADDR is used as
+ * fallback automatically. On servers NOT behind Cloudflare, a client could
+ * forge this header; override via the filter to restore REMOTE_ADDR-only.
  *
  * @return string
  */
-function wpfa_rate_limit_get_ip() {
+function wpfa_rate_limit_get_ip(): string {
     $ip = '';
 
     /**
      * Filter the list of $_SERVER headers checked for the client IP.
      *
-     * IMPORTANT: only add forwarded-for headers when you have verified that
-     * REMOTE_ADDR belongs to a trusted proxy (e.g. Cloudflare's published IP
-     * ranges). Without that verification, any client can forge these headers
-     * to bypass rate limiting.
-     *
-     * Example for Cloudflare sites (check REMOTE_ADDR first!):
-     *   add_filter( 'wpfa_rate_limit_ip_headers', function( $headers ) {
-     *       // Verify REMOTE_ADDR is a Cloudflare IP before trusting CF header.
-     *       $cf_ranges = [ '103.21.244.0/22', '103.22.200.0/22', /* ... *\/ ];
-     *       // ... validate REMOTE_ADDR against $cf_ranges, then:
-     *       return [ 'HTTP_CF_CONNECTING_IP', 'REMOTE_ADDR' ];
-     *   } );
+     * Default tries HTTP_CF_CONNECTING_IP first (Cloudflare real-client IP),
+     * then falls back to REMOTE_ADDR. On non-Cloudflare servers override to
+     * prevent header spoofing:
+     *   add_filter( 'wpfa_rate_limit_ip_headers', fn() => [ 'REMOTE_ADDR' ] );
      *
      * @param string[] $headers Ordered list of $_SERVER keys to try.
      */
-    $headers = (array) apply_filters( 'wpfa_rate_limit_ip_headers', [ 'REMOTE_ADDR' ] );
+    $headers = (array) apply_filters( 'wpfa_rate_limit_ip_headers', [ 'HTTP_CF_CONNECTING_IP', 'REMOTE_ADDR' ] );
 
     foreach ( $headers as $key ) {
         if ( ! empty( $_SERVER[ $key ] ) ) {
@@ -106,10 +88,49 @@ function wpfa_rate_limit_key( $action, $ip = '' ) {
  * @return bool  true = locked out.
  */
 function wpfa_rate_limit_is_locked( $action ) {
+    if ( ! wpfa_rate_limit_action_enabled( $action ) ) {
+        return false;
+    }
     $attempts = (int) get_transient( wpfa_rate_limit_key( $action ) );
-    $limit    = wpfa_get_rate_limit();
+    $limit    = wpfa_get_rate_limit_for( $action );
 
     return $limit > 0 && $attempts >= $limit;
+}
+
+/**
+ * Per-action enable/disable check.
+ *
+ * Each action (login, register, lostpassword, resetpass) has its own toggle
+ * stored as wpfa_rl_enabled_{action}. Default is true (enabled) for all.
+ * When false, wpfa_rate_limit_is_locked() returns false and wpfa_rate_limit_bump()
+ * is a no-op for that action — so the form is never blocked on that path.
+ *
+ * Setting the global wpfa_rate_limit option to 0 still disables everything
+ * via wpfa_rate_limit_is_locked()'s `$limit > 0` check (preserved as a
+ * master kill-switch).
+ *
+ * @param string $action
+ * @return bool
+ */
+function wpfa_rate_limit_action_enabled( $action ) {
+    return (bool) apply_filters(
+        "wpfa_rate_limit_enabled_{$action}",
+        (bool) get_option( "wpfa_rl_enabled_{$action}", true )
+    );
+}
+
+/**
+ * Per-action threshold resolver. Returns the override if set (>0), else the global default.
+ *
+ * @param string $action
+ * @return int
+ */
+function wpfa_get_rate_limit_for( $action ) {
+    $override = (int) get_option( "wpfa_rl_max_{$action}", 0 );
+    if ( $override > 0 ) {
+        return (int) apply_filters( "wpfa_rate_limit_{$action}", $override );
+    }
+    return wpfa_get_rate_limit();
 }
 
 /**
@@ -161,6 +182,9 @@ function wpfa_rate_limit_remaining_seconds( $action ) {
  * @return int  New attempt count.
  */
 function wpfa_rate_limit_bump( $action ) {
+    if ( ! wpfa_rate_limit_action_enabled( $action ) ) {
+        return 0;
+    }
     $key    = wpfa_rate_limit_key( $action );
     $ts_key = $key . '_ts';
     $window = wpfa_get_rate_limit_window() * MINUTE_IN_SECONDS;

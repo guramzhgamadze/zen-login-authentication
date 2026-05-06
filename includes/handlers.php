@@ -347,6 +347,22 @@ function wpfa_handle_lostpassword(): void {
         sanitize_text_field( wpfa_get_request_value( 'user_login', 'post' ) )
     );
 
+    // FIX (v1.4.18): Optionally count successful submissions toward the rate limit.
+    //
+    // WordPress core's retrieve_password() returns true on success — including for
+    // unknown email addresses (anti-enumeration behavior since WP 5.5). This means
+    // a determined attacker spamming reset emails to a single known-valid address
+    // can bypass the rate limiter entirely: every call returns true, the counter
+    // is cleared on success below, and emails go out unchecked.
+    //
+    // When wpfa_lostpassword_count_all is enabled, every submission bumps the
+    // counter. The success-clear path is skipped, so attempt #11 from the same
+    // IP gets blocked regardless of whether the email is valid.
+    //
+    // Default OFF for backward compatibility — admins can opt in via the
+    // "Count successful lost-password requests" toggle in Settings → Frontend Auth.
+    $count_all = (bool) get_option( 'wpfa_lostpassword_count_all', false );
+
     if ( is_wp_error( $result ) ) {
         wpfa_rate_limit_bump( 'lostpassword' );
 
@@ -367,7 +383,11 @@ function wpfa_handle_lostpassword(): void {
         return;
     }
 
-    wpfa_rate_limit_clear( 'lostpassword' );
+    if ( $count_all ) {
+        wpfa_rate_limit_bump( 'lostpassword' );
+    } else {
+        wpfa_rate_limit_clear( 'lostpassword' );
+    }
 
     if ( $is_ajax ) {
         wpfa_send_ajax_success( [

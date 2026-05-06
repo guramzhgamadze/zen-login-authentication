@@ -58,6 +58,16 @@ function wpfa_admin_register_settings(): void {
     register_setting( 'wp-frontend-auth', 'wpfa_rate_limit',        [ 'sanitize_callback' => 'absint', 'type' => 'integer', 'autoload' => false ] );
     register_setting( 'wp-frontend-auth', 'wpfa_rate_limit_window', [ 'sanitize_callback' => 'absint', 'type' => 'integer', 'autoload' => false ] );
 
+    // Per-action rate-limit toggles + threshold overrides (v1.4.18).
+    // Toggles default to true (rendered as checkbox: 1=on, missing=off).
+    // Overrides default to 0 (means "use global default"); positive int wins.
+    $rl_actions = [ 'login', 'register', 'lostpassword', 'resetpass' ];
+    foreach ( $rl_actions as $action ) {
+        register_setting( 'wp-frontend-auth', "wpfa_rl_enabled_{$action}", [ 'sanitize_callback' => 'absint', 'type' => 'integer', 'autoload' => false ] );
+        register_setting( 'wp-frontend-auth', "wpfa_rl_max_{$action}",     [ 'sanitize_callback' => 'absint', 'type' => 'integer', 'autoload' => false ] );
+    }
+    register_setting( 'wp-frontend-auth', 'wpfa_lostpassword_count_all', [ 'sanitize_callback' => 'absint', 'type' => 'integer', 'autoload' => false ] );
+
     // Slugs
     $slug_actions = [ 'login', 'logout', 'register', 'lostpassword', 'resetpass' ];
     foreach ( $slug_actions as $action ) {
@@ -188,6 +198,56 @@ function wpfa_admin_settings_page(): void {
                     <div class="wpfa-row-label"><?php esc_html_e( 'Lockout window', 'wp-frontend-auth' ); ?></div>
                     <div class="wpfa-row-field">
                         <input type="number" name="wpfa_rate_limit_window" value="<?php echo esc_attr( (string) get_option( 'wpfa_rate_limit_window', 15 ) ); ?>" min="1" max="1440"> <?php esc_html_e( 'minutes', 'wp-frontend-auth' ); ?>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Per-Form Rate Limiting (v1.4.18) -->
+            <div class="wpfa-card">
+                <h2><?php esc_html_e( 'Per-Form Rate Limiting', 'wp-frontend-auth' ); ?></h2>
+                <p class="desc"><?php esc_html_e( 'Enable or disable rate limiting per form, and override the global Max attempts threshold.', 'wp-frontend-auth' ); ?></p>
+
+                <?php
+                $rl_global   = (int) get_option( 'wpfa_rate_limit', 10 );
+                $rl_actions  = [
+                    'login'        => __( 'Login',         'wp-frontend-auth' ),
+                    'register'     => __( 'Registration',  'wp-frontend-auth' ),
+                    'lostpassword' => __( 'Lost Password', 'wp-frontend-auth' ),
+                    'resetpass'    => __( 'Reset Password', 'wp-frontend-auth' ),
+                ];
+                foreach ( $rl_actions as $rl_action => $rl_label ) :
+                    $rl_enabled = (bool) get_option( "wpfa_rl_enabled_{$rl_action}", true );
+                    $rl_max     = (int) get_option( "wpfa_rl_max_{$rl_action}", 0 );
+                ?>
+                <div class="wpfa-row">
+                    <div class="wpfa-row-label"><?php echo esc_html( $rl_label ); ?></div>
+                    <div class="wpfa-row-field" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+                        <label class="wpfa-toggle" title="<?php esc_attr_e( 'Enable rate limiting for this form', 'wp-frontend-auth' ); ?>">
+                            <input type="hidden" name="wpfa_rl_enabled_<?php echo esc_attr( $rl_action ); ?>" value="0">
+                            <input type="checkbox" name="wpfa_rl_enabled_<?php echo esc_attr( $rl_action ); ?>" value="1" <?php checked( $rl_enabled ); ?>>
+                            <span class="wpfa-toggle-slider"></span>
+                        </label>
+                        <span style="font-size:0.85rem;color:#646970;"><?php esc_html_e( 'Max attempts:', 'wp-frontend-auth' ); ?></span>
+                        <input type="number" name="wpfa_rl_max_<?php echo esc_attr( $rl_action ); ?>" value="<?php echo esc_attr( (string) $rl_max ); ?>" min="0" max="100" placeholder="<?php echo esc_attr( (string) $rl_global ); ?>" style="max-width:90px;">
+                        <span class="wpfa-hint" style="margin-top:0;">
+                            <?php
+                            /* translators: %d = global default */
+                            echo esc_html( sprintf( __( '0 = use global default (%d)', 'wp-frontend-auth' ), $rl_global ) );
+                            ?>
+                        </span>
+                    </div>
+                </div>
+                <?php endforeach; ?>
+
+                <div class="wpfa-row">
+                    <div class="wpfa-row-label"><?php esc_html_e( 'Count successful lost-password requests', 'wp-frontend-auth' ); ?></div>
+                    <div class="wpfa-row-field">
+                        <label class="wpfa-toggle">
+                            <input type="hidden" name="wpfa_lostpassword_count_all" value="0">
+                            <input type="checkbox" name="wpfa_lostpassword_count_all" value="1" <?php checked( (bool) get_option( 'wpfa_lostpassword_count_all', false ) ); ?>>
+                            <span class="wpfa-toggle-slider"></span>
+                        </label>
+                        <div class="wpfa-hint"><?php esc_html_e( 'Count every submission, not just failed ones. Prevents an attacker from spamming reset emails to a known-valid address.', 'wp-frontend-auth' ); ?></div>
                     </div>
                 </div>
             </div>
