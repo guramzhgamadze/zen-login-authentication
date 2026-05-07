@@ -21,7 +21,7 @@ WP Frontend Auth replaces the default `wp-login.php` experience with clean, them
 - **Nonce verification** on every form submission.
 - **Rate limiting** — configurable max attempts per IP with lockout window (uses transients). Applied to all four handlers: login, register, lost-password, and reset-password.
 - **Honeypot spam protection** — rotating hidden field (hourly key rotation via HMAC) catches bots. Trapped submissions get a fake success response — bots never know they failed.
-- **IP anonymisation** — rate-limit keys hash truncated IPs (last octet zeroed for IPv4, /48 for IPv6). Defaults to `REMOTE_ADDR` only — forwarded headers require explicit opt-in via the `wpfa_rate_limit_ip_headers` filter.
+- **IP anonymisation** — rate-limit keys hash truncated IPs (last octet zeroed for IPv4, /48 for IPv6). Defaults try `HTTP_CF_CONNECTING_IP` first (Cloudflare real-client IP), then fall back to `REMOTE_ADDR`. On non-Cloudflare servers, override the `wpfa_rate_limit_ip_headers` filter to prevent header spoofing: `add_filter('wpfa_rate_limit_ip_headers', fn() => ['REMOTE_ADDR']);`
 - **No password pre-population** — password fields are never re-filled from POST data.
 - **bcrypt-compatible** — uses `wp_set_password()` / `wp_signon()` which support WP 6.8+ bcrypt hashing.
 - **Password minimum length** — reset and registration passwords require at least 8 characters.
@@ -95,6 +95,22 @@ All settings are under the **Frontend Auth** admin menu:
 | Max attempts | 10 | Failed attempts before lockout (0 = disabled) |
 | Lockout window | 15 min | Duration of lockout after max attempts reached |
 
+### Per-Form Rate Limiting (v1.4.18+)
+
+Each form has its own enable toggle and an optional threshold override. The override defaults to `0` which means "use the global Max attempts value above"; any positive integer takes precedence for that form only.
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| Login — enabled | On | Toggle rate limiting on the login form |
+| Login — Max attempts override | 0 (use global) | Per-form threshold; e.g. set to `5` for stricter login lockout |
+| Registration — enabled | On | Toggle rate limiting on the registration form |
+| Registration — Max attempts override | 0 (use global) | Per-form threshold |
+| Lost Password — enabled | On | Toggle rate limiting on the lost-password form |
+| Lost Password — Max attempts override | 0 (use global) | Per-form threshold |
+| Reset Password — enabled | On | Toggle rate limiting on the reset-password form |
+| Reset Password — Max attempts override | 0 (use global) | Per-form threshold |
+| Count successful lost-password requests | Off | When enabled, every lost-password submission bumps the counter (not just failures). Closes the email-spam loophole where attackers spam reset emails to a known-valid address — `retrieve_password()` returns `true` on success (anti-enumeration), so the rate limiter would otherwise never engage. |
+
 ### Page Slugs
 
 Each action URL slug is customisable: `login`, `logout`, `register`, `lostpassword` (default: `lost-password`), `resetpass` (default: `reset-password`).
@@ -136,9 +152,11 @@ Each action URL slug is customisable: `login`, `logout`, `register`, `lostpasswo
 | `wpfa_allow_user_passwords` | `false` | Toggle user-chosen passwords |
 | `wpfa_allow_auto_login` | `false` | Toggle auto-login after registration |
 | `wpfa_use_honeypot` | `true` | Toggle honeypot protection |
-| `wpfa_rate_limit` | `10` | Max failed attempts |
+| `wpfa_rate_limit` | `10` | Max failed attempts (global default) |
 | `wpfa_rate_limit_window` | `15` | Lockout window in minutes |
-| `wpfa_rate_limit_ip_headers` | `['REMOTE_ADDR']` | `$_SERVER` keys checked for client IP (add forwarded headers only behind a verified proxy) |
+| `wpfa_rate_limit_ip_headers` | `['HTTP_CF_CONNECTING_IP', 'REMOTE_ADDR']` | `$_SERVER` keys checked for client IP (override on non-Cloudflare servers to prevent spoofing) |
+| `wpfa_rate_limit_enabled_{action}` | `true` | Per-form rate-limit toggle. `{action}` = `login` \| `register` \| `lostpassword` \| `resetpass`. Return `false` to disable rate limiting on a specific form. |
+| `wpfa_rate_limit_{action}` | global default | Per-form threshold override. Only fires when a positive integer override is set in the admin panel. |
 | `wpfa_action_url` | — | Filter any action URL |
 | `wpfa_action_slug_{action}` | — | Filter a specific action's slug |
 | `wpfa_username_label` | — | Filter the username field label |
@@ -221,6 +239,31 @@ wp-frontend-auth/
 ```
 
 ## Changelog
+
+### 1.4.18
+
+**Security & Bug Fixes**
+
+- **Medium:** Closed the lost-password email-spam loophole. WordPress core's `retrieve_password()` returns `true` on success — including for unknown email addresses (anti-enumeration behaviour since WP 5.5). This meant a determined attacker spamming reset emails to a single known-valid address bypassed the rate limiter entirely: every call returned `true`, the counter was cleared on success, and emails went out unchecked. The new "Count successful lost-password requests" toggle (default off for backward compatibility) bumps the counter on every submission and skips the success-clear path, so attempt #11 from the same IP gets blocked regardless of whether the email is valid.
+- **Medium:** Updated default IP-detection header order for Cloudflare deployments. `wpfa_rate_limit_get_ip()` now tries `HTTP_CF_CONNECTING_IP` first, then `REMOTE_ADDR`. On Cloudflare-fronted sites this means rate-limit transient keys are derived from the real visitor IP instead of pooling all attempts behind a handful of Cloudflare edge-node IPs (which would have caused legitimate users to be blocked by attackers sharing the same edge node). On non-Cloudflare servers, override via `add_filter('wpfa_rate_limit_ip_headers', fn() => ['REMOTE_ADDR'])` to prevent header spoofing.
+- **Low:** Fixed admin panel checkboxes silently failing to save when unchecked. WordPress's options.php only updates options that are present in `$_POST`; an unchecked HTML checkbox doesn't submit any value, so unchecking a toggle wouldn't persist as `0`. Added paired hidden `value="0"` inputs before each new checkbox so unchecking actually saves.
+
+**New Features**
+
+- **Per-Form Rate Limiting panel** in **Frontend Auth → Settings**. Each of the four forms (Login, Registration, Lost Password, Reset Password) gets:
+  - An **enable/disable toggle** — turn rate limiting off for an individual form without affecting the others
+  - A **Max attempts override** — leave at `0` to inherit the global default, or set a specific number (e.g. login=5, register=10, lostpassword=3) for per-form strictness
+- **Two new filters**: `wpfa_rate_limit_enabled_{action}` (override the per-form toggle in code) and `wpfa_rate_limit_{action}` (override the per-form threshold in code).
+- **Two new functions**: `wpfa_rate_limit_action_enabled($action)` and `wpfa_get_rate_limit_for($action)` — public helpers for themes/plugins that need to inspect the resolved per-action state.
+
+### 1.4.17
+
+**Maintenance**
+
+- One-time database cleanup on upgrade from any earlier version. Runs once via `wpfa_upgrade_cleanup_1_4_17()` — version-gated, idempotent, and skipped on fresh installs:
+  - **Orphaned `wpfa_slug_*` options**: scans every option matching `wpfa_slug_*` and deletes any whose action name isn't in the known list (`login`, `logout`, `register`, `lostpassword`, `resetpass`). Catches debris from earlier configuration experiments such as `wpfa_slug_dashboard`.
+  - **Auth page revision pruning**: for each of the four real auth pages (login, register, lostpassword, resetpass), keeps the 5 newest revisions and deletes the rest via `wp_delete_post_revision()`. On Yogahub this reclaimed ~1.5 MB of `wp_postmeta` (Elementor stores a full copy of `_elementor_data` per revision).
+- Hardened `uninstall.php` with a wildcard sweep that catches any remaining `wpfa_slug_*` options not in the explicit list, so reinstall→uninstall cycles can't leave debris behind.
 
 ### 1.4.16
 
