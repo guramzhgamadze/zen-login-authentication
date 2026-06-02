@@ -122,9 +122,6 @@ function wpfa_handle_login(): void {
     $credentials = [
         'user_login'    => sanitize_user( wpfa_get_request_value( 'log', 'post' ) ),
         'user_password' => wpfa_get_request_value( 'pwd', 'post' ),
-        // Fix 5 — explicit check against expected value 'forever' matching the form field;
-        //          sanitize_key() strips slashes (WP magic-quotes) and normalises case.
-        //          Source: developer.wordpress.org/apis/security/sanitizing/
         'remember'      => isset( $_POST['rememberme'] ) && is_string( $_POST['rememberme'] )
                            && 'forever' === sanitize_key( wp_unslash( $_POST['rememberme'] ) ),
     ];
@@ -138,9 +135,18 @@ function wpfa_handle_login(): void {
         $form     = wpfa()->get_form( 'login' );
 
         foreach ( $user->get_error_codes() as $code ) {
-            $msg        = preg_replace( '/<a[^>]*>.*?<\/a>/i', '', $user->get_error_message( $code ) );
-            $msg        = trim( $msg );
-            $messages[] = wp_strip_all_tags( $msg );
+            $raw = $user->get_error_message( $code );
+            // Strip anchor tags — use /is flag so . matches newlines (WP error
+            // messages wrap the "Lost your password?" link across multiple lines).
+            $msg   = preg_replace( '/<a[^>]*>.*?<\/a>/is', '', $raw );
+            $msg   = trim( (string) $msg );
+            // If stripping left nothing meaningful, fall back to stripping all
+            // tags from the raw message so the sentence text is preserved.
+            $plain = trim( wp_strip_all_tags( $msg ) );
+            if ( '' === $plain ) {
+                $plain = trim( wp_strip_all_tags( $raw ) );
+            }
+            $messages[] = $plain;
             if ( $form ) {
                 $form->add_error( $code, wp_kses_post( $msg ) );
             }
@@ -159,28 +165,16 @@ function wpfa_handle_login(): void {
     $redirect_to = wpfa_get_request_value( 'redirect_to' );
     $redirect_to = $redirect_to ? wpfa_validate_redirect( $redirect_to ) : '';
 
-    // Determine if this is a subscriber (no wp-admin access).
     $is_subscriber = count( $user->roles ) === 1 && in_array( 'subscriber', $user->roles, true );
 
-    // Subscriber default destination — where subscribers land when there is no
-    // explicit redirect_to, or when they try to go to wp-admin.
     $subscriber_default = apply_filters( 'wpfa_subscriber_redirect', home_url( '/instructor_dashboard/' ) );
 
     if ( empty( $redirect_to ) ) {
-        // No redirect_to supplied:
-        //   — Subscribers → instructor dashboard (never wp-admin).
-        //   — Privileged users → home_url(). They came via the login page
-        //     directly (no ?redirect_to=), so sending them to wp-admin
-        //     is presumptuous. home_url() is a safe, neutral landing point.
-        //     They can navigate to wp-admin themselves if that's where they want to go.
-        //     Use the standard login_redirect filter so other plugins can override.
         $default     = $is_subscriber ? $subscriber_default : home_url();
         $redirect_to = apply_filters( 'login_redirect', $default, '', $user );
     } elseif ( $is_subscriber && str_starts_with( $redirect_to, admin_url() ) ) {
-        // Subscriber tried to go to wp-admin via redirect_to — block it.
         $redirect_to = $subscriber_default;
     }
-    // For privileged users with a valid redirect_to: honour it exactly.
 
     do_action( 'wpfa_login_success', $user );
 
@@ -325,14 +319,6 @@ function wpfa_handle_lostpassword(): void {
         return;
     }
 
-    // FIX (v1.4.14): Honeypot check was missing from this handler.
-    //
-    // The honeypot hidden field is rendered in EVERY form (via WPFA_Form::render()),
-    // but the spam check was only called in wpfa_handle_register(). Without this
-    // guard, bots can automate the lost-password form to trigger mass password-reset
-    // emails to arbitrary users — even if rate limiting slows them down, they still
-    // generate real emails up to the limit. The honeypot catches simple bots before
-    // retrieve_password() fires, and returns a fake success so the bot never adapts.
     if ( wpfa_honeypot_is_spam() ) {
         if ( $is_ajax ) {
             wpfa_send_ajax_success( [
@@ -347,20 +333,6 @@ function wpfa_handle_lostpassword(): void {
         sanitize_text_field( wpfa_get_request_value( 'user_login', 'post' ) )
     );
 
-    // FIX (v1.4.18): Optionally count successful submissions toward the rate limit.
-    //
-    // WordPress core's retrieve_password() returns true on success — including for
-    // unknown email addresses (anti-enumeration behavior since WP 5.5). This means
-    // a determined attacker spamming reset emails to a single known-valid address
-    // can bypass the rate limiter entirely: every call returns true, the counter
-    // is cleared on success below, and emails go out unchecked.
-    //
-    // When wpfa_lostpassword_count_all is enabled, every submission bumps the
-    // counter. The success-clear path is skipped, so attempt #11 from the same
-    // IP gets blocked regardless of whether the email is valid.
-    //
-    // Default OFF for backward compatibility — admins can opt in via the
-    // "Count successful lost-password requests" toggle in Settings → Frontend Auth.
     $count_all = (bool) get_option( 'wpfa_lostpassword_count_all', false );
 
     if ( is_wp_error( $result ) ) {
@@ -412,14 +384,6 @@ function wpfa_handle_resetpass(): void {
     $pass2    = wpfa_get_request_value( 'pass2', 'post' );
     $form     = wpfa()->get_form( 'resetpass' );
 
-    // FIX: Rate-limit password reset submissions.
-    //
-    // Without this guard, an attacker can brute-force the rp_key (password reset token)
-    // by submitting the reset form in a loop. login, register, and lostpassword all
-    // have rate limiting — resetpass must too for consistent security posture.
-    //
-    // Source: owasp.org/www-community/attacks/Brute_force_attack
-    //         developer.wordpress.org/reference/functions/check_password_reset_key/
     if ( wpfa_rate_limit_is_locked( 'resetpass' ) ) {
         $message = sprintf(
             /* translators: %d = minutes */
@@ -438,7 +402,7 @@ function wpfa_handle_resetpass(): void {
     $user = check_password_reset_key( $rp_key, $rp_login );
 
     if ( is_wp_error( $user ) ) {
-        wpfa_rate_limit_bump( 'resetpass' ); // FIX: count failed attempts
+        wpfa_rate_limit_bump( 'resetpass' );
         $message = __( 'This password reset link has expired or is invalid. Please request a new one.', 'wp-frontend-auth' );
         if ( $form ) {
             $form->add_error( 'invalid_key', $message );
@@ -471,7 +435,7 @@ function wpfa_handle_resetpass(): void {
         return;
     }
 
-    wpfa_rate_limit_clear( 'resetpass' ); // FIX: clear counter on success
+    wpfa_rate_limit_clear( 'resetpass' );
     reset_password( $user, $pass1 );
     do_action( 'wpfa_password_reset', $user );
 
@@ -560,29 +524,6 @@ function wpfa_maybe_suppress_user_notification( bool $send, WP_User $user ): boo
     return $send;
 }
 
-/**
- * Suppress the ADMIN notification fired internally by register_new_user() when
- * user-chosen passwords are enabled.
- *
- * BUG FIX (v1.4.5) — Double admin email on registration with user passwords:
- *
- * When wpfa_allow_user_passwords() is true the flow is:
- *   1. register_new_user() runs and internally calls wp_new_user_notification(),
- *      which fires both the user and admin notification emails. The existing
- *      wpfa_maybe_suppress_user_notification filter (above) correctly blocks
- *      the user email at step 1. But the admin email still fires here.
- *   2. wpfa_send_new_user_notifications($id, 'admin') is then called explicitly,
- *      sending a SECOND admin notification with the correct context.
- *
- * Result: admin receives two identical "New User Registration" emails.
- *
- * Fix: also block the admin email triggered inside register_new_user() when
- * user-chosen passwords are enabled. wpfa_send_new_user_notifications() later
- * sends the one correct admin notification.
- *
- * wp_send_new_user_notification_to_admin was introduced in WP 6.1.
- * Source: developer.wordpress.org/reference/hooks/wp_send_new_user_notification_to_admin/
- */
 add_filter( 'wp_send_new_user_notification_to_admin', 'wpfa_maybe_suppress_admin_notification', 10, 2 );
 
 function wpfa_maybe_suppress_admin_notification( bool $send, WP_User $user ): bool {
@@ -593,9 +534,6 @@ function wpfa_maybe_suppress_admin_notification( bool $send, WP_User $user ): bo
     if ( 'register' !== $action ) {
         return $send;
     }
-    // Only suppress the internal notification from register_new_user() when
-    // user passwords are enabled — wpfa_send_new_user_notifications() will
-    // send the one correct admin email after wp_set_password() completes.
     if ( wpfa_allow_user_passwords() ) {
         return false;
     }
