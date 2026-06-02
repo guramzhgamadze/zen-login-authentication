@@ -3,23 +3,14 @@
  * WP Frontend Auth – Uninstall
  *
  * Runs when the plugin is deleted (not just deactivated).
- * Removes all plugin options and the auto-created pages.
- *
- * MEDIUM FIX: Deactivation left database debris (pages + options).
- * uninstall.php is the correct place for cleanup — deactivation alone
- * should not delete user content (options survive deactivation by design).
- *
- * v1.4.17: Added wildcard cleanup for any wpfa_slug_* options that may
- * have been created by earlier versions or manual experimentation
- * (e.g. wpfa_slug_dashboard). The explicit list below covers the known
- * options, but the wildcard sweep at the end catches any stragglers.
+ * Removes all plugin options and only auto-created pages that have
+ * never been edited by the user (no Elementor data, no post content).
  *
  * @package WP_Frontend_Auth
  */
 
 defined( 'WP_UNINSTALL_PLUGIN' ) || exit;
 
-// Options to delete
 $options = [
     'wpfa_version',
     'wpfa_rate_limit',
@@ -40,7 +31,6 @@ $options = [
 $page_actions = [ 'login', 'register', 'lostpassword', 'resetpass' ];
 
 if ( is_multisite() ) {
-    // Clean up every sub-site on network uninstall.
     $sites = get_sites( [ 'fields' => 'ids', 'number' => 0 ] );
     foreach ( $sites as $site_id ) {
         switch_to_blog( $site_id );
@@ -54,14 +44,11 @@ if ( is_multisite() ) {
 function wpfa_uninstall_site( array $options, array $page_actions ): void {
     global $wpdb;
 
-    // Delete known options.
     foreach ( $options as $option ) {
         delete_option( $option );
     }
 
-    // Catch any orphaned wpfa_slug_* options not in the explicit list above
-    // (e.g. wpfa_slug_dashboard from earlier configuration experiments).
-    // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+    // Catch any orphaned wpfa_slug_* options.
     $like     = $wpdb->esc_like( 'wpfa_slug_' ) . '%';
     $orphaned = $wpdb->get_col( $wpdb->prepare(
         "SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE %s",
@@ -71,18 +58,36 @@ function wpfa_uninstall_site( array $options, array $page_actions ): void {
         delete_option( $opt );
     }
 
-    // Delete auto-created pages and their stored IDs.
-    // FIX: Only delete pages that were auto-created by the plugin (flagged with
-    // _wpfa_auto_created post meta). Pages the user created manually and the
-    // plugin merely "adopted" by storing their ID are left intact.
+    // Delete auto-created pages — but ONLY if:
+    //   1. The plugin created it (has _wpfa_auto_created meta).
+    //   2. The user has never edited it in Elementor (no _elementor_edit_mode meta).
+    //   3. The page has no post_content (user never added anything manually).
+    // If any of these conditions fail, we leave the page intact and just
+    // remove our stored page ID option — the user owns that page now.
     foreach ( $page_actions as $action ) {
         $opt     = "wpfa_page_id_{$action}";
         $page_id = (int) get_option( $opt, 0 );
+
         if ( $page_id ) {
-            if ( get_post_meta( $page_id, '_wpfa_auto_created', true ) ) {
-                wp_delete_post( $page_id, true ); // true = force delete, skip trash
+            $post        = get_post( $page_id );
+            $is_auto     = (bool) get_post_meta( $page_id, '_wpfa_auto_created', true );
+            $has_el      = (bool) get_post_meta( $page_id, '_elementor_edit_mode', true );
+            $has_content = $post instanceof WP_Post && '' !== trim( $post->post_content );
+
+            if ( $is_auto && ! $has_el && ! $has_content ) {
+                // Truly untouched auto-created page — safe to delete.
+                wp_delete_post( $page_id, true );
             }
+            // Whether deleted or not, always remove our stored reference.
         }
+
         delete_option( $opt );
     }
+
+    // Per-action rate limit options (v1.4.18).
+    foreach ( [ 'login', 'register', 'lostpassword', 'resetpass' ] as $action ) {
+        delete_option( "wpfa_rl_enabled_{$action}" );
+        delete_option( "wpfa_rl_max_{$action}" );
+    }
+    delete_option( 'wpfa_lostpassword_count_all' );
 }

@@ -126,7 +126,6 @@ function wpfa_honeypot_is_spam(): bool {
     $value_current  = wp_unslash( $_POST[ $field_current ]  ?? '' ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
     $value_previous = wp_unslash( $_POST[ $field_previous ] ?? '' ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
 
-    // INFO fix: !empty() already implies isset(), second isset() check removed.
     return ! empty( $value_current ) || ! empty( $value_previous );
 }
 
@@ -150,7 +149,13 @@ function wpfa_send_ajax_success( $data = null ): void {
 }
 
 function wpfa_send_ajax_error( $data = null ): void {
-    wp_send_json_error( apply_filters( 'wpfa_ajax_error_data', $data ), 400 );
+    // FIX: Use HTTP 200 instead of 400 so jQuery's .done() fires instead of
+    // .fail(). The success/error distinction is carried by response.success
+    // (false) and response.data.errors — not the HTTP status code.
+    // With 400, jQuery's dataType:'json' routes the response to .fail() and
+    // the real error messages from PHP are never shown to the user — instead
+    // the generic fallback string "An error occurred. Please try again." fires.
+    wp_send_json_error( apply_filters( 'wpfa_ajax_error_data', $data ), 200 );
 }
 
 /* -----------------------------------------------------------------------

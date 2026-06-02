@@ -138,13 +138,20 @@ function wpfa_handle_login(): void {
             $raw = $user->get_error_message( $code );
             // Strip anchor tags — use /is flag so . matches newlines (WP error
             // messages wrap the "Lost your password?" link across multiple lines).
-            $msg   = preg_replace( '/<a[^>]*>.*?<\/a>/is', '', $raw );
-            $msg   = trim( (string) $msg );
+            $msg = preg_replace( '/<a[^>]*>.*?<\/a>/is', '', $raw );
+            $msg = (string) $msg;
+            // Strip any orphaned punctuation left after anchor removal.
+            // e.g. WP may leave a trailing "?" from "Lost your password?" if
+            // the "?" sits outside the closing </a> in some WP versions.
+            $msg = trim( $msg, " \t\n\r\0\x0B.?!" );
+            $msg = trim( $msg );
             // If stripping left nothing meaningful, fall back to stripping all
             // tags from the raw message so the sentence text is preserved.
             $plain = trim( wp_strip_all_tags( $msg ) );
             if ( '' === $plain ) {
                 $plain = trim( wp_strip_all_tags( $raw ) );
+                $plain = trim( $plain, " \t\n\r\0\x0B.?!" );
+                $plain = trim( $plain );
             }
             $messages[] = $plain;
             if ( $form ) {
@@ -165,8 +172,11 @@ function wpfa_handle_login(): void {
     $redirect_to = wpfa_get_request_value( 'redirect_to' );
     $redirect_to = $redirect_to ? wpfa_validate_redirect( $redirect_to ) : '';
 
+    // Determine if this is a subscriber (no wp-admin access).
     $is_subscriber = count( $user->roles ) === 1 && in_array( 'subscriber', $user->roles, true );
 
+    // Subscriber default destination — where subscribers land when there is no
+    // explicit redirect_to, or when they try to go to wp-admin.
     $subscriber_default = apply_filters( 'wpfa_subscriber_redirect', home_url( '/instructor_dashboard/' ) );
 
     if ( empty( $redirect_to ) ) {
@@ -319,6 +329,7 @@ function wpfa_handle_lostpassword(): void {
         return;
     }
 
+    // FIX (v1.4.14): Honeypot check was missing from this handler.
     if ( wpfa_honeypot_is_spam() ) {
         if ( $is_ajax ) {
             wpfa_send_ajax_success( [
@@ -524,6 +535,13 @@ function wpfa_maybe_suppress_user_notification( bool $send, WP_User $user ): boo
     return $send;
 }
 
+/**
+ * Suppress the ADMIN notification fired internally by register_new_user() when
+ * user-chosen passwords are enabled.
+ *
+ * wp_send_new_user_notification_to_admin was introduced in WP 6.1.
+ * Source: developer.wordpress.org/reference/hooks/wp_send_new_user_notification_to_admin/
+ */
 add_filter( 'wp_send_new_user_notification_to_admin', 'wpfa_maybe_suppress_admin_notification', 10, 2 );
 
 function wpfa_maybe_suppress_admin_notification( bool $send, WP_User $user ): bool {
