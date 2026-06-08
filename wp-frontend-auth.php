@@ -304,18 +304,22 @@ function wpfa_activate(): void {
     }
     update_option( 'wpfa_version', WPFA_VERSION );
 
-    // FIX: Removed automatic wpfa_create_action_pages() call.
+    // Adopt-or-create the real auth pages (Login, Register, Lost Password,
+    // Reset Password). For each action wpfa_create_action_pages() checks the
+    // configured/default slug:
+    //   • a page already exists at that slug → it is reused as-is and left
+    //     unflagged, so uninstall will never delete it;
+    //   • no page exists → a new one is created and flagged _wpfa_auto_created,
+    //     so uninstall can remove it later *only while it stays empty/unedited*.
     //
-    // Previously, the plugin auto-created 4 real WP pages (Login, Register,
-    // Lost Password, Reset Password) every time it was activated — including
-    // deactivate→reactivate cycles. This caused unwanted page proliferation
-    // and surprised users who expected manual control over their page structure.
-    //
-    // Page creation is now manual via the "Create Pages" button on the
-    // Frontend Auth settings screen (Settings → Frontend Auth → Page Management).
-    // The virtual-page rewrite system (wpfa_the_posts filter) provides fallback
-    // URLs for all actions even without real pages, so the plugin works out of
-    // the box. Real pages are only needed for Elementor Theme Builder targeting.
+    // The routine is idempotent — it skips any action that already has a stored,
+    // published page — so repeated activate/deactivate cycles never duplicate
+    // pages (the duplication bug that affected pre-1.4.16 builds, before the
+    // stored-ID check and slug adoption were added). Manual control remains via
+    // the "Create Missing Pages" / "Delete Auto-Created Pages" buttons on the
+    // settings screen, and the plugin still works with no real pages at all via
+    // its virtual URL-rewrite fallback.
+    wpfa_create_action_pages();
 
     wpfa_flush_rewrite_rules();
 }

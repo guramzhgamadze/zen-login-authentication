@@ -43,7 +43,7 @@ Only the Reset Password widget declares `is_dynamic_content(): true` (it reads `
 
 #### Page Management
 
-The plugin includes a **Page Management** panel in the settings screen. You can manually create real WordPress pages for each auth action so Elementor Theme Builder conditions work correctly (Singular > Page targeting by ID). Pages are **not** created automatically on activation — you choose when and whether to create them. The plugin works without real pages via its virtual URL rewrite system.
+On activation the plugin sets up a real WordPress page for each auth action so Elementor Theme Builder conditions work correctly (Singular > Page targeting by ID). For each action it checks the default slug: if a page already exists there it is **reused** as-is (never modified, and never deleted on uninstall); otherwise a new page is **created**. The process is idempotent, so activate/deactivate cycles never duplicate pages. The **Page Management** panel in the settings screen lets you re-create any missing pages or remove the auto-created ones manually. The plugin also works without real pages via its virtual URL rewrite system.
 
 ### Classic Widgets
 
@@ -69,7 +69,7 @@ All expose `show_instance_in_rest` for the WP 5.8+ block-based Widgets screen.
 1. Upload the `wp-frontend-auth` folder to `/wp-content/plugins/`.
 2. Activate the plugin through **Plugins → Installed Plugins**.
 3. Go to **Frontend Auth** in the admin sidebar to configure options.
-4. *(Optional)* Click **Create Missing Pages** in the Page Management section to create real WordPress pages for Elementor Theme Builder targeting.
+4. *(Optional)* The auth pages are created automatically on activation. If you later delete some and want them back, click **Create Missing Pages** in the Page Management section.
 5. Rewrite rules are flushed automatically on the first page load after activation (v1.4.16+). If needed, go to **Settings → Permalinks** and click **Save Changes**, or run `wp rewrite flush`.
 6. *(Elementor users)* Open any page in the Elementor editor and search for "Login Form", "Registration Form", etc. in the widget panel under the **Frontend Auth** category.
 
@@ -246,10 +246,11 @@ wp-frontend-auth/
 **Security & Bug Fixes**
 
 - **Medium (regression fix):** Reverted the default rate-limit IP source back to `REMOTE_ADDR` only. 1.4.18 changed the default to try `HTTP_CF_CONNECTING_IP` first, which is spoofable on any site not actually behind Cloudflare — an attacker could send a different forged header on each request to land in a fresh rate-limit bucket and bypass throttling entirely. This restores the 1.4.11 behaviour. Cloudflare sites can opt back in with `add_filter('wpfa_rate_limit_ip_headers', fn() => ['HTTP_CF_CONNECTING_IP', 'REMOTE_ADDR'])`, and should only do so with the origin firewall restricted to Cloudflare's IP ranges.
-- **Medium (data loss):** The plugin no longer deletes auth pages on uninstall. Older versions force-deleted every stored auth page when the plugin was deleted (e.g. during a deactivate → delete → reinstall "replace"), including pages built in Elementor. Uninstall now removes only the plugin's options and stored page-ID references; pages are left untouched. Use the **Delete Auto-Created Pages** button before uninstalling if you want them gone.
+- **Medium (data loss):** Hardened uninstall page cleanup. Older versions force-deleted *every* stored auth page when the plugin was deleted (e.g. during a deactivate → delete → reinstall "replace"), including pages built in Elementor. Uninstall now deletes a page only when the plugin created it (`_wpfa_auto_created`), it was never edited in Elementor, and it has no content — adopted pages and any page you've touched are always kept. Stored page-ID references are removed either way.
 
 **Changes**
 
+- **Auto page setup on activation (adopt-or-create).** On install the plugin again creates a real page for each auth action — but now checks each default slug first: if a page already exists there it is reused as-is; otherwise a new page is created. Reused pages are never flagged for deletion, and the routine is idempotent, so activate/deactivate cycles can't duplicate pages (the duplication that caused auto-creation to be disabled in 1.4.16 cannot recur). The **Create Missing Pages** / **Delete Auto-Created Pages** buttons remain for manual control.
 - **Configurable subscriber redirect.** Replaced the hardcoded `/instructor_dashboard/` default with a **Subscriber redirect** field under **Settings → Frontend Auth → General**. Enter a page slug or full URL, or leave it empty to send subscribers to the site home page. The `wpfa_subscriber_redirect` filter still works.
 - **Housekeeping:** removed an unreachable duplicate guard in `wpfa_filter_site_url()`, removed an empty admin-enqueue no-op, switched a `DOING_AJAX` constant check to `wp_doing_ajax()`, and corrected `current_time('mysql', 1)` to `current_time('mysql', true)`. No behaviour change.
 

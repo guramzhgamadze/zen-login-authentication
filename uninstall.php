@@ -3,10 +3,10 @@
  * WP Frontend Auth – Uninstall
  *
  * Runs when the plugin is deleted (not just deactivated).
- * Removes all plugin options and the stored page-ID references, but never
- * deletes the auth pages themselves — those are user-owned content. Users who
- * want the auto-created pages removed can use the "Delete Auto-Created Pages"
- * button on the settings screen before deleting the plugin.
+ * Removes all plugin options, and deletes only the pages the plugin itself
+ * auto-created that the user never edited (no Elementor data, no content).
+ * Adopted pages (pre-existing pages the plugin reused) and edited pages are
+ * always kept.
  *
  * @package WP_Frontend_Auth
  */
@@ -61,15 +61,31 @@ function wpfa_uninstall_site( array $options, array $page_actions ): void {
         delete_option( $opt );
     }
 
-    // Pages are NEVER deleted on uninstall — we only remove the plugin's stored
-    // page-ID references. Deleting pages here previously caused data loss when a
-    // user "replaced" the plugin via deactivate → delete → reinstall: the delete
-    // step ran uninstall.php and force-removed their auth pages, including ones
-    // built in Elementor. Auth pages are user-owned content; a user who genuinely
-    // wants the auto-created pages gone can use the "Delete Auto-Created Pages"
-    // button on the settings screen *before* deleting the plugin.
+    // Delete pages the plugin created, but ONLY when they are still untouched:
+    //   1. Created by the plugin    — has _wpfa_auto_created meta. Adopted pages
+    //      (pre-existing pages the plugin merely reused) never get this flag, so
+    //      they are always preserved.
+    //   2. Never edited in Elementor — no _elementor_edit_mode meta.
+    //   3. Empty                     — post_content is blank.
+    // If any condition fails the page is kept. Either way the stored reference is
+    // removed. These guards are what prevent the data loss seen in older builds,
+    // which force-deleted every stored page — including ones edited in Elementor.
     foreach ( $page_actions as $action ) {
-        delete_option( "wpfa_page_id_{$action}" );
+        $opt     = "wpfa_page_id_{$action}";
+        $page_id = (int) get_option( $opt, 0 );
+
+        if ( $page_id ) {
+            $post        = get_post( $page_id );
+            $is_auto     = (bool) get_post_meta( $page_id, '_wpfa_auto_created', true );
+            $has_el      = (bool) get_post_meta( $page_id, '_elementor_edit_mode', true );
+            $has_content = $post instanceof WP_Post && '' !== trim( $post->post_content );
+
+            if ( $is_auto && ! $has_el && ! $has_content ) {
+                wp_delete_post( $page_id, true );
+            }
+        }
+
+        delete_option( $opt );
     }
 
     // Per-action rate limit options (v1.4.18).
