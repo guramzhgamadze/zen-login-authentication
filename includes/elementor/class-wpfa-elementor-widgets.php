@@ -74,9 +74,13 @@ abstract class WPFA_Elementor_Base_Widget extends \Elementor\Widget_Base {
     public function get_style_depends(): array  { return [ 'wp-frontend-auth' ]; }
     public function get_script_depends(): array { return [ 'wp-frontend-auth' ]; }
     public function has_widget_inner_wrapper(): bool { return false; }
-    // Fix #10 — Only Reset Password reads $_GET; the other three emit static markup.
-    // Each concrete subclass overrides this if it genuinely needs dynamic mode.
-    protected function is_dynamic_content(): bool { return false; }
+    // Auth forms must NEVER be cached by Elementor's element cache: every form
+    // carries a per-request nonce (a cached/stale nonce makes login fail with a
+    // security error), and the login/register/lost-password widgets read
+    // ?redirect_to= from the URL (a cached form freezes redirect_to, so users are
+    // sent to a stale destination instead of where they were heading). Marking the
+    // content dynamic forces Elementor to render these widgets fresh on every load.
+    protected function is_dynamic_content(): bool { return true; }
 
     /* --- Shared content controls --- */
 
