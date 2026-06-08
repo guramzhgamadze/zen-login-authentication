@@ -52,6 +52,35 @@ function wpfa_get_rate_limit_window(): int {
     return (int) apply_filters( 'wpfa_rate_limit_window', get_option( 'wpfa_rate_limit_window', 15 ) );
 }
 
+/**
+ * Resolve where subscribers (and other non-admin users with no wp-admin access)
+ * should land after logging in.
+ *
+ * Configurable via Settings → Frontend Auth → "Subscriber redirect". The stored
+ * value (option wpfa_subscriber_redirect) may be:
+ *   - empty       → the site home page (default)
+ *   - a slug/path → resolved against home_url(), e.g. "dashboard" → https://site/dashboard/
+ *   - a full URL  → used as-is (still passed through wp_safe_redirect() at the call
+ *                   site, so only same-host destinations are honoured)
+ *
+ * The legacy 'wpfa_subscriber_redirect' filter still works and wraps the resolved
+ * default, so any code already overriding it keeps functioning.
+ */
+function wpfa_get_subscriber_redirect(): string {
+    $value = trim( (string) get_option( 'wpfa_subscriber_redirect', '' ) );
+
+    if ( '' === $value ) {
+        $default = home_url();
+    } elseif ( preg_match( '#^https?://#i', $value ) ) {
+        $default = $value;
+    } else {
+        // Treat the value as a site-relative slug/path.
+        $default = home_url( user_trailingslashit( '/' . ltrim( $value, '/' ) ) );
+    }
+
+    return (string) apply_filters( 'wpfa_subscriber_redirect', $default );
+}
+
 /* -----------------------------------------------------------------------
  * Slug helpers
  * -------------------------------------------------------------------- */

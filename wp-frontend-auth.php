@@ -3,7 +3,7 @@
  * Plugin Name:       WP Frontend Auth
  * Plugin URI:        https://github.com/guramzhgamadze/Frontend-Auth
  * Description:       Secure, accessible frontend login, registration, and password recovery forms — with rate limiting, honeypot protection, AJAX support, and native Elementor widgets.
- * Version:           1.4.18
+ * Version:           1.4.19
  * Requires at least: 6.5
  * Requires PHP:      8.0
  * Author:            Guram Zhgamadze
@@ -67,7 +67,7 @@ if ( version_compare( get_bloginfo( 'version' ), '6.5', '<' ) ) {
     return;
 }
 
-define( 'WPFA_VERSION', '1.4.18' );
+define( 'WPFA_VERSION', '1.4.19' );
 define( 'WPFA_PATH',    plugin_dir_path( __FILE__ ) );
 define( 'WPFA_URL',     plugin_dir_url( __FILE__ ) );
 
@@ -142,9 +142,9 @@ function wpfa_maybe_upgrade(): void {
      * 1. Delete orphaned wpfa_slug_* options that don't belong to any
      *    known action (e.g. wpfa_slug_dashboard from earlier experiments).
      * 2. Prune excessive post revisions on auth pages — keep latest 5,
-     *    delete the rest. On Yogahub this removes ~240 revisions and
-     *    reclaims ~1.5 MB of wp_postmeta data (each Elementor revision
-     *    stores a full copy of _elementor_data).
+     *    delete the rest. On a busy Elementor site this can remove a few
+     *    hundred revisions and reclaim a meaningful chunk of wp_postmeta data
+     *    (each Elementor revision stores a full copy of _elementor_data).
      *
      * Both operations are idempotent and version-gated so they only run
      * once during the upgrade from any earlier version to 1.4.17+.

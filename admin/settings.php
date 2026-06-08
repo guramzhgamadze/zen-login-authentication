@@ -68,6 +68,9 @@ function wpfa_admin_register_settings(): void {
     }
     register_setting( 'wp-frontend-auth', 'wpfa_lostpassword_count_all', [ 'sanitize_callback' => 'absint', 'type' => 'integer', 'autoload' => false ] );
 
+    // Subscriber post-login redirect: page slug/path or full URL; empty = site home.
+    register_setting( 'wp-frontend-auth', 'wpfa_subscriber_redirect', [ 'sanitize_callback' => 'wpfa_sanitize_redirect_target', 'type' => 'string', 'autoload' => false ] );
+
     // Slugs
     $slug_actions = [ 'login', 'logout', 'register', 'lostpassword', 'resetpass' ];
     foreach ( $slug_actions as $action ) {
@@ -79,6 +82,15 @@ function wpfa_sanitize_login_type( $value ): string {
     $allowed = [ 'default', 'username', 'email' ];
     $value   = sanitize_text_field( (string) $value );
     return in_array( $value, $allowed, true ) ? $value : 'default';
+}
+
+/**
+ * Sanitize the subscriber-redirect target. Accepts a slug/path or a full URL.
+ * Stored as plain text; same-host safety is enforced at redirect time by
+ * wpfa_get_subscriber_redirect() (home_url) and wp_safe_redirect().
+ */
+function wpfa_sanitize_redirect_target( $value ): string {
+    return trim( sanitize_text_field( (string) $value ) );
 }
 
 /* -----------------------------------------------------------------------
@@ -180,6 +192,14 @@ function wpfa_admin_settings_page(): void {
                     </div>
                 </div>
                 <?php endforeach; ?>
+
+                <div class="wpfa-row">
+                    <div class="wpfa-row-label"><?php esc_html_e( 'Subscriber redirect', 'wp-frontend-auth' ); ?></div>
+                    <div class="wpfa-row-field">
+                        <input type="text" name="wpfa_subscriber_redirect" value="<?php echo esc_attr( (string) get_option( 'wpfa_subscriber_redirect', '' ) ); ?>" placeholder="<?php esc_attr_e( 'e.g. dashboard  (leave empty for home page)', 'wp-frontend-auth' ); ?>">
+                        <div class="wpfa-hint"><?php esc_html_e( 'Where subscribers land after logging in. Enter a page slug (e.g. dashboard) or a full URL. Leave empty to send them to the site home page. Admins and editors keep their normal redirect.', 'wp-frontend-auth' ); ?></div>
+                    </div>
+                </div>
             </div>
 
             <!-- Rate Limiting -->

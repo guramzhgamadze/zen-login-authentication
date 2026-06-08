@@ -14,11 +14,13 @@ defined( 'ABSPATH' ) || exit;
  * Return the anonymised IP used as the transient key.
  * IPv4: last octet zeroed. IPv6: last 80 bits zeroed.
  *
- * FIX (v1.4.18): Default header order updated for Cloudflare deployments.
- * HTTP_CF_CONNECTING_IP is only present when the request passes through
- * Cloudflare — absent on direct connections, so REMOTE_ADDR is used as
- * fallback automatically. On servers NOT behind Cloudflare, a client could
- * forge this header; override via the filter to restore REMOTE_ADDR-only.
+ * SECURITY (v1.4.18): The client IP is read from REMOTE_ADDR only by default.
+ * Forwarded headers such as HTTP_CF_CONNECTING_IP / X-Forwarded-For are trivially
+ * spoofable on any server that is not actually behind the proxy that sets them —
+ * an attacker could rotate the header on each request to land in a fresh
+ * rate-limit bucket and bypass throttling entirely. Sites genuinely behind
+ * Cloudflare (or another trusted reverse proxy) can opt the real-client header
+ * back in via the 'wpfa_rate_limit_ip_headers' filter — see below.
  *
  * @return string
  */
@@ -28,14 +30,15 @@ function wpfa_rate_limit_get_ip(): string {
     /**
      * Filter the list of $_SERVER headers checked for the client IP.
      *
-     * Default tries HTTP_CF_CONNECTING_IP first (Cloudflare real-client IP),
-     * then falls back to REMOTE_ADDR. On non-Cloudflare servers override to
-     * prevent header spoofing:
-     *   add_filter( 'wpfa_rate_limit_ip_headers', fn() => [ 'REMOTE_ADDR' ] );
+     * Default is REMOTE_ADDR only (the connecting socket address, which cannot be
+     * forged). If — and only if — your site is behind Cloudflare AND your origin
+     * firewall restricts inbound traffic to Cloudflare's IP ranges, you may safely
+     * prepend the real-client header:
+     *   add_filter( 'wpfa_rate_limit_ip_headers', fn() => [ 'HTTP_CF_CONNECTING_IP', 'REMOTE_ADDR' ] );
      *
      * @param string[] $headers Ordered list of $_SERVER keys to try.
      */
-    $headers = (array) apply_filters( 'wpfa_rate_limit_ip_headers', [ 'HTTP_CF_CONNECTING_IP', 'REMOTE_ADDR' ] );
+    $headers = (array) apply_filters( 'wpfa_rate_limit_ip_headers', [ 'REMOTE_ADDR' ] );
 
     foreach ( $headers as $key ) {
         if ( ! empty( $_SERVER[ $key ] ) ) {

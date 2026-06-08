@@ -176,8 +176,9 @@ function wpfa_handle_login(): void {
     $is_subscriber = count( $user->roles ) === 1 && in_array( 'subscriber', $user->roles, true );
 
     // Subscriber default destination — where subscribers land when there is no
-    // explicit redirect_to, or when they try to go to wp-admin.
-    $subscriber_default = apply_filters( 'wpfa_subscriber_redirect', home_url( '/instructor_dashboard/' ) );
+    // explicit redirect_to, or when they try to go to wp-admin. Configurable via
+    // Settings → Frontend Auth → "Subscriber redirect" (empty = site home).
+    $subscriber_default = wpfa_get_subscriber_redirect();
 
     if ( empty( $redirect_to ) ) {
         $default     = $is_subscriber ? $subscriber_default : home_url();

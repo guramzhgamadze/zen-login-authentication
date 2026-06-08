@@ -247,7 +247,7 @@ function wpfa_maybe_redirect_logged_in_user(): void {
 
     $user              = wp_get_current_user();
     $is_subscriber     = count( $user->roles ) === 1 && in_array( 'subscriber', $user->roles, true );
-    $subscriber_default = apply_filters( 'wpfa_subscriber_redirect', home_url( '/instructor_dashboard/' ) );
+    $subscriber_default = wpfa_get_subscriber_redirect();
 
     if ( $is_subscriber ) {
         // Subscribers must never reach wp-admin.
@@ -291,9 +291,9 @@ function wpfa_the_posts( array $posts, WP_Query $wp_query ): array {
         'post_author'       => 0,
         'post_status'       => 'publish',
         'post_date'         => current_time( 'mysql' ),
-        'post_date_gmt'     => current_time( 'mysql', 1 ),
+        'post_date_gmt'     => current_time( 'mysql', true ),
         'post_modified'     => current_time( 'mysql' ),
-        'post_modified_gmt' => current_time( 'mysql', 1 ),
+        'post_modified_gmt' => current_time( 'mysql', true ),
         'post_type'         => 'page',
         'post_content'      => '',
         'post_title'        => wpfa()->get_action( $action )['title'] ?? ucfirst( $action ),
@@ -381,7 +381,7 @@ function wpfa_maybe_inject_form( string $content ): string {
         // FIX (v1.4.16): Pass redirect_to from the current URL into the form so it is
         // written as a hidden field. Without this, the handler receives no redirect_to
         // on POST and falls back to home_url() — even when the user arrived via e.g.
-        // /log-in/?redirect_to=/instructor_dashboard/.
+        // /log-in/?redirect_to=/dashboard/.
         'redirect_to' => isset( $_GET['redirect_to'] ) && is_string( $_GET['redirect_to'] ) // phpcs:ignore WordPress.Security.NonceVerification
             ? wpfa_validate_redirect( wp_unslash( $_GET['redirect_to'] ) ) // phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput
             : '',
@@ -562,9 +562,6 @@ function wpfa_filter_site_url( string $url, string $path, $scheme ): string {
     // inspect whether the destination is a REST endpoint on this site.
     $synthetic_redirect = $url;
     if ( wpfa_is_login_url_exempt( $synthetic_redirect ) ) {
-        return $url;
-    }
-    if ( ! isset( $map[ $base ] ) ) {
         return $url;
     }
     $action_from_query = $query['action'] ?? '';

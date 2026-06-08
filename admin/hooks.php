@@ -7,14 +7,6 @@
 
 defined( 'ABSPATH' ) || exit;
 
-add_action( 'admin_enqueue_scripts', 'wpfa_admin_enqueue_scripts' );
-
-function wpfa_admin_enqueue_scripts( string $hook ): void {
-    if ( 'toplevel_page_wp-frontend-auth' !== $hook ) {
-        return;
-    }
-}
-
 /**
  * Add a "Settings" link on the plugins list page.
  */

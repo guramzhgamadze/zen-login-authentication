@@ -183,7 +183,7 @@ function wpfa_is_elementor_context(): bool {
     if ( isset( $_GET['elementor-preview'] ) ) {
         return true;
     }
-    if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
+    if ( wp_doing_ajax() ) {
         $action = isset( $_REQUEST['action'] ) && is_string( $_REQUEST['action'] ) ? sanitize_key( $_REQUEST['action'] ) : '';
         if ( str_starts_with( $action, 'elementor_' ) ) {
             return true;

@@ -13,7 +13,7 @@ WP Frontend Auth replaces the default `wp-login.php` experience with clean, them
 - **Lost Password / Reset Password** forms with full email flow integration.
 - **URL rewriting** — all `wp-login.php` links site-wide are transparently redirected to your frontend pages.
 - **Multisite support** — network-activated, per-site settings, signup/activation flow handled.
-- **Smart redirects** — `?redirect_to=` is fully honoured on both virtual and Elementor pages. Subscribers are blocked from wp-admin and sent to a configurable destination (default: `/instructor_dashboard/`, filterable via `wpfa_subscriber_redirect`). Privileged users always land where they intended.
+- **Smart redirects** — `?redirect_to=` is fully honoured on both virtual and Elementor pages. Subscribers are blocked from wp-admin and sent to a configurable destination — set a page slug or URL under **Settings → Frontend Auth → Subscriber redirect** (default: the site home page; also filterable via `wpfa_subscriber_redirect`). Privileged users always land where they intended.
 - **Cache exclusion** — auth pages are automatically excluded from LiteSpeed Cache, Super Page Cache, WP Rocket, W3 Total Cache, and WP Super Cache. Stale 404 cache entries are purged automatically on plugin update.
 
 ### Security
@@ -21,7 +21,7 @@ WP Frontend Auth replaces the default `wp-login.php` experience with clean, them
 - **Nonce verification** on every form submission.
 - **Rate limiting** — configurable max attempts per IP with lockout window (uses transients). Applied to all four handlers: login, register, lost-password, and reset-password.
 - **Honeypot spam protection** — rotating hidden field (hourly key rotation via HMAC) catches bots. Trapped submissions get a fake success response — bots never know they failed.
-- **IP anonymisation** — rate-limit keys hash truncated IPs (last octet zeroed for IPv4, /48 for IPv6). Defaults try `HTTP_CF_CONNECTING_IP` first (Cloudflare real-client IP), then fall back to `REMOTE_ADDR`. On non-Cloudflare servers, override the `wpfa_rate_limit_ip_headers` filter to prevent header spoofing: `add_filter('wpfa_rate_limit_ip_headers', fn() => ['REMOTE_ADDR']);`
+- **IP anonymisation** — rate-limit keys hash truncated IPs (last octet zeroed for IPv4, /48 for IPv6). The client IP is read from `REMOTE_ADDR` only by default, because forwarded headers like `HTTP_CF_CONNECTING_IP` / `X-Forwarded-For` are spoofable on any server not actually behind that proxy (an attacker could rotate the header to land in a fresh bucket and dodge the throttle). Sites genuinely behind Cloudflare — with the origin firewall locked to Cloudflare's IP ranges — can opt the real-client header back in: `add_filter('wpfa_rate_limit_ip_headers', fn() => ['HTTP_CF_CONNECTING_IP', 'REMOTE_ADDR']);`
 - **No password pre-population** — password fields are never re-filled from POST data.
 - **bcrypt-compatible** — uses `wp_set_password()` / `wp_signon()` which support WP 6.8+ bcrypt hashing.
 - **Password minimum length** — reset and registration passwords require at least 8 characters.
@@ -87,6 +87,7 @@ All settings are under the **Frontend Auth** admin menu:
 | User-chosen passwords | Off | Shows password fields on registration form |
 | Auto-login | Off | Logs users in immediately after registering |
 | Honeypot protection | On | Hidden field to catch bots |
+| Subscriber redirect | *(empty)* | Where subscribers land after login. A page slug (e.g. `dashboard`) or full URL; empty = site home page. Admins/editors keep their normal redirect. |
 
 ### Rate Limiting
 
@@ -154,13 +155,13 @@ Each action URL slug is customisable: `login`, `logout`, `register`, `lostpasswo
 | `wpfa_use_honeypot` | `true` | Toggle honeypot protection |
 | `wpfa_rate_limit` | `10` | Max failed attempts (global default) |
 | `wpfa_rate_limit_window` | `15` | Lockout window in minutes |
-| `wpfa_rate_limit_ip_headers` | `['HTTP_CF_CONNECTING_IP', 'REMOTE_ADDR']` | `$_SERVER` keys checked for client IP (override on non-Cloudflare servers to prevent spoofing) |
+| `wpfa_rate_limit_ip_headers` | `['REMOTE_ADDR']` | `$_SERVER` keys checked for client IP. Default is `REMOTE_ADDR` only (unforgeable); Cloudflare sites can prepend `HTTP_CF_CONNECTING_IP` *only if* the origin is locked to Cloudflare's IP ranges |
 | `wpfa_rate_limit_enabled_{action}` | `true` | Per-form rate-limit toggle. `{action}` = `login` \| `register` \| `lostpassword` \| `resetpass`. Return `false` to disable rate limiting on a specific form. |
 | `wpfa_rate_limit_{action}` | global default | Per-form threshold override. Only fires when a positive integer override is set in the admin panel. |
 | `wpfa_action_url` | — | Filter any action URL |
 | `wpfa_action_slug_{action}` | — | Filter a specific action's slug |
 | `wpfa_username_label` | — | Filter the username field label |
-| `wpfa_subscriber_redirect` | `home_url('/instructor_dashboard/')` | Destination URL for subscribers after login, or when they attempt to reach wp-admin. Override to send subscribers anywhere. |
+| `wpfa_subscriber_redirect` | resolved from the **Subscriber redirect** setting (empty = `home_url()`) | Destination URL for subscribers after login, or when they attempt to reach wp-admin. Override to send subscribers anywhere. |
 | `wpfa_logged_in_redirect` | Role-based (see below) | Final redirect URL for already-logged-in users visiting the login/register page |
 | `wpfa_logout_redirect` | `home_url()` | Redirect URL after logout |
 | `wpfa_login_url_exempt` | `false` | Return `true` to bypass WPFA's login URL rewriting (for OAuth/MCP flows) |
@@ -180,7 +181,7 @@ After a successful login, the destination is resolved in this order:
 1. `?redirect_to=` in the URL — always wins (user's actual intended destination, e.g. bounced from a protected page).
 2. Redirect URL configured in the Elementor widget editor panel — used when no URL parameter is present.
 3. Role-based fallback:
-   - **Subscriber** → `wpfa_subscriber_redirect` filter value (default `/instructor_dashboard/`). Subscribers can never reach wp-admin regardless of `redirect_to`.
+   - **Subscriber** → the **Subscriber redirect** setting (a slug or URL; empty = `home_url()`), overridable via the `wpfa_subscriber_redirect` filter. Subscribers can never reach wp-admin regardless of `redirect_to`.
    - **All other roles** → `home_url()` when no redirect is specified. If WordPress bounced them from wp-admin (adding `?redirect_to=wp-admin/...` to the login URL), that redirect is honoured exactly.
 
 ## 3rd-Party Plugin Compatibility
@@ -239,6 +240,18 @@ wp-frontend-auth/
 ```
 
 ## Changelog
+
+### 1.4.19
+
+**Security & Bug Fixes**
+
+- **Medium (regression fix):** Reverted the default rate-limit IP source back to `REMOTE_ADDR` only. 1.4.18 changed the default to try `HTTP_CF_CONNECTING_IP` first, which is spoofable on any site not actually behind Cloudflare — an attacker could send a different forged header on each request to land in a fresh rate-limit bucket and bypass throttling entirely. This restores the 1.4.11 behaviour. Cloudflare sites can opt back in with `add_filter('wpfa_rate_limit_ip_headers', fn() => ['HTTP_CF_CONNECTING_IP', 'REMOTE_ADDR'])`, and should only do so with the origin firewall restricted to Cloudflare's IP ranges.
+- **Medium (data loss):** The plugin no longer deletes auth pages on uninstall. Older versions force-deleted every stored auth page when the plugin was deleted (e.g. during a deactivate → delete → reinstall "replace"), including pages built in Elementor. Uninstall now removes only the plugin's options and stored page-ID references; pages are left untouched. Use the **Delete Auto-Created Pages** button before uninstalling if you want them gone.
+
+**Changes**
+
+- **Configurable subscriber redirect.** Replaced the hardcoded `/instructor_dashboard/` default with a **Subscriber redirect** field under **Settings → Frontend Auth → General**. Enter a page slug or full URL, or leave it empty to send subscribers to the site home page. The `wpfa_subscriber_redirect` filter still works.
+- **Housekeeping:** removed an unreachable duplicate guard in `wpfa_filter_site_url()`, removed an empty admin-enqueue no-op, switched a `DOING_AJAX` constant check to `wp_doing_ajax()`, and corrected `current_time('mysql', 1)` to `current_time('mysql', true)`. No behaviour change.
 
 ### 1.4.18
 

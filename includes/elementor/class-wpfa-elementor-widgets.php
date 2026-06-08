@@ -598,7 +598,7 @@ abstract class WPFA_Elementor_Base_Widget extends \Elementor\Widget_Base {
         // FIX (v1.4.16): Honour ?redirect_to= from the current URL.
         // The editor control sets a *default* destination. But when a user is
         // bounced to the login page because they tried to visit a protected page
-        // (e.g. /instructor_dashboard/ → /log-in/?redirect_to=/instructor_dashboard/),
+        // (e.g. /dashboard/ → /log-in/?redirect_to=/dashboard/),
         // the URL parameter represents their actual intended destination and must
         // take priority over whatever the editor default is.
         $url_redirect = isset( $_GET['redirect_to'] ) && is_string( $_GET['redirect_to'] ) // phpcs:ignore WordPress.Security.NonceVerification
