@@ -46,6 +46,3 @@ error_log
 # === Environment ===
 .env
 .env.*
-
-# === WordPress build / local test install (not part of the plugin source) ===
-/wordpress/

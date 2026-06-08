@@ -81,6 +81,26 @@ function wpfa_get_subscriber_redirect(): string {
     return (string) apply_filters( 'wpfa_subscriber_redirect', $default );
 }
 
+/**
+ * Whether a user should be treated as a "restricted subscriber" — a front-end-only
+ * account that is kept out of wp-admin and sent to the Subscriber redirect.
+ *
+ * Default: users with the 'subscriber' role and no post-editing or admin
+ * capabilities. Filterable so membership/LMS setups can widen or narrow it.
+ *
+ * @param mixed $user A WP_User (anything else returns false).
+ */
+function wpfa_user_is_restricted_subscriber( $user ): bool {
+    if ( ! ( $user instanceof WP_User ) || ! $user->exists() ) {
+        return false;
+    }
+    $restricted = in_array( 'subscriber', (array) $user->roles, true )
+        && ! user_can( $user, 'edit_posts' )
+        && ! user_can( $user, 'manage_options' );
+
+    return (bool) apply_filters( 'wpfa_is_restricted_subscriber', $restricted, $user );
+}
+
 /* -----------------------------------------------------------------------
  * Slug helpers
  * -------------------------------------------------------------------- */

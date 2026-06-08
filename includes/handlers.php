@@ -24,6 +24,15 @@ function wpfa_route_post_request(): void {
     }
     $nonce = sanitize_key( wpfa_get_request_value( "wpfa_{$action}_nonce", 'post' ) );
     if ( ! wp_verify_nonce( $nonce, "wpfa_{$action}" ) ) {
+        // An expired/invalid nonce usually means the form was served from cache or
+        // pasted as static HTML (a baked-in nonce eventually expires). For AJAX
+        // submissions, return a clear JSON message instead of a raw 403 page — the
+        // script can only render a 403 as the unhelpful generic-error fallback.
+        if ( wpfa_is_ajax_request() ) {
+            wpfa_send_ajax_error( [
+                'errors' => [ __( 'Your session has expired. Please reload the page and try again.', 'wp-frontend-auth' ) ],
+            ] );
+        }
         wp_die(
             esc_html__( 'Security check failed. Please try again.', 'wp-frontend-auth' ),
             esc_html__( 'Security Error', 'wp-frontend-auth' ),
@@ -173,18 +182,21 @@ function wpfa_handle_login(): void {
     $redirect_to = $redirect_to ? wpfa_validate_redirect( $redirect_to ) : '';
 
     // Determine if this is a subscriber (no wp-admin access).
-    $is_subscriber = count( $user->roles ) === 1 && in_array( 'subscriber', $user->roles, true );
+    $is_subscriber = wpfa_user_is_restricted_subscriber( $user );
 
     // Subscriber default destination — where subscribers land when there is no
     // explicit redirect_to, or when they try to go to wp-admin. Configurable via
     // Settings → Frontend Auth → "Subscriber redirect" (empty = site home).
     $subscriber_default = wpfa_get_subscriber_redirect();
 
-    if ( empty( $redirect_to ) ) {
-        $default     = $is_subscriber ? $subscriber_default : home_url();
-        $redirect_to = apply_filters( 'login_redirect', $default, '', $user );
-    } elseif ( $is_subscriber && str_starts_with( $redirect_to, admin_url() ) ) {
-        $redirect_to = $subscriber_default;
+    if ( $is_subscriber ) {
+        // Subscribers always land on the configured Subscriber redirect — it wins
+        // over any redirect_to baked into the form/widget (e.g. a Login widget
+        // "Redirect URL" or the home URL). To honour an explicit per-login
+        // redirect for subscribers instead, return $redirect_to from this filter.
+        $redirect_to = (string) apply_filters( 'wpfa_subscriber_login_redirect_to', $subscriber_default, $redirect_to, $user );
+    } elseif ( empty( $redirect_to ) ) {
+        $redirect_to = apply_filters( 'login_redirect', home_url(), '', $user );
     }
 
     do_action( 'wpfa_login_success', $user );
@@ -278,6 +290,13 @@ function wpfa_handle_register(): void {
     }
 
     $new_user_id = (int) $registration;
+
+    // Hide the front-end admin toolbar by default for users who register here.
+    // This only sets the initial preference (stored as user meta) — the user can
+    // re-enable "Show Toolbar when viewing site" from their profile at any time.
+    if ( apply_filters( 'wpfa_hide_admin_bar_on_register', true, $new_user_id ) ) {
+        update_user_meta( $new_user_id, 'show_admin_bar_front', 'false' );
+    }
 
     if ( wpfa_allow_user_passwords() ) {
         $pass1 = wpfa_get_request_value( 'user_pass1', 'post' );

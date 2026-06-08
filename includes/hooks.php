@@ -37,6 +37,13 @@ add_action( 'wp',                 'wpfa_remove_unneeded_head_items' );
 add_action( 'template_redirect', 'wpfa_maybe_redirect_logged_in_user', 1 );
 
 /* -----------------------------------------------------------------------
+ * Subscriber containment — applies to ALL login paths (front-end form,
+ * wp-login.php, third-party flows) and blocks wp-admin for subscribers.
+ * -------------------------------------------------------------------- */
+add_filter( 'login_redirect', 'wpfa_subscriber_login_redirect', 100, 3 );
+add_action( 'admin_init',     'wpfa_block_subscriber_admin' );
+
+/* -----------------------------------------------------------------------
  * Cache exclusion — auth pages must never be served from cache.
  *
  * FIX (v1.4.16): LiteSpeed Cache and Super Page Cache were caching 404
@@ -246,25 +253,79 @@ function wpfa_maybe_redirect_logged_in_user(): void {
         : '';
 
     $user              = wp_get_current_user();
-    $is_subscriber     = count( $user->roles ) === 1 && in_array( 'subscriber', $user->roles, true );
+    $is_subscriber     = wpfa_user_is_restricted_subscriber( $user );
     $subscriber_default = wpfa_get_subscriber_redirect();
 
     if ( $is_subscriber ) {
-        // Subscribers must never reach wp-admin.
-        if ( empty( $redirect_to ) || str_starts_with( $redirect_to, admin_url() ) ) {
-            $redirect_to = $subscriber_default;
-        }
-    } else {
+        // Subscribers always go to the configured Subscriber redirect (never
+        // wp-admin, and overriding any redirect_to in the URL/form).
+        $redirect_to = (string) apply_filters( 'wpfa_subscriber_login_redirect_to', $subscriber_default, $redirect_to, $user );
+    } elseif ( empty( $redirect_to ) ) {
         // Privileged users: honour redirect_to if present, otherwise home_url().
         // Do NOT default to admin_url() — if they landed on the login page without
         // a redirect_to they came directly, not from an admin auth_redirect() call.
-        if ( empty( $redirect_to ) ) {
-            $redirect_to = home_url();
-        }
+        $redirect_to = home_url();
     }
 
     $redirect = apply_filters( 'wpfa_logged_in_redirect', $redirect_to );
     wp_safe_redirect( $redirect );
+    exit;
+}
+
+/**
+ * Force restricted subscribers to the configured Subscriber redirect after login,
+ * no matter which login form was used. Runs at priority 100 so it wins over other
+ * plugins/themes that hook `login_redirect` (the usual reason a configured
+ * subscriber destination "doesn't work").
+ *
+ * An explicit, non-admin destination the user actually requested is still honoured;
+ * only an empty or wp-admin target is overridden.
+ *
+ * @param string $redirect_to           Destination WordPress resolved.
+ * @param string $requested_redirect_to The requested redirect_to value.
+ * @param mixed  $user                  WP_User on success, WP_Error otherwise.
+ * @return string
+ */
+function wpfa_subscriber_login_redirect( $redirect_to, $requested_redirect_to, $user ): string {
+    if ( ! wpfa_user_is_restricted_subscriber( $user ) ) {
+        return (string) $redirect_to;
+    }
+    // Subscribers always go to the configured Subscriber redirect, overriding any
+    // requested redirect_to (which is commonly hardcoded to the home URL by a
+    // Login widget's "Redirect URL" control). Return $requested_redirect_to from
+    // the filter to honour explicit per-login redirects for subscribers instead.
+    return (string) apply_filters( 'wpfa_subscriber_login_redirect_to', wpfa_get_subscriber_redirect(), (string) $requested_redirect_to, $user );
+}
+
+/**
+ * Keep restricted subscribers out of wp-admin: any wp-admin request from such a
+ * user is redirected to the Subscriber redirect destination (the site home page
+ * by default). admin-ajax.php is exempt so front-end AJAX keeps working.
+ */
+function wpfa_block_subscriber_admin(): void {
+    if ( wp_doing_ajax() ) {
+        return; // never break admin-ajax.php
+    }
+    global $pagenow;
+    // Never interfere with the wp-admin action endpoints used by logout handlers,
+    // form processors, and other programmatic flows.
+    if ( in_array( $pagenow, [ 'admin-post.php', 'admin-ajax.php' ], true ) ) {
+        return;
+    }
+    // Always let a logout request complete.
+    $req_action = isset( $_REQUEST['action'] ) && is_string( $_REQUEST['action'] ) // phpcs:ignore WordPress.Security.NonceVerification
+        ? sanitize_key( wp_unslash( $_REQUEST['action'] ) ) // phpcs:ignore WordPress.Security.NonceVerification
+        : '';
+    if ( 'logout' === $req_action || isset( $_GET['loggedout'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+        return;
+    }
+    if ( ! is_user_logged_in() ) {
+        return;
+    }
+    if ( ! wpfa_user_is_restricted_subscriber( wp_get_current_user() ) ) {
+        return;
+    }
+    wp_safe_redirect( wpfa_get_subscriber_redirect() );
     exit;
 }
 

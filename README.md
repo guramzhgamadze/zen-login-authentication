@@ -241,6 +241,20 @@ wp-frontend-auth/
 
 ## Changelog
 
+### 1.4.20
+
+**Subscriber handling**
+
+- **New:** subscribers who register through the plugin have the front-end admin toolbar ("Show Toolbar when viewing site") hidden by default. It's a default preference (stored as `show_admin_bar_front` user meta) they can re-enable from their profile; filterable via `wpfa_hide_admin_bar_on_register`.
+- **New:** subscribers are blocked from `wp-admin` and redirected to the Subscriber redirect destination (site home by default). `admin-ajax.php` is exempt so front-end AJAX keeps working.
+- **Fixed:** the Subscriber redirect now applies to **every** login path — the front-end form, `wp-login.php`, and third-party login flows — via a priority-100 `login_redirect` filter. Previously the destination was only enforced inside the plugin's own login handler, so another plugin (security/membership) or a non-plugin login could silently override it.
+- The "restricted subscriber" definition is centralized in `wpfa_user_is_restricted_subscriber()` and filterable via `wpfa_is_restricted_subscriber`.
+
+**Other**
+
+- **Fixed:** the "Settings" action link on the Plugins page now resolves the plugin basename dynamically (`plugin_basename()`), so it works regardless of the installed folder name.
+- Tested up to WordPress 7.0.
+
 ### 1.4.19
 
 **Security & Bug Fixes**

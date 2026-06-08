@@ -10,7 +10,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Add a "Settings" link on the plugins list page.
  */
-add_filter( 'plugin_action_links_wp-frontend-auth/wp-frontend-auth.php', 'wpfa_plugin_action_links' );
+add_filter( 'plugin_action_links_' . plugin_basename( WPFA_PATH . 'wp-frontend-auth.php' ), 'wpfa_plugin_action_links' );
 
 function wpfa_plugin_action_links( array $links ): array {
     array_unshift(
