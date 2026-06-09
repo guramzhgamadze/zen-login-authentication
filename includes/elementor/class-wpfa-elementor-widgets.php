@@ -200,12 +200,12 @@ abstract class WPFA_Elementor_Base_Widget extends \Elementor\Widget_Base {
 
         $this->add_control( 'form_bg_color', [
             'label' => esc_html__( 'Background', 'wp-frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR,
-            'selectors' => [ '{{WRAPPER}} .wpfa-form' => 'background-color: {{VALUE}};' ],
+            'selectors' => [ '{{WRAPPER}} .wpfa-form-wrap' => 'background-color: {{VALUE}};' ],
         ] );
         $this->add_responsive_control( 'form_padding', [
             'label' => esc_html__( 'Padding', 'wp-frontend-auth' ), 'type' => \Elementor\Controls_Manager::DIMENSIONS,
             'size_units' => [ 'px', 'em', '%' ],
-            'selectors' => [ '{{WRAPPER}} .wpfa-form' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ],
+            'selectors' => [ '{{WRAPPER}} .wpfa-form-wrap' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ],
         ] );
         $this->add_responsive_control( 'form_spacing_top', [
             'label' => esc_html__( 'Spacing Top', 'wp-frontend-auth' ), 'type' => \Elementor\Controls_Manager::SLIDER,
@@ -220,15 +220,15 @@ abstract class WPFA_Elementor_Base_Widget extends \Elementor\Widget_Base {
             'selectors' => [ '{{WRAPPER}} .wpfa-form-wrap' => 'margin-bottom: {{SIZE}}{{UNIT}};' ],
             'separator' => 'after',
         ] );
-        $this->add_group_control( \Elementor\Group_Control_Border::get_type(), [ 'name' => 'form_border', 'selector' => '{{WRAPPER}} .wpfa-form' ] );
+        $this->add_group_control( \Elementor\Group_Control_Border::get_type(), [ 'name' => 'form_border', 'selector' => '{{WRAPPER}} .wpfa-form-wrap' ] );
         $this->add_responsive_control( 'form_border_radius', [
             'label' => esc_html__( 'Border Radius', 'wp-frontend-auth' ), 'type' => \Elementor\Controls_Manager::DIMENSIONS,
             'size_units' => [ 'px', '%' ],
-            'selectors' => [ '{{WRAPPER}} .wpfa-form' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ],
+            'selectors' => [ '{{WRAPPER}} .wpfa-form-wrap' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ],
         ] );
         // Fix #2 — class_exists() guard for safety across Elementor versions.
         if ( class_exists( '\\Elementor\\Group_Control_Box_Shadow' ) ) {
-            $this->add_group_control( \Elementor\Group_Control_Box_Shadow::get_type(), [ 'name' => 'form_shadow', 'selector' => '{{WRAPPER}} .wpfa-form' ] );
+            $this->add_group_control( \Elementor\Group_Control_Box_Shadow::get_type(), [ 'name' => 'form_shadow', 'selector' => '{{WRAPPER}} .wpfa-form-wrap' ] );
         }
         $this->end_controls_section();
 

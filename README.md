@@ -241,6 +241,14 @@ wp-frontend-auth/
 
 ## Changelog
 
+### 1.4.22
+
+**Design**
+
+- Refreshed the **default form styling** for a modern, polished out-of-the-box look — softer rounded inputs/buttons (`10px`), refined focus rings (accent border + soft glow), fully-rounded tinted status notices, an updated password strength meter, a brand-tinted "Remember Me" checkbox (`accent-color`), and a cleaner password field (label above, with the Show/Hide toggle **inside** the field's right edge so the input stays full-width like the others).
+- Everything remains overridable via the `--wpfa-*` CSS custom properties and the Elementor style controls. Applies to all four forms and every widget type (Elementor, classic sidebar, and virtual pages), since they share one stylesheet.
+- **Fixed (Elementor):** the Form Container styling (background, border, padding, radius, shadow) now wraps the **form title** too — it previously rendered outside the styled container because those controls targeted `.wpfa-form` instead of the outer `.wpfa-form-wrap`.
+
 ### 1.4.20
 
 **Subscriber handling**

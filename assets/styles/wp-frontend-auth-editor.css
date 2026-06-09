@@ -12,10 +12,10 @@
 /* Editor-only preview wrapper (Reset Password widget) */
 .wpfa-editor-preview-wrap {
     margin-top: 1em;
-    padding: 1em;
-    border: 1px dashed var(--wp-admin-theme-color, #0073aa);
-    border-radius: 4px;
-    opacity: 0.75;
+    padding: 1.1em 1.2em;
+    border: 1px dashed var(--wp-admin-theme-color, #2271b1);
+    border-radius: 10px;
+    opacity: 0.9;
 }
 
 .wpfa-editor-preview-label {

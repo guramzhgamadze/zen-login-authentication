@@ -23,37 +23,47 @@
    CSS Custom Properties
 ------------------------------------------------------------------------- */
 .wpfa {
+    /* Modern, polished defaults. Every value is overridable via theme CSS
+       (just redefine the custom property) or per-widget Elementor controls. */
     --wpfa-font-size: 1rem;
-    --wpfa-line-height: 1.5;
+    --wpfa-line-height: 1.55;
     --wpfa-text-color: inherit;
     --wpfa-label-color: inherit;
     --wpfa-label-weight: 600;
-    --wpfa-required-color: #d63638;
-    --wpfa-field-bg: #fff;
-    --wpfa-field-color: inherit;
-    --wpfa-field-border: 1px solid #8c8f94;
-    --wpfa-field-radius: 3px;
-    --wpfa-field-padding: 0.5em 0.75em;
-    --wpfa-field-focus-color: currentColor;
-    --wpfa-field-focus-shadow: none;
-    --wpfa-field-spacing: 1em;
-    --wpfa-btn-bg: #2271b1;
-    --wpfa-btn-color: #fff;
+    --wpfa-required-color: #ef4444;
+
+    --wpfa-field-bg: #ffffff;
+    --wpfa-field-color: #1f2937;
+    --wpfa-field-border: 1px solid #d0d5dd;
+    --wpfa-field-radius: 10px;
+    --wpfa-field-padding: 0.7em 0.95em;
+    --wpfa-field-focus-color: #3b82f6;
+    --wpfa-field-focus-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18);
+    --wpfa-field-spacing: 1.15em;
+
+    --wpfa-btn-bg: #3b82f6;
+    --wpfa-btn-color: #ffffff;
     --wpfa-btn-border: 1px solid transparent;
-    --wpfa-btn-radius: 3px;
-    --wpfa-btn-padding: 0.55em 1.25em;
-    --wpfa-btn-hover-bg: #135e96;
-    --wpfa-btn-hover-color: #fff;
-    --wpfa-link-color: #2271b1;
-    --wpfa-link-hover-color: #135e96;
-    --wpfa-error-bg: #fef7f7;
-    --wpfa-error-color: #50575e;
-    --wpfa-error-border: #d63638;
-    --wpfa-msg-bg: #f0f6fc;
-    --wpfa-msg-color: #1d2327;
-    --wpfa-msg-border: #2271b1;
-    --wpfa-description-color: #646970;   /* Fix L */
-    --wpfa-strength-text-color: #23282d; /* Fix L */
+    --wpfa-btn-radius: 10px;
+    --wpfa-btn-padding: 0.72em 1.5em;
+    --wpfa-btn-hover-bg: #2563eb;
+    --wpfa-btn-hover-color: #ffffff;
+    --wpfa-btn-shadow: 0 1px 2px rgba(16, 24, 40, 0.06);
+    --wpfa-btn-hover-shadow: 0 6px 18px rgba(59, 130, 246, 0.30);
+
+    --wpfa-link-color: #2563eb;
+    --wpfa-link-hover-color: #1d4ed8;
+
+    --wpfa-radius: 12px;
+    --wpfa-error-bg: #fef2f2;
+    --wpfa-error-color: #991b1b;
+    --wpfa-error-border: #ef4444;
+    --wpfa-msg-bg: #eff6ff;
+    --wpfa-msg-color: #1e40af;
+    --wpfa-msg-border: #3b82f6;
+
+    --wpfa-description-color: #6b7280;
+    --wpfa-strength-text-color: #374151;
 }
 
 /* -----------------------------------------------------------------------
@@ -125,11 +135,12 @@
 
 .wpfa-error,
 .wpfa-message {
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05);
     display: block;
     margin: 0 0 0.5em;
-    padding: 0.75em 1em;
-    border-radius: 0 3px 3px 0;
+    padding: 0.8em 1em;
+    border-radius: var(--wpfa-radius);
+    font-size: 0.92em;
 }
 
 .wpfa-error {
@@ -197,11 +208,22 @@
 /* -----------------------------------------------------------------------
    Checkbox
 ------------------------------------------------------------------------- */
+.wpfa-checkbox {
+    accent-color: var(--wpfa-field-focus-color);
+    width: 1.05em;
+    height: 1.05em;
+    margin: 0;
+    vertical-align: -0.15em;
+    cursor: pointer;
+}
+
 .wpfa-checkbox-label {
     display: inline;
     font-weight: normal;
-    margin-left: 0.4em;
+    margin-left: 0.5em;
+    margin-bottom: 0;
     vertical-align: middle;
+    cursor: pointer;
 }
 
 /* -----------------------------------------------------------------------
@@ -215,20 +237,27 @@
     background: var(--wpfa-btn-bg);
     border: var(--wpfa-btn-border);
     border-radius: var(--wpfa-btn-radius);
+    box-shadow: var(--wpfa-btn-shadow);
     color: var(--wpfa-btn-color);
     cursor: pointer;
     font-size: 0.95rem;
     font-weight: 600;
+    line-height: 1.4;
     padding: var(--wpfa-btn-padding);
     text-decoration: none;
-    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+    transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
 }
 
 .wpfa-button:hover,
 .wpfa-button:focus {
     background: var(--wpfa-btn-hover-bg);
     color: var(--wpfa-btn-hover-color);
+    box-shadow: var(--wpfa-btn-hover-shadow);
     outline: none;
+}
+
+.wpfa-button:hover {
+    transform: translateY(-1px);
 }
 
 /* Fix E */
@@ -238,7 +267,18 @@
 }
 
 .wpfa-button:active {
-    opacity: 0.85;
+    transform: translateY(0);
+    box-shadow: var(--wpfa-btn-shadow);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .wpfa-button,
+    .wpfa-field {
+        transition: none;
+    }
+    .wpfa-button:hover {
+        transform: none;
+    }
 }
 
 .wpfa-button[disabled],
@@ -271,33 +311,61 @@
    JS adds .wpfa-field-wrap--password when injecting the toggle button.
 ------------------------------------------------------------------------- */
 .wpfa-field-wrap--password {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr auto;
     align-items: center;
-    gap: 0.5em;
-    flex-wrap: nowrap;
+    column-gap: 0;
 }
 
+/* Label on its own row, above the input (consistent with the other fields). */
+.wpfa-field-wrap--password .wpfa-label {
+    grid-column: 1 / -1;
+    grid-row: 1;
+}
+
+/* The input spans the FULL width — so it lines up with the other fields and is
+   not shortened by the toggle. The Show/Hide toggle overlays its right edge. */
 .wpfa-field-wrap--password .wpfa-field {
-    flex: 1 1 auto;
-    min-width: 0; /* allow shrinking in flex context */
+    grid-column: 1 / -1;
+    grid-row: 2;
+    width: 100%;
+    min-width: 0;
+    padding-right: 3.8em; /* keep typed text clear of the toggle */
+}
+
+/* Toggle sits inside the input's right edge (grid overlay), vertically centred
+   regardless of field height. Borderless by default for a clean in-field look;
+   the Elementor "Password Toggle" controls still override bg/border/padding. */
+.wpfa-field-wrap--password .wpfa-password-toggle {
+    grid-column: 2;
+    grid-row: 2;
+    justify-self: end;
+    align-self: center;
+    margin-right: 0.45em;
+    background: transparent;
+    border: none;
+    padding: 0.2em 0.35em;
+    z-index: 2;
 }
 
 /* -----------------------------------------------------------------------
    Password toggle button (Fix J — removed margin-top, inline-block)
 ------------------------------------------------------------------------- */
 .wpfa-password-toggle {
-    background: none;
-    border: 1px solid #8c8f94;
-    border-radius: 3px;
+    background: #fff;
+    border: 1px solid #d0d5dd;
+    border-radius: var(--wpfa-field-radius);
     color: var(--wpfa-link-color);
     cursor: pointer;
     font-size: 0.8rem;
-    padding: 0.25em 0.65em;
+    font-weight: 500;
+    padding: 0.35em 0.75em;
     display: inline-flex;
     align-items: center;
     flex-shrink: 0;
     white-space: nowrap;
     line-height: 1.4;
+    transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
 }
 
 .wpfa-password-toggle:hover,
@@ -317,22 +385,22 @@
    Password strength meter
 ------------------------------------------------------------------------- */
 #pass-strength-result {
-    background: #eee;
-    border: 1px solid #ddd;
-    border-radius: 3px;
+    background: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    border-radius: var(--wpfa-field-radius);
     color: var(--wpfa-strength-text-color); /* Fix L */
-    font-size: 0.85em;
+    font-size: 0.82em;
     font-weight: 600;
     margin-bottom: 0.75em;
     opacity: 0;
-    padding: 0.4em 0.75em;
+    padding: 0.45em 0.85em;
     transition: opacity 0.2s;
 }
 
-#pass-strength-result.strong  { background: #c1e1b9; border-color: #83c373; opacity: 1; }
-#pass-strength-result.good    { background: #ffe399; border-color: #ffc733; opacity: 1; }
-#pass-strength-result.bad     { background: #fbc5a9; border-color: #f78b53; opacity: 1; }
-#pass-strength-result.short   { background: #f1adad; border-color: #e35b5b; opacity: 1; }
+#pass-strength-result.strong  { background: #dcfce7; border-color: #86efac; opacity: 1; }
+#pass-strength-result.good    { background: #fef9c3; border-color: #fde047; opacity: 1; }
+#pass-strength-result.bad     { background: #ffedd5; border-color: #fdba74; opacity: 1; }
+#pass-strength-result.short   { background: #fee2e2; border-color: #fca5a5; opacity: 1; }
 
 /* -----------------------------------------------------------------------
    AJAX spinner
