@@ -4,7 +4,7 @@ Tags: login, registration, authentication, elementor, frontend
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 1.4.22
+Stable tag: 1.4.23
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -101,6 +101,9 @@ Only pages the plugin created that you never edited (no content, no Elementor da
 4. The registration form with the password strength meter.
 
 == Changelog ==
+
+= 1.4.23 =
+* Fixed: the Elementor editor preview now shows the in-field password toggle layout, matching the front end (the preview templates were missing the password-field modifier class).
 
 = 1.4.22 =
 * Design: refreshed the default form styling for a modern, polished look out of the box — softer rounded inputs and buttons, refined focus rings, fully-rounded status notices, an updated password strength meter, a brand-tinted "Remember Me" checkbox, and a cleaner password field (label above, with the Show/Hide toggle inside the field's right edge so the input stays full-width like the other fields). Every value stays overridable via the `--wpfa-*` CSS custom properties and the Elementor style controls. Applies to all four forms and every widget type (Elementor, classic, and virtual pages).

@@ -241,6 +241,10 @@ wp-frontend-auth/
 
 ## Changelog
 
+### 1.4.23
+
+- **Fixed:** the Elementor editor preview now shows the in-field password toggle layout, matching the front end — the preview templates were missing the `wpfa-field-wrap--password` modifier class that the overlay CSS keys off.
+
 ### 1.4.22
 
 **Design**
