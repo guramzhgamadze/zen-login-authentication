@@ -4,7 +4,7 @@ Tags: login, registration, authentication, elementor, frontend
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 1.4.23
+Stable tag: 1.5.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -14,13 +14,14 @@ Frontend login, registration, and password recovery for WordPress and Elementor,
 
 WP Frontend Auth replaces the default `wp-login.php` experience with clean, accessible, theme-integrated forms that live on your actual site. It works out of the box on any WordPress theme and ships with first-class Elementor support: four drag-and-drop widgets that fit any page-builder layout, with full Theme Builder compatibility.
 
-The plugin works with no configuration, and adds no external service calls, tracking, or "phone home" behaviour.
+The plugin works with no configuration and adds no tracking or "phone home" behaviour. The only external service it ever contacts is Google — and only during a sign-in, when the optional "Sign in with Google" feature is enabled.
 
 = What it does =
 
 * **Login** with username, email, or either (configurable).
 * **Registration** with optional user-chosen passwords and auto-login.
 * **Lost Password / Reset Password** with the full WordPress email flow.
+* **Sign in with Google** (optional) — a server-side OpenID Connect flow with no Google JavaScript on your pages. New accounts can be auto-created (toggleable) and existing accounts are linked by verified email.
 * **URL rewriting** so every site-wide `wp-login.php` link is transparently redirected to your frontend pages.
 * **Multisite support** — network-activated, per-site settings, signup/activation flow handled.
 * **Smart redirects** — `?redirect_to=` is honoured everywhere. Subscribers are kept out of wp-admin and sent to a destination you set in **Settings &rarr; Frontend Auth &rarr; Subscriber redirect** (a page slug or URL; empty = site home). Privileged users always land where they intended.
@@ -85,6 +86,14 @@ Enable **User-chosen passwords** under **Settings &rarr; Frontend Auth &rarr; Ge
 By default the plugin uses `REMOTE_ADDR` only, because forwarded headers are spoofable. If your origin firewall is locked to Cloudflare's IP ranges, opt the header back in:
 `add_filter( 'wpfa_rate_limit_ip_headers', fn() => [ 'HTTP_CF_CONNECTING_IP', 'REMOTE_ADDR' ] );`
 
+= How do I set up Sign in with Google? =
+
+1. In Google Cloud Console, create an OAuth client: APIs & Services → Credentials → Create credentials → OAuth client ID → Web application.
+2. Copy the **Authorized redirect URI** shown under Settings → Frontend Auth → Sign in with Google, and add it to the OAuth client.
+3. Paste the Client ID and Client Secret into the same settings panel and switch the feature on.
+
+A "Continue with Google" button then appears on the login and registration forms (each Elementor widget has a toggle and style controls for it). The flow is entirely server-side — no Google JavaScript is loaded on your pages.
+
 = Is it multisite compatible? =
 
 Yes. It is network-activatable, with per-site settings and signup/activation handling.
@@ -101,6 +110,11 @@ Only pages the plugin created that you never edited (no content, no Elementor da
 4. The registration form with the password strength meter.
 
 == Changelog ==
+
+= 1.5.0 =
+* Security: the Google Client Secret is **encrypted at rest** (AES-256-GCM, keyed from your wp-config.php salts — a database dump alone cannot leak it) and is never re-displayed in the admin once saved. Both credentials can alternatively be defined as `WPFA_GOOGLE_CLIENT_ID` / `WPFA_GOOGLE_CLIENT_SECRET` constants in wp-config.php to keep them out of the database entirely. If you rotate your WordPress salts, re-enter the secret.
+* Fixed: required-field asterisks were invisible — the honeypot's catch-all CSS rule (`.wpfa [aria-hidden="true"]`) also hid the decorative asterisk spans. The rule is now scoped to the honeypot element only.
+* New: **Sign in with Google** (optional). A server-side OpenID Connect flow — no Google JavaScript on your pages and no third-party libraries. Configure a Client ID/Secret under Settings → Frontend Auth → Sign in with Google; a "Continue with Google" button then appears on the login and registration forms (toggleable per Elementor widget, with its own style section). First-time Google users can be auto-created (toggleable); existing accounts are linked by verified email. Google logins respect the Subscriber redirect, wp-admin blocking, rate limiting, and the hidden-toolbar default for new sign-ups. CSRF protection via a single-use state token bound to the browser; only verified Google emails are accepted.
 
 = 1.4.23 =
 * Fixed: the Elementor editor preview now shows the in-field password toggle layout, matching the front end (the preview templates were missing the password-field modifier class).
@@ -138,6 +152,9 @@ Only pages the plugin created that you never edited (no content, no Elementor da
 Older versions: see the project's CHANGELOG / README on the plugin homepage.
 
 == Upgrade Notice ==
+
+= 1.5.0 =
+Adds optional Sign in with Google — a secure server-side flow with no Google JavaScript on your pages. Configure it under Settings → Frontend Auth.
 
 = 1.4.20 =
 Subscribers are now reliably sent to your configured destination on every login path and kept out of wp-admin. New subscriber registrations get the front-end toolbar hidden by default.

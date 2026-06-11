@@ -24,6 +24,10 @@ $options = [
     'wpfa_login_type',
     'wpfa_use_permalinks',
     'wpfa_subscriber_redirect',
+    'wpfa_google_enabled',
+    'wpfa_google_client_id',
+    'wpfa_google_client_secret',
+    'wpfa_google_allow_registration',
     'wpfa_slug_login',
     'wpfa_slug_logout',
     'wpfa_slug_register',
@@ -94,4 +98,8 @@ function wpfa_uninstall_site( array $options, array $page_actions ): void {
         delete_option( "wpfa_rl_max_{$action}" );
     }
     delete_option( 'wpfa_lostpassword_count_all' );
+
+    // Google account links (v1.5.0). delete_all = true removes the meta for
+    // every user; harmless to repeat per-site on multisite (users are global).
+    delete_metadata( 'user', 0, 'wpfa_google_sub', '', true );
 }

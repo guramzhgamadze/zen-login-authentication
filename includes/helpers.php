@@ -134,7 +134,7 @@ function wpfa_honeypot_field_html(): string {
         return '';
     }
     $field = esc_attr( wpfa_honeypot_field_name() );
-    return '<div style="display:none!important" aria-hidden="true">'
+    return '<div class="wpfa-hp" style="display:none!important" aria-hidden="true">'
         . '<label for="' . $field . '">' . esc_html__( 'Leave this empty', 'wp-frontend-auth' ) . '</label>'
         . '<input type="text" id="' . $field . '" name="' . $field . '" value="" autocomplete="off" tabindex="-1">'
         . '</div>';

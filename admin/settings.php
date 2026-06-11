@@ -71,6 +71,12 @@ function wpfa_admin_register_settings(): void {
     // Subscriber post-login redirect: page slug/path or full URL; empty = site home.
     register_setting( 'wp-frontend-auth', 'wpfa_subscriber_redirect', [ 'sanitize_callback' => 'wpfa_sanitize_redirect_target', 'type' => 'string', 'autoload' => false ] );
 
+    // Sign in with Google (v1.5.0).
+    register_setting( 'wp-frontend-auth', 'wpfa_google_enabled',            [ 'sanitize_callback' => 'absint',              'type' => 'integer', 'autoload' => false ] );
+    register_setting( 'wp-frontend-auth', 'wpfa_google_client_id',          [ 'sanitize_callback' => 'sanitize_text_field', 'type' => 'string',  'autoload' => false ] );
+    register_setting( 'wp-frontend-auth', 'wpfa_google_client_secret',      [ 'sanitize_callback' => 'wpfa_sanitize_google_secret', 'type' => 'string', 'autoload' => false ] );
+    register_setting( 'wp-frontend-auth', 'wpfa_google_allow_registration', [ 'sanitize_callback' => 'absint',              'type' => 'integer', 'autoload' => false ] );
+
     // Slugs
     $slug_actions = [ 'login', 'logout', 'register', 'lostpassword', 'resetpass' ];
     foreach ( $slug_actions as $action ) {
@@ -198,6 +204,65 @@ function wpfa_admin_settings_page(): void {
                     <div class="wpfa-row-field">
                         <input type="text" name="wpfa_subscriber_redirect" value="<?php echo esc_attr( (string) get_option( 'wpfa_subscriber_redirect', '' ) ); ?>" placeholder="<?php esc_attr_e( 'e.g. dashboard  (leave empty for home page)', 'wp-frontend-auth' ); ?>">
                         <div class="wpfa-hint"><?php esc_html_e( 'Where subscribers land after logging in. Enter a page slug (e.g. dashboard) or a full URL. Leave empty to send them to the site home page. Admins and editors keep their normal redirect.', 'wp-frontend-auth' ); ?></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sign in with Google -->
+            <div class="wpfa-card">
+                <h2><?php esc_html_e( 'Sign in with Google', 'wp-frontend-auth' ); ?></h2>
+                <p class="desc"><?php esc_html_e( 'Let users log in (and optionally register) with their Google account. Server-side flow — no Google JavaScript is loaded on your pages.', 'wp-frontend-auth' ); ?></p>
+
+                <div class="wpfa-row">
+                    <div class="wpfa-row-label"><?php esc_html_e( 'Enable Google sign-in', 'wp-frontend-auth' ); ?></div>
+                    <div class="wpfa-row-field">
+                        <label class="wpfa-toggle">
+                            <input type="hidden" name="wpfa_google_enabled" value="0">
+                            <input type="checkbox" name="wpfa_google_enabled" value="1" <?php checked( (bool) get_option( 'wpfa_google_enabled', false ) ); ?>>
+                            <span class="wpfa-toggle-slider"></span>
+                        </label>
+                        <div class="wpfa-hint"><?php esc_html_e( 'Shows a "Continue with Google" button on the login and registration forms once the credentials below are filled in.', 'wp-frontend-auth' ); ?></div>
+                    </div>
+                </div>
+
+                <div class="wpfa-row">
+                    <div class="wpfa-row-label"><?php esc_html_e( 'Client ID', 'wp-frontend-auth' ); ?></div>
+                    <div class="wpfa-row-field">
+                        <input type="text" name="wpfa_google_client_id" value="<?php echo esc_attr( (string) get_option( 'wpfa_google_client_id', '' ) ); ?>" autocomplete="off" placeholder="xxxxxxxx.apps.googleusercontent.com">
+                    </div>
+                </div>
+
+                <div class="wpfa-row">
+                    <div class="wpfa-row-label"><?php esc_html_e( 'Client Secret', 'wp-frontend-auth' ); ?></div>
+                    <div class="wpfa-row-field">
+                        <?php if ( defined( 'WPFA_GOOGLE_CLIENT_SECRET' ) ) : ?>
+                            <input type="password" value="****************" disabled>
+                            <div class="wpfa-hint"><?php esc_html_e( 'Defined as WPFA_GOOGLE_CLIENT_SECRET in wp-config.php — manage it there.', 'wp-frontend-auth' ); ?></div>
+                        <?php else : ?>
+                            <?php $wpfa_has_secret = '' !== trim( (string) get_option( 'wpfa_google_client_secret', '' ) ); ?>
+                            <input type="password" name="wpfa_google_client_secret" value="" autocomplete="new-password" placeholder="<?php echo esc_attr( $wpfa_has_secret ? __( 'Saved — leave blank to keep the current secret', 'wp-frontend-auth' ) : '' ); ?>">
+                            <div class="wpfa-hint"><?php esc_html_e( 'Stored encrypted (AES-256-GCM, keyed from your wp-config.php salts) and never shown again after saving. Tip: you can instead define WPFA_GOOGLE_CLIENT_ID and WPFA_GOOGLE_CLIENT_SECRET in wp-config.php to keep credentials out of the database entirely. If you rotate your salts, re-enter the secret.', 'wp-frontend-auth' ); ?></div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+
+                <div class="wpfa-row">
+                    <div class="wpfa-row-label"><?php esc_html_e( 'Allow new accounts', 'wp-frontend-auth' ); ?></div>
+                    <div class="wpfa-row-field">
+                        <label class="wpfa-toggle">
+                            <input type="hidden" name="wpfa_google_allow_registration" value="0">
+                            <input type="checkbox" name="wpfa_google_allow_registration" value="1" <?php checked( (bool) get_option( 'wpfa_google_allow_registration', true ) ); ?>>
+                            <span class="wpfa-toggle-slider"></span>
+                        </label>
+                        <div class="wpfa-hint"><?php esc_html_e( 'Create an account automatically on first Google sign-in. Existing accounts with the same verified email are always linked. When off, only existing users can sign in with Google.', 'wp-frontend-auth' ); ?></div>
+                    </div>
+                </div>
+
+                <div class="wpfa-row">
+                    <div class="wpfa-row-label"><?php esc_html_e( 'Authorized redirect URI', 'wp-frontend-auth' ); ?></div>
+                    <div class="wpfa-row-field">
+                        <input type="text" readonly value="<?php echo esc_attr( wpfa_google_callback_url() ); ?>" onclick="this.select();">
+                        <div class="wpfa-hint"><?php esc_html_e( 'Add this exact URL in Google Cloud Console → APIs & Services → Credentials → your OAuth 2.0 Client ID → Authorized redirect URIs.', 'wp-frontend-auth' ); ?></div>
                     </div>
                 </div>
             </div>

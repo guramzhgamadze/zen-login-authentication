@@ -3,7 +3,7 @@
  * Plugin Name:       WP Frontend Auth
  * Plugin URI:        https://github.com/guramzhgamadze/Frontend-Auth
  * Description:       Secure, accessible frontend login, registration, and password recovery forms — with rate limiting, honeypot protection, AJAX support, and native Elementor widgets.
- * Version:           1.4.23
+ * Version:           1.5.0
  * Requires at least: 6.5
  * Requires PHP:      8.0
  * Author:            Guram Zhgamadze
@@ -67,7 +67,7 @@ if ( version_compare( get_bloginfo( 'version' ), '6.5', '<' ) ) {
     return;
 }
 
-define( 'WPFA_VERSION', '1.4.23' );
+define( 'WPFA_VERSION', '1.5.0' );
 define( 'WPFA_PATH',    plugin_dir_path( __FILE__ ) );
 define( 'WPFA_URL',     plugin_dir_url( __FILE__ ) );
 
@@ -90,6 +90,8 @@ require WPFA_PATH . 'includes/class-wpfa.php';
 require WPFA_PATH . 'includes/class-wpfa-form.php';
 require WPFA_PATH . 'includes/forms.php';
 require WPFA_PATH . 'includes/handlers.php';
+require WPFA_PATH . 'includes/crypto.php';
+require WPFA_PATH . 'includes/google-login.php';
 require WPFA_PATH . 'includes/widgets.php';
 require WPFA_PATH . 'includes/hooks.php';
 require WPFA_PATH . 'includes/ms-hooks.php';

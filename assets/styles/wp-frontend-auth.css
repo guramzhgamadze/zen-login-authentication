@@ -422,9 +422,81 @@
 }
 
 /* -----------------------------------------------------------------------
-   Honeypot (must be invisible)
+   Social sign-in (Google) — rendered below the login/register forms
 ------------------------------------------------------------------------- */
-.wpfa [aria-hidden="true"] {
+.wpfa-sso {
+    margin-top: 1em;
+}
+
+.wpfa-sso-divider {
+    display: flex;
+    align-items: center;
+    gap: 0.75em;
+    color: var(--wpfa-sso-divider-text, #9aa3b2);
+    font-size: 0.78em;
+    margin: 0 0 1em;
+}
+
+.wpfa-sso-divider::before,
+.wpfa-sso-divider::after {
+    content: "";
+    flex: 1 1 auto;
+    height: 1px;
+    background: var(--wpfa-sso-divider-color, #e5e7eb);
+}
+
+.wpfa-sso-divider span {
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    font-weight: 600;
+}
+
+.wpfa-google-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6em;
+    width: 100%;
+    box-sizing: border-box;
+    background: var(--wpfa-google-btn-bg, #ffffff);
+    color: var(--wpfa-google-btn-color, #374151);
+    border: 1px solid var(--wpfa-google-btn-border, #d0d5dd);
+    border-radius: var(--wpfa-btn-radius);
+    padding: 0.66em 1.25em;
+    font-size: 0.95rem;
+    font-weight: 600;
+    line-height: 1.4;
+    text-decoration: none;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+}
+
+.wpfa-google-btn:hover,
+.wpfa-google-btn:focus {
+    border-color: #b6bcc8;
+    box-shadow: 0 2px 8px rgba(16, 24, 40, 0.08);
+    color: var(--wpfa-google-btn-color, #374151);
+    text-decoration: none;
+    outline: none;
+}
+
+.wpfa-google-btn:focus-visible {
+    outline: 2px solid var(--wpfa-field-focus-color);
+    outline-offset: 2px;
+}
+
+.wpfa-google-icon {
+    flex-shrink: 0;
+}
+
+/* -----------------------------------------------------------------------
+   Honeypot (must be invisible)
+
+   Scoped to the honeypot's own class. The old selector
+   `.wpfa [aria-hidden="true"]` was over-broad: it also hid legitimate
+   decorative elements such as the required-field asterisks (which carry
+   aria-hidden="true" for screen readers) and any inline SVG icons.
+------------------------------------------------------------------------- */
+.wpfa-hp {
     display: none !important;
     visibility: hidden !important;
 }

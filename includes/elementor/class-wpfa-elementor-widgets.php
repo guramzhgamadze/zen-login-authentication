@@ -420,6 +420,124 @@ abstract class WPFA_Elementor_Base_Widget extends \Elementor\Widget_Base {
         ] );
     }
 
+    /* --- Shared "Sign in with Google" controls (Login / Register) --- */
+
+    protected function register_google_button_controls(): void {
+        $this->add_control( 'wpfa_h_google', [
+            'label'     => esc_html__( 'Google Sign-In', 'wp-frontend-auth' ),
+            'type'      => \Elementor\Controls_Manager::HEADING,
+            'separator' => 'before',
+        ] );
+        $this->add_control( 'show_google_button', [
+            'label'        => esc_html__( 'Show Google button', 'wp-frontend-auth' ),
+            'type'         => \Elementor\Controls_Manager::SWITCHER,
+            'label_on'     => esc_html__( 'Yes', 'wp-frontend-auth' ),
+            'label_off'    => esc_html__( 'No', 'wp-frontend-auth' ),
+            'return_value' => 'yes',
+            'default'      => 'yes',
+            'description'  => esc_html__( 'Appears on the live page only when Google sign-in is configured under Settings → Frontend Auth.', 'wp-frontend-auth' ),
+        ] );
+        $this->add_control( 'google_button_text', [
+            'label'       => esc_html__( 'Google button text', 'wp-frontend-auth' ),
+            'type'        => \Elementor\Controls_Manager::TEXT,
+            'default'     => '',
+            'placeholder' => esc_html__( 'Continue with Google', 'wp-frontend-auth' ),
+            'label_block' => true,
+            'dynamic'     => [ 'active' => true ],
+            'condition'   => [ 'show_google_button' => 'yes' ],
+        ] );
+    }
+
+    /**
+     * Style section for the Google button + divider.
+     */
+    protected function register_google_button_style_controls(): void {
+        $this->start_controls_section( 'section_style_google', [
+            'label'     => esc_html__( 'Google Button', 'wp-frontend-auth' ),
+            'tab'       => \Elementor\Controls_Manager::TAB_STYLE,
+            'condition' => [ 'show_google_button' => 'yes' ],
+        ] );
+        $this->add_group_control( \Elementor\Group_Control_Typography::get_type(), [
+            'name'     => 'google_btn_typography',
+            'selector' => '{{WRAPPER}} .wpfa-google-btn',
+        ] );
+        $this->add_responsive_control( 'google_btn_padding', [
+            'label'      => esc_html__( 'Padding', 'wp-frontend-auth' ),
+            'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+            'size_units' => [ 'px', 'em' ],
+            'selectors'  => [ '{{WRAPPER}} .wpfa-google-btn' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ],
+        ] );
+        $this->add_responsive_control( 'google_btn_radius', [
+            'label'      => esc_html__( 'Border Radius', 'wp-frontend-auth' ),
+            'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+            'size_units' => [ 'px', '%' ],
+            'selectors'  => [ '{{WRAPPER}} .wpfa-google-btn' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ],
+        ] );
+        $this->start_controls_tabs( 'google_btn_tabs' );
+        $this->start_controls_tab( 'google_btn_normal', [ 'label' => esc_html__( 'Normal', 'wp-frontend-auth' ) ] );
+        $this->add_control( 'google_btn_color', [ 'label' => esc_html__( 'Text', 'wp-frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .wpfa-google-btn' => 'color: {{VALUE}};' ] ] );
+        $this->add_control( 'google_btn_bg', [ 'label' => esc_html__( 'Background', 'wp-frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .wpfa-google-btn' => 'background-color: {{VALUE}};' ] ] );
+        $this->add_control( 'google_btn_border', [ 'label' => esc_html__( 'Border Color', 'wp-frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .wpfa-google-btn' => 'border-color: {{VALUE}};' ] ] );
+        $this->end_controls_tab();
+        $this->start_controls_tab( 'google_btn_hover', [ 'label' => esc_html__( 'Hover', 'wp-frontend-auth' ) ] );
+        $this->add_control( 'google_btn_color_h', [ 'label' => esc_html__( 'Text', 'wp-frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .wpfa-google-btn:hover,{{WRAPPER}} .wpfa-google-btn:focus' => 'color: {{VALUE}};' ] ] );
+        $this->add_control( 'google_btn_bg_h', [ 'label' => esc_html__( 'Background', 'wp-frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .wpfa-google-btn:hover,{{WRAPPER}} .wpfa-google-btn:focus' => 'background-color: {{VALUE}};' ] ] );
+        $this->add_control( 'google_btn_border_h', [ 'label' => esc_html__( 'Border Color', 'wp-frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .wpfa-google-btn:hover,{{WRAPPER}} .wpfa-google-btn:focus' => 'border-color: {{VALUE}};' ] ] );
+        $this->end_controls_tab();
+        $this->end_controls_tabs();
+        $this->add_control( 'google_divider_color', [
+            'label'     => esc_html__( 'Divider Color', 'wp-frontend-auth' ),
+            'type'      => \Elementor\Controls_Manager::COLOR,
+            'separator' => 'before',
+            'selectors' => [
+                '{{WRAPPER}} .wpfa-sso-divider'          => 'color: {{VALUE}};',
+                '{{WRAPPER}} .wpfa-sso-divider::before,{{WRAPPER}} .wpfa-sso-divider::after' => 'background-color: {{VALUE}};',
+            ],
+        ] );
+        $this->end_controls_section();
+    }
+
+    /**
+     * Apply the widget's Google-button settings as request-scoped filters.
+     * Returns a cleanup callable to invoke immediately after the form renders —
+     * same add→render→remove pattern as the link filters (see render_login_form).
+     */
+    protected function setup_google_button_overrides( array $s ): callable {
+        $hide = ( 'yes' !== ( $s['show_google_button'] ?? 'yes' ) );
+        if ( $hide ) {
+            add_filter( 'wpfa_show_google_button', '__return_false', 99 );
+        }
+        $text    = trim( (string) ( $s['google_button_text'] ?? '' ) );
+        $text_cb = null;
+        if ( '' !== $text ) {
+            $text_cb = static function () use ( $text ) {
+                return $text;
+            };
+            add_filter( 'wpfa_google_button_text', $text_cb, 99 );
+        }
+        return static function () use ( $hide, $text_cb ): void {
+            if ( $hide ) {
+                remove_filter( 'wpfa_show_google_button', '__return_false', 99 );
+            }
+            if ( null !== $text_cb ) {
+                remove_filter( 'wpfa_google_button_text', $text_cb, 99 );
+            }
+        };
+    }
+
+    /**
+     * Editor-preview markup for the Google button (Backbone template fragment).
+     * Mirrors wpfa_google_button_html(); shown whenever the widget toggle is on.
+     */
+    protected function google_button_content_template(): string {
+        $svg = function_exists( 'wpfa_google_button_svg' ) ? wpfa_google_button_svg() : '';
+        return '<# if ( "yes" === settings.show_google_button ) { #>'
+            . '<div class="wpfa-sso"><div class="wpfa-sso-divider"><span>' . esc_html__( 'or', 'wp-frontend-auth' ) . '</span></div>'
+            . '<a class="wpfa-google-btn" href="#" onclick="return false;">' . $svg
+            . '<span><# if(settings.google_button_text){#>{{{settings.google_button_text}}}<#}else{#>' . esc_html__( 'Continue with Google', 'wp-frontend-auth' ) . '<#}#></span></a></div>'
+            . '<# } #>';
+    }
+
 
 
     /**
@@ -757,12 +875,14 @@ class WPFA_Elementor_Login_Widget extends WPFA_Elementor_Base_Widget {
         $this->add_control( 'link_lostpw_url', [ 'label' => esc_html__( 'Lost password link URL', 'wp-frontend-auth' ), 'type' => \Elementor\Controls_Manager::URL, 'dynamic' => [ 'active' => true ], 'default' => [ 'url' => '' ], 'placeholder' => esc_html__( 'Leave empty for auto-detect', 'wp-frontend-auth' ), 'label_block' => true ] );
 
 
+        $this->register_google_button_controls();
         $this->register_redirect_controls();
         $this->end_controls_section();
 
         $this->register_form_style_controls();
         $this->register_password_toggle_style_controls();
         $this->register_checkbox_style_controls(); // Fix H
+        $this->register_google_button_style_controls();
     }
 
     protected function render(): void {
@@ -847,10 +967,14 @@ class WPFA_Elementor_Login_Widget extends WPFA_Elementor_Base_Widget {
             $link_callback = null;
         }
 
+        $google_cleanup = $this->setup_google_button_overrides( $s );
+
         $this->open_form_wrap();
         $this->render_form_title( $s );
         echo wpfa_render_form( 'login', $this->build_render_args( $s ) ); // phpcs:ignore
         $this->close_form_wrap();
+
+        $google_cleanup();
 
         /*
          * ELEMENTOR EDITOR FIX (v1.4.2):
@@ -888,6 +1012,7 @@ class WPFA_Elementor_Login_Widget extends WPFA_Elementor_Base_Widget {
         echo '<# if ( "yes" === settings.show_links ) { #>';
         echo '<p class="wpfa-links"><a href="#"><# if(settings.link_register_text){#>{{{settings.link_register_text}}}<#}else{#>' . esc_html__( 'Register', 'wp-frontend-auth' ) . '<#}#></a> &bull; <a href="#"><# if(settings.link_lostpw_text){#>{{{settings.link_lostpw_text}}}<#}else{#>' . esc_html__( 'Lost your password?', 'wp-frontend-auth' ) . '<#}#></a></p>';
         echo '<# } #></div>';
+        echo $this->google_button_content_template(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped during construction
         echo '</div><!-- /.wpfa-form-wrap -->';
     }
 }
@@ -929,11 +1054,13 @@ class WPFA_Elementor_Register_Widget extends WPFA_Elementor_Base_Widget {
         $this->add_control( 'h_links', [ 'label' => esc_html__( 'Action Links', 'wp-frontend-auth' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
         $this->add_control( 'link_login_text', [ 'label' => esc_html__( 'Log In link text', 'wp-frontend-auth' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Log In', 'wp-frontend-auth' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
         $this->add_control( 'link_login_url', [ 'label' => esc_html__( 'Log In link URL', 'wp-frontend-auth' ), 'type' => \Elementor\Controls_Manager::URL, 'dynamic' => [ 'active' => true ], 'default' => [ 'url' => '' ], 'placeholder' => esc_html__( 'Leave empty for auto-detect', 'wp-frontend-auth' ), 'label_block' => true ] );
+        $this->register_google_button_controls();
         $this->register_redirect_controls();
         $this->end_controls_section();
         $this->register_form_style_controls();
         $this->register_password_toggle_style_controls();
         $this->register_strength_meter_style_controls(); // Fix M
+        $this->register_google_button_style_controls();
     }
 
     protected function render(): void {
@@ -982,10 +1109,12 @@ class WPFA_Elementor_Register_Widget extends WPFA_Elementor_Base_Widget {
                 $link_callback = null;
             }
         }
+        $google_cleanup = $this->setup_google_button_overrides( $s );
         $this->open_form_wrap();
         $this->render_form_title( $s );
         echo wpfa_render_form( 'register', $this->build_render_args( $s ) ); // phpcs:ignore
         $this->close_form_wrap();
+        $google_cleanup();
         // Remove filter immediately after render — see Login widget for full explanation.
         if ( ! empty( $link_callback ) ) {
             remove_filter( 'wpfa_form_links_register', $link_callback, 99 );
@@ -1003,6 +1132,7 @@ class WPFA_Elementor_Register_Widget extends WPFA_Elementor_Base_Widget {
         echo '<p class="wpfa-field-wrap wpfa-field-wrap--password"><label class="wpfa-label"><# if(settings.label_confirm_pw){#>{{{settings.label_confirm_pw}}}<#}else{#>' . esc_html__('Confirm Password','wp-frontend-auth') . '<#}#> <span class="wpfa-required">*</span></label><input type="password" class="wpfa-field" placeholder="<# if(settings.placeholder_confirm_pw){#>{{settings.placeholder_confirm_pw}}<#}#>" disabled><button type="button" class="wpfa-password-toggle"><# if(settings.toggle_show_text){#>{{{settings.toggle_show_text}}}<#}else{#>' . esc_html__('Show','wp-frontend-auth') . '<#}#></button></p>';
         echo '<p class="wpfa-submit"><button type="button" class="wpfa-button wpfa-submit-button"><# if(settings.button_text){#>{{{settings.button_text}}}<#}else{#>' . esc_html__('Register','wp-frontend-auth') . '<#}#></button></p>';
         echo '</div><# if("yes"===settings.show_links){#><p class="wpfa-links"><a href="#"><# if(settings.link_login_text){#>{{{settings.link_login_text}}}<#}else{#>' . esc_html__('Log In','wp-frontend-auth') . '<#}#></a></p><#}#></div>';
+        echo $this->google_button_content_template(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped during construction
         echo '</div><!-- /.wpfa-form-wrap -->';
     }
 }

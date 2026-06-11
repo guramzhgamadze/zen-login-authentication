@@ -11,6 +11,7 @@ WP Frontend Auth replaces the default `wp-login.php` experience with clean, them
 - **Login form** with username, email, or either — configurable from Settings.
 - **Registration form** with optional user-chosen passwords and auto-login.
 - **Lost Password / Reset Password** forms with full email flow integration.
+- **Sign in with Google** (optional) — a server-side OpenID Connect flow with no Google JavaScript on your pages and no third-party libraries. New accounts can be auto-created (toggleable); existing accounts are linked by verified email. Configured under **Settings → Frontend Auth → Sign in with Google**.
 - **URL rewriting** — all `wp-login.php` links site-wide are transparently redirected to your frontend pages.
 - **Multisite support** — network-activated, per-site settings, signup/activation flow handled.
 - **Smart redirects** — `?redirect_to=` is fully honoured on both virtual and Elementor pages. Subscribers are blocked from wp-admin and sent to a configurable destination — set a page slug or URL under **Settings → Frontend Auth → Subscriber redirect** (default: the site home page; also filterable via `wpfa_subscriber_redirect`). Privileged users always land where they intended.
@@ -240,6 +241,22 @@ wp-frontend-auth/
 ```
 
 ## Changelog
+
+### 1.5.0
+
+**Fixed**
+
+- Required-field asterisks were invisible: the honeypot's catch-all CSS rule (`.wpfa [aria-hidden="true"] { display:none }`) also hid the decorative asterisk spans (and would have hidden any inline SVG icon). The honeypot now has its own `wpfa-hp` class and the rule is scoped to it.
+
+**New: Sign in with Google (optional)**
+
+- Server-side OpenID Connect authorization-code flow — no Google JavaScript on any page, no third-party PHP libraries. The button is a plain link; the CSRF `state` token is generated at click time on an `admin-post.php` endpoint, so cached pages can never serve a stale sign-in link, and nothing depends on rewrite rules.
+- Settings: enable toggle, Client ID/Secret, "Allow new accounts" toggle, and the exact Authorized redirect URI to copy into Google Cloud Console.
+- User provisioning: matched by stored Google account ID first, then by **verified** email (links the existing account); otherwise a new account is created with the site's default role (toggleable). New Google users get the same hidden-toolbar default as form registrations; the admin is notified (filterable via `wpfa_google_new_user_notification`).
+- Google logins run through `login_redirect`, so the Subscriber redirect, wp-admin blocking, and rate limiting all apply exactly like password logins.
+- Security: single-use `state` stored server-side **and** bound to the browser via a `SameSite=Lax` cookie (blocks OAuth login-CSRF); `iss`/`aud`/`exp` claim validation; `email_verified` required; ID token received directly from Google's token endpoint over TLS (OIDC Core §3.1.3.7).
+- Credential storage: the Client Secret is **encrypted at rest** with AES-256-GCM (`includes/crypto.php`), keyed from the `wp-config.php` salts — ciphertext in `wp_options` is useless without the config file. The settings field never re-displays the saved secret (blank = keep current). A plaintext value saved before this hardening is auto-migrated on first read. Power users can define `WPFA_GOOGLE_CLIENT_ID` / `WPFA_GOOGLE_CLIENT_SECRET` in `wp-config.php` instead, keeping credentials out of the database entirely. Caveat: rotating the WordPress salts invalidates the ciphertext — re-enter the secret afterwards.
+- Elementor: Login and Register widgets get a "Show Google button" toggle, button-text override, an editor preview, and a Google Button style section (typography, padding, radius, normal/hover colors, divider color). New filters: `wpfa_show_google_button`, `wpfa_google_button_text`, `wpfa_google_redirect_to`, `wpfa_google_remember`, `wpfa_google_allow_registration`, `wpfa_google_enabled`.
 
 ### 1.4.23
 
