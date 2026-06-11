@@ -46,3 +46,4 @@ error_log
 # === Environment ===
 .env
 .env.*
+CLAUDE.md
