@@ -35,6 +35,14 @@ The plugin works with no configuration and adds no tracking or "phone home" beha
 * **Spoof-resistant IP detection** — rate-limit keys use the real socket address (`REMOTE_ADDR`) by default; forwarded headers are opt-in via a filter for sites genuinely behind Cloudflare.
 * **No password pre-population**, bcrypt-compatible (`wp_set_password()` / `wp_signon()`), and an 8-character minimum on new passwords.
 
+= External services =
+
+This plugin contacts an external service **only** when the optional "Sign in with Google" feature is enabled, and only during a Google sign-in:
+
+* **Google OAuth / OpenID Connect** (accounts.google.com and oauth2.googleapis.com). When a user clicks "Continue with Google", they are redirected to Google's consent screen, and the plugin's server then exchanges the one-time authorization code for an ID token. The data involved: the OAuth client credentials you configured, the single-use authorization code, and — returned by Google — the user's verified email address, name, and Google account ID, which are used solely to log the user in or create their account on your site. No other data is sent to Google, and nothing is sent at any other time. This service is provided by Google LLC: [Terms of Service](https://policies.google.com/terms), [Privacy Policy](https://policies.google.com/privacy).
+
+If the feature is disabled (the default), the plugin makes no external calls whatsoever.
+
 = Elementor integration =
 
 Four native widgets registered under a "Frontend Auth" category:
