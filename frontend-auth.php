@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name:       WP Frontend Auth
+ * Plugin Name:       Frontend Auth
  * Plugin URI:        https://github.com/guramzhgamadze/Frontend-Auth
  * Description:       Secure, accessible frontend login, registration, and password recovery forms — with rate limiting, honeypot protection, AJAX support, and native Elementor widgets.
  * Version:           1.5.0
@@ -10,7 +10,7 @@
  * Author URI:        https://github.com/guramzhgamadze
  * License:           GPL-2.0-or-later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
- * Text Domain:       wp-frontend-auth
+ * Text Domain:       frontend-auth
  * Domain Path:       /languages
  * Network:           true
  */
@@ -41,9 +41,9 @@ if ( defined( 'WPFA_VERSION' ) ) {
 if ( version_compare( PHP_VERSION, '8.0.0', '<' ) ) {
     add_action( 'admin_notices', static function (): void {
         echo '<div class="notice notice-error"><p>';
-        echo '<strong>WP Frontend Auth</strong> requires PHP 8.0 or higher. ';
+        echo '<strong>Frontend Auth</strong> requires PHP 8.0 or higher. ';
         printf(
-            esc_html__( 'Your server is running PHP %s. Please upgrade to PHP 8.0 or higher, or deactivate the plugin.', 'wp-frontend-auth' ),
+            esc_html__( 'Your server is running PHP %s. Please upgrade to PHP 8.0 or higher, or deactivate the plugin.', 'frontend-auth' ),
             esc_html( PHP_VERSION )
         );
         echo '</p></div>';
@@ -60,8 +60,8 @@ if ( version_compare( PHP_VERSION, '8.0.0', '<' ) ) {
 if ( version_compare( get_bloginfo( 'version' ), '6.5', '<' ) ) {
     add_action( 'admin_notices', static function (): void {
         echo '<div class="notice notice-error"><p>';
-        echo '<strong>' . esc_html__( 'WP Frontend Auth', 'wp-frontend-auth' ) . '</strong> ';
-        echo esc_html__( 'requires WordPress 6.5 or higher. Please update WordPress or deactivate the plugin.', 'wp-frontend-auth' );
+        echo '<strong>' . esc_html__( 'Frontend Auth', 'frontend-auth' ) . '</strong> ';
+        echo esc_html__( 'requires WordPress 6.5 or higher. Please update WordPress or deactivate the plugin.', 'frontend-auth' );
         echo '</p></div>';
     } );
     return;

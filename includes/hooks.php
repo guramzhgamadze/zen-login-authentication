@@ -1,8 +1,8 @@
 <?php
 /**
- * WP Frontend Auth – Hooks
+ * Frontend Auth – Hooks
  *
- * @package WP_Frontend_Auth
+ * @package Frontend_Auth
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -106,7 +106,7 @@ function wpfa_register_assets(): void {
     $suffix = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
 
     wp_register_style(
-        'wp-frontend-auth',
+        'frontend-auth',
         WPFA_URL . "assets/styles/wp-frontend-auth{$suffix}.css",
         [],
         WPFA_VERSION
@@ -116,7 +116,7 @@ function wpfa_register_assets(): void {
     // may need the script and Elementor's own scripts are not deferred.
     // We enqueue with defer only on non-Elementor pages (see wpfa_enqueue_assets).
     wp_register_script(
-        'wp-frontend-auth',
+        'frontend-auth',
         WPFA_URL . "assets/scripts/wp-frontend-auth{$suffix}.js",
         [ 'jquery' ],
         WPFA_VERSION,
@@ -138,8 +138,8 @@ function wpfa_enqueue_assets(): void {
         return;
     }
 
-    wp_enqueue_style( 'wp-frontend-auth' );
-    wp_enqueue_script( 'wp-frontend-auth' );
+    wp_enqueue_style( 'frontend-auth' );
+    wp_enqueue_script( 'frontend-auth' );
 
     /*
      * BUG FIX (v1.4.3): const wpFrontendAuth declared twice — SyntaxError
@@ -187,22 +187,22 @@ function wpfa_maybe_add_inline_script(): void {
         'useAjax' => wpfa_use_ajax(),
         'action'  => wpfa_get_current_action(),
         'i18n'    => [
-            'genericError'       => __( 'An error occurred. Please try again.', 'wp-frontend-auth' ),
-            'show'               => __( 'Show', 'wp-frontend-auth' ),
-            'hide'               => __( 'Hide', 'wp-frontend-auth' ),
-            'passwordToggle'     => __( 'Toggle password visibility', 'wp-frontend-auth' ),
-            'strengthVeryWeak'   => __( 'Very weak', 'wp-frontend-auth' ),
-            'strengthWeak'       => __( 'Weak', 'wp-frontend-auth' ),
-            'strengthGood'       => __( 'Good', 'wp-frontend-auth' ),
-            'strengthStrong'     => __( 'Strong', 'wp-frontend-auth' ),
-            'msgRegistered'      => __( 'Registration successful! Please check your email for login instructions.', 'wp-frontend-auth' ),
-            'msgCheckEmail'      => __( 'Check your email for a link to reset your password.', 'wp-frontend-auth' ),
-            'msgPasswordChanged' => __( 'Your password has been reset. You can now log in.', 'wp-frontend-auth' ),
+            'genericError'       => __( 'An error occurred. Please try again.', 'frontend-auth' ),
+            'show'               => __( 'Show', 'frontend-auth' ),
+            'hide'               => __( 'Hide', 'frontend-auth' ),
+            'passwordToggle'     => __( 'Toggle password visibility', 'frontend-auth' ),
+            'strengthVeryWeak'   => __( 'Very weak', 'frontend-auth' ),
+            'strengthWeak'       => __( 'Weak', 'frontend-auth' ),
+            'strengthGood'       => __( 'Good', 'frontend-auth' ),
+            'strengthStrong'     => __( 'Strong', 'frontend-auth' ),
+            'msgRegistered'      => __( 'Registration successful! Please check your email for login instructions.', 'frontend-auth' ),
+            'msgCheckEmail'      => __( 'Check your email for a link to reset your password.', 'frontend-auth' ),
+            'msgPasswordChanged' => __( 'Your password has been reset. You can now log in.', 'frontend-auth' ),
         ],
     ] ) );
 
     if ( $script_data ) {
-        wp_add_inline_script( 'wp-frontend-auth', 'const wpFrontendAuth = ' . $script_data . ';', 'before' );
+        wp_add_inline_script( 'frontend-auth', 'const wpFrontendAuth = ' . $script_data . ';', 'before' );
     }
 }
 
@@ -420,7 +420,7 @@ function wpfa_maybe_inject_form( string $content ): string {
 
     // Register: show message if registration is disabled.
     if ( 'register' === $action && ! get_option( 'users_can_register' ) ) {
-        return '<p>' . esc_html__( 'User registration is currently not allowed.', 'wp-frontend-auth' ) . '</p>';
+        return '<p>' . esc_html__( 'User registration is currently not allowed.', 'frontend-auth' ) . '</p>';
     }
 
     // Reset password: show error if key/login params are absent.
@@ -430,10 +430,10 @@ function wpfa_maybe_inject_form( string $content ): string {
         if ( ! is_string( $rp_key ) || ! is_string( $rp_login ) || '' === $rp_key || '' === $rp_login ) {
             return '<div class="wpfa wpfa-form wpfa-form-resetpass">'
                 . '<ul class="wpfa-errors" role="alert">'
-                . '<li class="wpfa-error">' . esc_html__( 'This password reset link is invalid or has expired. Please request a new one.', 'wp-frontend-auth' ) . '</li>'
+                . '<li class="wpfa-error">' . esc_html__( 'This password reset link is invalid or has expired. Please request a new one.', 'frontend-auth' ) . '</li>'
                 . '</ul>'
                 . '<p class="wpfa-links"><a href="' . esc_url( wpfa_get_action_url( 'lostpassword' ) ) . '">'
-                . esc_html__( 'Request a new password reset link', 'wp-frontend-auth' ) . '</a></p>'
+                . esc_html__( 'Request a new password reset link', 'frontend-auth' ) . '</a></p>'
                 . '</div>';
         }
     }

@@ -1,8 +1,8 @@
 <?php
 /**
- * WP Frontend Auth – Options & Page Management
+ * Frontend Auth – Options & Page Management
  *
- * @package WP_Frontend_Auth
+ * @package Frontend_Auth
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -176,10 +176,10 @@ function wpfa_get_page_author_id(): int {
  */
 function wpfa_get_page_actions(): array {
     return apply_filters( 'wpfa_page_actions', [
-        'login'        => __( 'Login',         'wp-frontend-auth' ),
-        'register'     => __( 'Register',       'wp-frontend-auth' ),
-        'lostpassword' => __( 'Lost Password',  'wp-frontend-auth' ),
-        'resetpass'    => __( 'Reset Password', 'wp-frontend-auth' ),
+        'login'        => __( 'Login',         'frontend-auth' ),
+        'register'     => __( 'Register',       'frontend-auth' ),
+        'lostpassword' => __( 'Lost Password',  'frontend-auth' ),
+        'resetpass'    => __( 'Reset Password', 'frontend-auth' ),
     ] );
 }
 

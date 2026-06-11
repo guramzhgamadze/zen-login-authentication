@@ -1,4 +1,4 @@
-=== WP Frontend Auth ===
+=== Frontend Auth ===
 Contributors: guramzhgamadze
 Tags: login, registration, authentication, elementor, frontend
 Requires at least: 6.5
@@ -12,7 +12,7 @@ Frontend login, registration, and password recovery for WordPress and Elementor,
 
 == Description ==
 
-WP Frontend Auth replaces the default `wp-login.php` experience with clean, accessible, theme-integrated forms that live on your actual site. It works out of the box on any WordPress theme and ships with first-class Elementor support: four drag-and-drop widgets that fit any page-builder layout, with full Theme Builder compatibility.
+Frontend Auth replaces the default `wp-login.php` experience with clean, accessible, theme-integrated forms that live on your actual site. It works out of the box on any WordPress theme and ships with first-class Elementor support: four drag-and-drop widgets that fit any page-builder layout, with full Theme Builder compatibility.
 
 The plugin works with no configuration and adds no tracking or "phone home" behaviour. The only external service it ever contacts is Google — and only during a sign-in, when the optional "Sign in with Google" feature is enabled.
 
@@ -64,7 +64,7 @@ On activation the plugin sets up a real WordPress page for each auth action so E
 
 == Installation ==
 
-1. Upload the `wp-frontend-auth` folder to `/wp-content/plugins/`, or install it from **Plugins &rarr; Add New**.
+1. Upload the `frontend-auth` folder to `/wp-content/plugins/`, or install it from **Plugins &rarr; Add New**.
 2. Activate the plugin through **Plugins &rarr; Installed Plugins**.
 3. Go to **Frontend Auth** in the admin sidebar to configure options.
 4. Auth pages are created automatically on activation. If you delete some and want them back, use **Create Missing Pages** in the Page Management section.

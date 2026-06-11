@@ -1,10 +1,10 @@
 <?php
 /**
- * WP Frontend Auth – Handlers
+ * Frontend Auth – Handlers
  *
  * All form-processing and routing logic.
  *
- * @package WP_Frontend_Auth
+ * @package Frontend_Auth
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -30,12 +30,12 @@ function wpfa_route_post_request(): void {
         // script can only render a 403 as the unhelpful generic-error fallback.
         if ( wpfa_is_ajax_request() ) {
             wpfa_send_ajax_error( [
-                'errors' => [ __( 'Your session has expired. Please reload the page and try again.', 'wp-frontend-auth' ) ],
+                'errors' => [ __( 'Your session has expired. Please reload the page and try again.', 'frontend-auth' ) ],
             ] );
         }
         wp_die(
-            esc_html__( 'Security check failed. Please try again.', 'wp-frontend-auth' ),
-            esc_html__( 'Security Error', 'wp-frontend-auth' ),
+            esc_html__( 'Security check failed. Please try again.', 'frontend-auth' ),
+            esc_html__( 'Security Error', 'frontend-auth' ),
             [ 'response' => 403 ]
         );
     }
@@ -70,13 +70,13 @@ function wpfa_register_default_actions(): void {
     $done = true;
 
     wpfa()->register_action( 'login', [
-        'title'              => __( 'Log In', 'wp-frontend-auth' ),
+        'title'              => __( 'Log In', 'frontend-auth' ),
         'slug'               => wpfa_get_action_slug( 'login' ),
         'show_nav_menu_item' => ! is_user_logged_in(),
     ] );
 
     wpfa()->register_action( 'logout', [
-        'title'              => __( 'Log Out', 'wp-frontend-auth' ),
+        'title'              => __( 'Log Out', 'frontend-auth' ),
         'slug'               => wpfa_get_action_slug( 'logout' ),
         'show_in_widget'     => false,
         'show_on_forms'      => false,
@@ -84,20 +84,20 @@ function wpfa_register_default_actions(): void {
     ] );
 
     wpfa()->register_action( 'register', [
-        'title'              => __( 'Register', 'wp-frontend-auth' ),
+        'title'              => __( 'Register', 'frontend-auth' ),
         'slug'               => wpfa_get_action_slug( 'register' ),
         'show_on_forms'      => (bool) get_option( 'users_can_register' ),
         'show_nav_menu_item' => ! is_user_logged_in(),
     ] );
 
     wpfa()->register_action( 'lostpassword', [
-        'title'             => __( 'Lost Password', 'wp-frontend-auth' ),
+        'title'             => __( 'Lost Password', 'frontend-auth' ),
         'slug'              => wpfa_get_action_slug( 'lostpassword' ),
         'show_in_nav_menus' => false,
     ] );
 
     wpfa()->register_action( 'resetpass', [
-        'title'             => __( 'Reset Password', 'wp-frontend-auth' ),
+        'title'             => __( 'Reset Password', 'frontend-auth' ),
         'slug'              => wpfa_get_action_slug( 'resetpass' ),
         'show_in_widget'    => false,
         'show_in_nav_menus' => false,
@@ -115,7 +115,7 @@ function wpfa_handle_login(): void {
     if ( wpfa_rate_limit_is_locked( 'login' ) ) {
         $message = sprintf(
             /* translators: %d = minutes */
-            __( 'Too many failed attempts. Please try again in %d minutes.', 'wp-frontend-auth' ),
+            __( 'Too many failed attempts. Please try again in %d minutes.', 'frontend-auth' ),
             wpfa_get_rate_limit_window()
         );
         $form = wpfa()->get_form( 'login' );
@@ -246,7 +246,7 @@ function wpfa_handle_register(): void {
     if ( wpfa_honeypot_is_spam() ) {
         if ( $is_ajax ) {
             wpfa_send_ajax_success( [
-                'message' => __( 'Registration complete. Please check your email.', 'wp-frontend-auth' ),
+                'message' => __( 'Registration complete. Please check your email.', 'frontend-auth' ),
             ] );
         }
         wp_safe_redirect( add_query_arg( 'registered', '1', wpfa_get_action_url( 'login' ) ) );
@@ -254,7 +254,7 @@ function wpfa_handle_register(): void {
     }
 
     if ( wpfa_rate_limit_is_locked( 'register' ) ) {
-        $message = __( 'Too many registration attempts. Please wait before trying again.', 'wp-frontend-auth' );
+        $message = __( 'Too many registration attempts. Please wait before trying again.', 'frontend-auth' );
         $form    = wpfa()->get_form( 'register' );
         if ( $form ) {
             $form->add_error( 'too_many_attempts', $message );
@@ -321,7 +321,7 @@ function wpfa_handle_register(): void {
 
     if ( $is_ajax ) {
         wpfa_send_ajax_success( [
-            'message' => __( 'Registration complete. Please check your email for login instructions.', 'wp-frontend-auth' ),
+            'message' => __( 'Registration complete. Please check your email for login instructions.', 'frontend-auth' ),
         ] );
     }
 
@@ -338,7 +338,7 @@ function wpfa_handle_lostpassword(): void {
     $is_ajax = wpfa_is_ajax_request();
 
     if ( wpfa_rate_limit_is_locked( 'lostpassword' ) ) {
-        $message = __( 'Too many attempts. Please wait a few minutes before trying again.', 'wp-frontend-auth' );
+        $message = __( 'Too many attempts. Please wait a few minutes before trying again.', 'frontend-auth' );
         $form    = wpfa()->get_form( 'lostpassword' );
         if ( $form ) {
             $form->add_error( 'too_many_attempts', $message );
@@ -353,7 +353,7 @@ function wpfa_handle_lostpassword(): void {
     if ( wpfa_honeypot_is_spam() ) {
         if ( $is_ajax ) {
             wpfa_send_ajax_success( [
-                'message' => __( 'Check your email for a link to reset your password.', 'wp-frontend-auth' ),
+                'message' => __( 'Check your email for a link to reset your password.', 'frontend-auth' ),
             ] );
         }
         wp_safe_redirect( add_query_arg( 'checkemail', 'confirm', wpfa_get_action_url( 'lostpassword' ) ) );
@@ -394,7 +394,7 @@ function wpfa_handle_lostpassword(): void {
 
     if ( $is_ajax ) {
         wpfa_send_ajax_success( [
-            'message' => __( 'Check your email for a link to reset your password.', 'wp-frontend-auth' ),
+            'message' => __( 'Check your email for a link to reset your password.', 'frontend-auth' ),
         ] );
     }
 
@@ -418,7 +418,7 @@ function wpfa_handle_resetpass(): void {
     if ( wpfa_rate_limit_is_locked( 'resetpass' ) ) {
         $message = sprintf(
             /* translators: %d = minutes */
-            __( 'Too many attempts. Please try again in %d minutes.', 'wp-frontend-auth' ),
+            __( 'Too many attempts. Please try again in %d minutes.', 'frontend-auth' ),
             wpfa_get_rate_limit_window()
         );
         if ( $form ) {
@@ -434,7 +434,7 @@ function wpfa_handle_resetpass(): void {
 
     if ( is_wp_error( $user ) ) {
         wpfa_rate_limit_bump( 'resetpass' );
-        $message = __( 'This password reset link has expired or is invalid. Please request a new one.', 'wp-frontend-auth' );
+        $message = __( 'This password reset link has expired or is invalid. Please request a new one.', 'frontend-auth' );
         if ( $form ) {
             $form->add_error( 'invalid_key', $message );
         }
@@ -445,7 +445,7 @@ function wpfa_handle_resetpass(): void {
     }
 
     if ( empty( $pass1 ) || $pass1 !== $pass2 ) {
-        $message = __( 'Passwords do not match. Please try again.', 'wp-frontend-auth' );
+        $message = __( 'Passwords do not match. Please try again.', 'frontend-auth' );
         if ( $form ) {
             $form->add_error( 'password_mismatch', $message );
         }
@@ -456,7 +456,7 @@ function wpfa_handle_resetpass(): void {
     }
 
     if ( strlen( $pass1 ) < 8 ) {
-        $message = __( 'Password must be at least 8 characters.', 'wp-frontend-auth' );
+        $message = __( 'Password must be at least 8 characters.', 'frontend-auth' );
         if ( $form ) {
             $form->add_error( 'password_too_short', $message );
         }
@@ -493,11 +493,11 @@ function wpfa_validate_registration_password( WP_Error $errors, $sanitized_user_
     $pass2 = wpfa_get_request_value( 'user_pass2', 'post' );
 
     if ( empty( $pass1 ) || empty( $pass2 ) ) {
-        $errors->add( 'empty_password', __( 'Please enter a password.', 'wp-frontend-auth' ) );
+        $errors->add( 'empty_password', __( 'Please enter a password.', 'frontend-auth' ) );
     } elseif ( $pass1 !== $pass2 ) {
-        $errors->add( 'password_mismatch', __( 'Passwords do not match.', 'wp-frontend-auth' ) );
+        $errors->add( 'password_mismatch', __( 'Passwords do not match.', 'frontend-auth' ) );
     } elseif ( strlen( $pass1 ) < 8 ) {
-        $errors->add( 'password_too_short', __( 'Password must be at least 8 characters.', 'wp-frontend-auth' ) );
+        $errors->add( 'password_too_short', __( 'Password must be at least 8 characters.', 'frontend-auth' ) );
     }
 
     return $errors;
@@ -515,13 +515,13 @@ function wpfa_enforce_login_type( $user, $username, $password ) {
     if ( wpfa_is_email_login_type() && ! is_email( $username ) ) {
         return new WP_Error(
             'invalid_email',
-            __( 'Please log in with your email address.', 'wp-frontend-auth' )
+            __( 'Please log in with your email address.', 'frontend-auth' )
         );
     }
     if ( wpfa_is_username_login_type() && is_email( $username ) ) {
         return new WP_Error(
             'invalid_username',
-            __( 'Please log in with your username, not your email address.', 'wp-frontend-auth' )
+            __( 'Please log in with your username, not your email address.', 'frontend-auth' )
         );
     }
     return $user;

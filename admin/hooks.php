@@ -1,8 +1,8 @@
 <?php
 /**
- * WP Frontend Auth – Admin Hooks
+ * Frontend Auth – Admin Hooks
  *
- * @package WP_Frontend_Auth
+ * @package Frontend_Auth
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -10,13 +10,13 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Add a "Settings" link on the plugins list page.
  */
-add_filter( 'plugin_action_links_' . plugin_basename( WPFA_PATH . 'wp-frontend-auth.php' ), 'wpfa_plugin_action_links' );
+add_filter( 'plugin_action_links_' . plugin_basename( WPFA_PATH . 'frontend-auth.php' ), 'wpfa_plugin_action_links' );
 
 function wpfa_plugin_action_links( array $links ): array {
     array_unshift(
         $links,
-        '<a href="' . esc_url( admin_url( 'admin.php?page=wp-frontend-auth' ) ) . '">'
-            . esc_html__( 'Settings', 'wp-frontend-auth' )
+        '<a href="' . esc_url( admin_url( 'admin.php?page=frontend-auth' ) ) . '">'
+            . esc_html__( 'Settings', 'frontend-auth' )
         . '</a>'
     );
     return $links;
@@ -87,12 +87,12 @@ add_action( 'admin_post_wpfa_create_pages', 'wpfa_admin_handle_create_pages' );
 
 function wpfa_admin_handle_create_pages(): void {
     if ( ! current_user_can( 'manage_options' ) ) {
-        wp_die( esc_html__( 'Unauthorized.', 'wp-frontend-auth' ), 403 );
+        wp_die( esc_html__( 'Unauthorized.', 'frontend-auth' ), 403 );
     }
     check_admin_referer( 'wpfa_create_pages', 'wpfa_pages_nonce' );
     wpfa_create_action_pages();
     wpfa_flush_rewrite_rules();
-    wp_safe_redirect( add_query_arg( 'wpfa_notice', 'pages_created', admin_url( 'admin.php?page=wp-frontend-auth' ) ) );
+    wp_safe_redirect( add_query_arg( 'wpfa_notice', 'pages_created', admin_url( 'admin.php?page=frontend-auth' ) ) );
     exit;
 }
 
@@ -100,7 +100,7 @@ add_action( 'admin_post_wpfa_delete_pages', 'wpfa_admin_handle_delete_pages' );
 
 function wpfa_admin_handle_delete_pages(): void {
     if ( ! current_user_can( 'manage_options' ) ) {
-        wp_die( esc_html__( 'Unauthorized.', 'wp-frontend-auth' ), 403 );
+        wp_die( esc_html__( 'Unauthorized.', 'frontend-auth' ), 403 );
     }
     check_admin_referer( 'wpfa_delete_pages', 'wpfa_pages_nonce' );
 
@@ -119,7 +119,7 @@ function wpfa_admin_handle_delete_pages(): void {
     }
 
     wpfa_flush_rewrite_rules();
-    wp_safe_redirect( add_query_arg( 'wpfa_notice', 'pages_deleted', admin_url( 'admin.php?page=wp-frontend-auth' ) ) );
+    wp_safe_redirect( add_query_arg( 'wpfa_notice', 'pages_deleted', admin_url( 'admin.php?page=frontend-auth' ) ) );
     exit;
 }
 
@@ -134,8 +134,8 @@ function wpfa_admin_page_notices(): void {
     }
     $notice = sanitize_key( wp_unslash( $_GET['wpfa_notice'] ) ); // phpcs:ignore WordPress.Security.NonceVerification
     $messages = [
-        'pages_created' => __( 'Auth pages have been created successfully.', 'wp-frontend-auth' ),
-        'pages_deleted' => __( 'Auto-created auth pages have been deleted.', 'wp-frontend-auth' ),
+        'pages_created' => __( 'Auth pages have been created successfully.', 'frontend-auth' ),
+        'pages_deleted' => __( 'Auto-created auth pages have been deleted.', 'frontend-auth' ),
     ];
     if ( isset( $messages[ $notice ] ) ) {
         echo '<div class="notice notice-success is-dismissible"><p>' . esc_html( $messages[ $notice ] ) . '</p></div>';

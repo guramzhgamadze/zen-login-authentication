@@ -1,6 +1,6 @@
 <?php
 /**
- * WP Frontend Auth – Multisite Hooks
+ * Frontend Auth – Multisite Hooks
  *
  * The plugin declares Network: true but previously had zero multisite code.
  * This file handles the multisite registration flow correctly.
@@ -10,7 +10,7 @@
  * The signup/activation emails contain links that must resolve correctly,
  * so we intercept the signup URL and the activation URL filters.
  *
- * @package WP_Frontend_Auth
+ * @package Frontend_Auth
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -60,7 +60,7 @@ function wpfa_ms_maybe_show_activation_notice(): void {
     if ( $form ) {
         $form->add_message(
             'ms_activated',
-            __( 'Your account has been activated. You can now log in.', 'wp-frontend-auth' )
+            __( 'Your account has been activated. You can now log in.', 'frontend-auth' )
         );
     }
 }

@@ -1,6 +1,6 @@
 <?php
 /**
- * WP Frontend Auth – Secret encryption
+ * Frontend Auth – Secret encryption
  *
  * Encrypts sensitive option values (the Google OAuth client secret) at rest so a
  * database dump alone cannot leak them. The key is derived from the site's
@@ -14,7 +14,7 @@
  *
  * Stored format: "wpfaenc:" . base64( iv[12] . tag[16] . ciphertext )
  *
- * @package WP_Frontend_Auth
+ * @package Frontend_Auth
  */
 
 defined( 'ABSPATH' ) || exit;

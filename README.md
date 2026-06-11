@@ -1,10 +1,10 @@
-# WP Frontend Auth
+# Frontend Auth
 
 Secure, accessible frontend login, registration, and password recovery forms for WordPress — with rate limiting, honeypot protection, AJAX support, native Elementor widgets, and full cache-plugin compatibility.
 
 ## Description
 
-WP Frontend Auth replaces the default `wp-login.php` experience with clean, theme-integrated forms that live on your actual site. It works out of the box on any WordPress theme and ships with first-class Elementor support — four drag-and-drop widgets that fit into any page builder layout with full Theme Builder compatibility.
+Frontend Auth replaces the default `wp-login.php` experience with clean, theme-integrated forms that live on your actual site. It works out of the box on any WordPress theme and ships with first-class Elementor support — four drag-and-drop widgets that fit into any page builder layout with full Theme Builder compatibility.
 
 ### What It Does
 
@@ -67,7 +67,7 @@ All expose `show_instance_in_rest` for the WP 5.8+ block-based Widgets screen.
 
 ## Installation
 
-1. Upload the `wp-frontend-auth` folder to `/wp-content/plugins/`.
+1. Upload the `frontend-auth` folder to `/wp-content/plugins/`.
 2. Activate the plugin through **Plugins → Installed Plugins**.
 3. Go to **Frontend Auth** in the admin sidebar to configure options.
 4. *(Optional)* The auth pages are created automatically on activation. If you later delete some and want them back, click **Create Missing Pages** in the Page Management section.
@@ -187,7 +187,7 @@ After a successful login, the destination is resolved in this order:
 
 ## 3rd-Party Plugin Compatibility
 
-WP Frontend Auth fires the standard WordPress form hooks (`login_form`, `register_form`, `lostpassword_form`, `resetpass_form`) inside its forms. This means plugins that add fields to WordPress's native login — including 2FA plugins, CAPTCHA plugins, and social login plugins — will render their fields inside WPFA forms automatically.
+Frontend Auth fires the standard WordPress form hooks (`login_form`, `register_form`, `lostpassword_form`, `resetpass_form`) inside its forms. This means plugins that add fields to WordPress's native login — including 2FA plugins, CAPTCHA plugins, and social login plugins — will render their fields inside WPFA forms automatically.
 
 An OAuth/REST exemption system is built in. When another plugin (e.g. WordPress MCP Bridge) calls `wp_login_url()` or `site_url('wp-login.php')` with a REST API redirect target, WPFA automatically stands aside and returns the native `/wp-login.php` URL so the OAuth handshake completes correctly. Plugins can also use the `wpfa_login_url_exempt` filter for an explicit opt-out.
 
@@ -207,8 +207,8 @@ Auth pages are automatically excluded from caching and stale entries are purged 
 ## File Structure
 
 ```
-wp-frontend-auth/
-├── wp-frontend-auth.php          Main plugin file (activation, deactivation, Elementor loader)
+frontend-auth/
+├── frontend-auth.php          Main plugin file (activation, deactivation, Elementor loader)
 ├── uninstall.php                 Cleanup on deletion (respects user-created pages)
 ├── README.md                     This file
 ├── index.html                    GitHub Pages landing page

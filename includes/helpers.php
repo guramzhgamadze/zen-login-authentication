@@ -1,8 +1,8 @@
 <?php
 /**
- * WP Frontend Auth – Helpers
+ * Frontend Auth – Helpers
  *
- * @package WP_Frontend_Auth
+ * @package Frontend_Auth
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -95,13 +95,13 @@ function wpfa_get_action_slug( string $action ): string {
 
 function wpfa_get_username_label( string $context = 'login' ): string {
     if ( 'register' === $context ) {
-        $label = __( 'Username', 'wp-frontend-auth' );
+        $label = __( 'Username', 'frontend-auth' );
     } elseif ( wpfa_is_username_login_type() ) {
-        $label = __( 'Username', 'wp-frontend-auth' );
+        $label = __( 'Username', 'frontend-auth' );
     } elseif ( wpfa_is_email_login_type() ) {
-        $label = __( 'Email Address', 'wp-frontend-auth' );
+        $label = __( 'Email Address', 'frontend-auth' );
     } else {
-        $label = __( 'Username or Email Address', 'wp-frontend-auth' );
+        $label = __( 'Username or Email Address', 'frontend-auth' );
     }
     return (string) apply_filters( 'wpfa_username_label', $label, $context );
 }
@@ -135,7 +135,7 @@ function wpfa_honeypot_field_html(): string {
     }
     $field = esc_attr( wpfa_honeypot_field_name() );
     return '<div class="wpfa-hp" style="display:none!important" aria-hidden="true">'
-        . '<label for="' . $field . '">' . esc_html__( 'Leave this empty', 'wp-frontend-auth' ) . '</label>'
+        . '<label for="' . $field . '">' . esc_html__( 'Leave this empty', 'frontend-auth' ) . '</label>'
         . '<input type="text" id="' . $field . '" name="' . $field . '" value="" autocomplete="off" tabindex="-1">'
         . '</div>';
 }

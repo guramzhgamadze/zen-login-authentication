@@ -1,8 +1,8 @@
 <?php
 /**
- * WP Frontend Auth – Form Definitions
+ * Frontend Auth – Form Definitions
  *
- * @package WP_Frontend_Auth
+ * @package Frontend_Auth
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -41,7 +41,7 @@ function wpfa_register_login_form(): void {
 
     $form->add_field( 'pwd', [
         'type'     => 'password',
-        'label'    => __( 'Password', 'wp-frontend-auth' ),
+        'label'    => __( 'Password', 'frontend-auth' ),
         'id'       => 'user_pass',
         'attrs'    => [ 'autocomplete' => 'current-password' ],
         'required' => true,
@@ -55,7 +55,7 @@ function wpfa_register_login_form(): void {
 
     $form->add_field( 'rememberme', [
         'type'     => 'checkbox',
-        'label'    => __( 'Remember Me', 'wp-frontend-auth' ),
+        'label'    => __( 'Remember Me', 'frontend-auth' ),
         'value'    => 'forever',
         'id'       => 'rememberme',
         'priority' => 20,
@@ -63,7 +63,7 @@ function wpfa_register_login_form(): void {
 
     $form->add_field( 'submit', [
         'type'     => 'submit',
-        'value'    => __( 'Log In', 'wp-frontend-auth' ),
+        'value'    => __( 'Log In', 'frontend-auth' ),
         'priority' => 30,
     ] );
 
@@ -83,18 +83,18 @@ function wpfa_register_registration_form(): void {
 
     $form->add_field( 'user_login', [
         'type'        => 'text',
-        'label'       => __( 'Username', 'wp-frontend-auth' ),
+        'label'       => __( 'Username', 'frontend-auth' ),
         'value'       => wpfa_get_request_value( 'user_login', 'post' ),
         'id'          => 'user_login',
         'attrs'       => [ 'autocapitalize' => 'off', 'autocomplete' => 'username' ],
         'required'    => true,
         'priority'    => 10,
-        'description' => __( 'Letters, numbers, and underscores only.', 'wp-frontend-auth' ),
+        'description' => __( 'Letters, numbers, and underscores only.', 'frontend-auth' ),
     ] );
 
     $form->add_field( 'user_email', [
         'type'     => 'email',
-        'label'    => __( 'Email Address', 'wp-frontend-auth' ),
+        'label'    => __( 'Email Address', 'frontend-auth' ),
         'value'    => wpfa_get_request_value( 'user_email', 'post' ),
         'id'       => 'user_email',
         'attrs'    => [ 'autocomplete' => 'email' ],
@@ -105,7 +105,7 @@ function wpfa_register_registration_form(): void {
     if ( wpfa_allow_user_passwords() ) {
         $form->add_field( 'user_pass1', [
             'type'     => 'password',
-            'label'    => __( 'Password', 'wp-frontend-auth' ),
+            'label'    => __( 'Password', 'frontend-auth' ),
             'id'       => 'user_pass1',
             'attrs'    => [ 'autocomplete' => 'new-password' ],
             'required' => true,
@@ -113,7 +113,7 @@ function wpfa_register_registration_form(): void {
         ] );
         $form->add_field( 'user_pass2', [
             'type'     => 'password',
-            'label'    => __( 'Confirm Password', 'wp-frontend-auth' ),
+            'label'    => __( 'Confirm Password', 'frontend-auth' ),
             'id'       => 'user_pass2',
             'attrs'    => [ 'autocomplete' => 'new-password' ],
             'required' => true,
@@ -128,7 +128,7 @@ function wpfa_register_registration_form(): void {
 
     $form->add_field( 'submit', [
         'type'     => 'submit',
-        'value'    => __( 'Register', 'wp-frontend-auth' ),
+        'value'    => __( 'Register', 'frontend-auth' ),
         'priority' => 40,
     ] );
 
@@ -144,7 +144,7 @@ function wpfa_register_lost_password_form(): void {
 
     $form->add_field( 'user_login', [
         'type'     => 'text',
-        'label'    => __( 'Username or Email Address', 'wp-frontend-auth' ),
+        'label'    => __( 'Username or Email Address', 'frontend-auth' ),
         'value'    => wpfa_get_request_value( 'user_login', 'post' ),
         'id'       => 'user_login',
         'attrs'    => [ 'autocapitalize' => 'off', 'autocomplete' => 'username email' ],
@@ -159,7 +159,7 @@ function wpfa_register_lost_password_form(): void {
 
     $form->add_field( 'submit', [
         'type'     => 'submit',
-        'value'    => __( 'Get New Password', 'wp-frontend-auth' ),
+        'value'    => __( 'Get New Password', 'frontend-auth' ),
         'priority' => 20,
     ] );
 
@@ -187,7 +187,7 @@ function wpfa_register_password_reset_form(): void {
 
     $form->add_field( 'pass1', [
         'type'     => 'password',
-        'label'    => __( 'New Password', 'wp-frontend-auth' ),
+        'label'    => __( 'New Password', 'frontend-auth' ),
         'id'       => 'pass1',
         'attrs'    => [ 'autocomplete' => 'new-password' ],
         'required' => true,
@@ -196,7 +196,7 @@ function wpfa_register_password_reset_form(): void {
 
     $form->add_field( 'pass2', [
         'type'     => 'password',
-        'label'    => __( 'Confirm New Password', 'wp-frontend-auth' ),
+        'label'    => __( 'Confirm New Password', 'frontend-auth' ),
         'id'       => 'pass2',
         'attrs'    => [ 'autocomplete' => 'new-password' ],
         'required' => true,
@@ -210,7 +210,7 @@ function wpfa_register_password_reset_form(): void {
 
     $form->add_field( 'submit', [
         'type'     => 'submit',
-        'value'    => __( 'Reset Password', 'wp-frontend-auth' ),
+        'value'    => __( 'Reset Password', 'frontend-auth' ),
         'priority' => 30,
     ] );
 
@@ -223,18 +223,18 @@ function wpfa_register_password_reset_form(): void {
 
 add_filter( 'wpfa_form_links_login', function ( $links ) {
     if ( get_option( 'users_can_register' ) ) {
-        $links[] = [ 'label' => __( 'Register', 'wp-frontend-auth' ), 'url' => wpfa_get_action_url( 'register' ) ];
+        $links[] = [ 'label' => __( 'Register', 'frontend-auth' ), 'url' => wpfa_get_action_url( 'register' ) ];
     }
-    $links[] = [ 'label' => __( 'Lost your password?', 'wp-frontend-auth' ), 'url' => wpfa_get_action_url( 'lostpassword' ) ];
+    $links[] = [ 'label' => __( 'Lost your password?', 'frontend-auth' ), 'url' => wpfa_get_action_url( 'lostpassword' ) ];
     return $links;
 } );
 
 add_filter( 'wpfa_form_links_register', function ( $links ) {
-    $links[] = [ 'label' => __( 'Log In', 'wp-frontend-auth' ), 'url' => wpfa_get_action_url( 'login' ) ];
+    $links[] = [ 'label' => __( 'Log In', 'frontend-auth' ), 'url' => wpfa_get_action_url( 'login' ) ];
     return $links;
 } );
 
 add_filter( 'wpfa_form_links_lostpassword', function ( $links ) {
-    $links[] = [ 'label' => __( 'Log In', 'wp-frontend-auth' ), 'url' => wpfa_get_action_url( 'login' ) ];
+    $links[] = [ 'label' => __( 'Log In', 'frontend-auth' ), 'url' => wpfa_get_action_url( 'login' ) ];
     return $links;
 } );

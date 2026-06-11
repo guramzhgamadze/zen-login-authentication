@@ -1,8 +1,8 @@
 <?php
 /**
- * WP Frontend Auth – Core class
+ * Frontend Auth – Core class
  *
- * @package WP_Frontend_Auth
+ * @package Frontend_Auth
  */
 
 defined( 'ABSPATH' ) || exit;

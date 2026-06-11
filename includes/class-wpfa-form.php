@@ -1,11 +1,11 @@
 <?php
 /**
- * WP Frontend Auth – Form Class
+ * Frontend Auth – Form Class
  *
  * Each "form" is responsible for building its own fields, rendering itself
  * and carrying its own WP_Error bag.
  *
- * @package WP_Frontend_Auth
+ * @package Frontend_Auth
  */
 
 defined( 'ABSPATH' ) || exit;

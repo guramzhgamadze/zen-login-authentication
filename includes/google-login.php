@@ -1,6 +1,6 @@
 <?php
 /**
- * WP Frontend Auth – Sign in with Google
+ * Frontend Auth – Sign in with Google
  *
  * Server-side OpenID Connect authorization-code flow. No Google JavaScript is
  * loaded on any page and no third-party PHP libraries are used: the button is
@@ -21,7 +21,7 @@
  * skipped. The claims are still validated: iss, aud (client ID), exp, and
  * email_verified.
  *
- * @package WP_Frontend_Auth
+ * @package Frontend_Auth
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -431,10 +431,10 @@ function wpfa_google_button_html(): string {
         $url = add_query_arg( 'redirect_to', rawurlencode( $redirect_to ), $url );
     }
 
-    $text = (string) apply_filters( 'wpfa_google_button_text', __( 'Continue with Google', 'wp-frontend-auth' ) );
+    $text = (string) apply_filters( 'wpfa_google_button_text', __( 'Continue with Google', 'frontend-auth' ) );
 
     return '<div class="wpfa-sso">'
-        . '<div class="wpfa-sso-divider" aria-hidden="true"><span>' . esc_html__( 'or', 'wp-frontend-auth' ) . '</span></div>'
+        . '<div class="wpfa-sso-divider" aria-hidden="true"><span>' . esc_html__( 'or', 'frontend-auth' ) . '</span></div>'
         . '<a class="wpfa-google-btn" href="' . esc_url( $url ) . '">' . wpfa_google_button_svg()
         . '<span>' . esc_html( $text ) . '</span></a>'
         . '</div>';
@@ -468,12 +468,12 @@ function wpfa_google_maybe_show_error( $form ): void {
         return;
     }
     $messages = [
-        'denied'       => __( 'Google sign-in was cancelled.', 'wp-frontend-auth' ),
-        'state'        => __( 'The sign-in attempt expired. Please try again.', 'wp-frontend-auth' ),
-        'email'        => __( 'Your Google account email address is not verified, so it cannot be used to sign in.', 'wp-frontend-auth' ),
-        'registration' => __( 'No account matches this Google email address, and new registrations via Google are disabled.', 'wp-frontend-auth' ),
-        'locked'       => __( 'Too many attempts. Please try again later.', 'wp-frontend-auth' ),
-        'failed'       => __( 'Google sign-in failed. Please try again.', 'wp-frontend-auth' ),
+        'denied'       => __( 'Google sign-in was cancelled.', 'frontend-auth' ),
+        'state'        => __( 'The sign-in attempt expired. Please try again.', 'frontend-auth' ),
+        'email'        => __( 'Your Google account email address is not verified, so it cannot be used to sign in.', 'frontend-auth' ),
+        'registration' => __( 'No account matches this Google email address, and new registrations via Google are disabled.', 'frontend-auth' ),
+        'locked'       => __( 'Too many attempts. Please try again later.', 'frontend-auth' ),
+        'failed'       => __( 'Google sign-in failed. Please try again.', 'frontend-auth' ),
     ];
     $form->add_error( 'google_' . $code, $messages[ $code ] ?? $messages['failed'] );
 }

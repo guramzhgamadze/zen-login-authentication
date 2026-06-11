@@ -1,6 +1,6 @@
 <?php
 /**
- * WP Frontend Auth – Uninstall
+ * Frontend Auth – Uninstall
  *
  * Runs when the plugin is deleted (not just deactivated).
  * Removes all plugin options, and deletes only the pages the plugin itself
@@ -8,7 +8,7 @@
  * Adopted pages (pre-existing pages the plugin reused) and edited pages are
  * always kept.
  *
- * @package WP_Frontend_Auth
+ * @package Frontend_Auth
  */
 
 defined( 'WP_UNINSTALL_PLUGIN' ) || exit;

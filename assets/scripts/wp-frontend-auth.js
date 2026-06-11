@@ -1,5 +1,5 @@
 /**
- * WP Frontend Auth – Frontend Script
+ * Frontend Auth – Frontend Script
  *
  * Bug 10 fix: rewritten from jQuery IIFE to ES6 arrow-function IIFE.
  * jQuery is still used for $.ajax (required because jquery is a dependency)

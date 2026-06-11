@@ -1,6 +1,6 @@
 <?php
 /**
- * WP Frontend Auth – Widgets
+ * Frontend Auth – Widgets
  *
  * All frontend auth forms exposed as classic WP_Widget instances.
  *
@@ -24,7 +24,7 @@
  *  [F10] parse_instance() / get_instance_defaults() pattern introduced so every widget
  *        merges defaults consistently instead of scattering wp_parse_args() calls.
  *
- * @package WP_Frontend_Auth
+ * @package Frontend_Auth
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -169,7 +169,7 @@ abstract class WPFA_Abstract_Widget extends WP_Widget {
         ?>
         <p>
             <label for="<?php echo esc_attr( $this->get_field_id( 'title' ) ); ?>">
-                <?php esc_html_e( 'Title:', 'wp-frontend-auth' ); ?>
+                <?php esc_html_e( 'Title:', 'frontend-auth' ); ?>
             </label>
             <input class="widefat"
                    id="<?php echo esc_attr( $this->get_field_id( 'title' ) ); ?>"
@@ -184,7 +184,7 @@ abstract class WPFA_Abstract_Widget extends WP_Widget {
      * Render the Redirect URL input.
      */
     protected function render_redirect_field( array $instance, string $label = '' ): void {
-        $label       = $label ?: __( 'Redirect URL after success:', 'wp-frontend-auth' );
+        $label       = $label ?: __( 'Redirect URL after success:', 'frontend-auth' );
         $redirect_to = $instance['redirect_to'] ?? '';
         ?>
         <p>
@@ -195,7 +195,7 @@ abstract class WPFA_Abstract_Widget extends WP_Widget {
                    id="<?php echo esc_attr( $this->get_field_id( 'redirect_to' ) ); ?>"
                    name="<?php echo esc_attr( $this->get_field_name( 'redirect_to' ) ); ?>"
                    type="text"
-                   placeholder="<?php esc_attr_e( 'Default: admin dashboard', 'wp-frontend-auth' ); ?>"
+                   placeholder="<?php esc_attr_e( 'Default: admin dashboard', 'frontend-auth' ); ?>"
                    value="<?php echo esc_attr( $redirect_to ); ?>">
         </p>
         <?php
@@ -213,7 +213,7 @@ abstract class WPFA_Abstract_Widget extends WP_Widget {
                        name="<?php echo esc_attr( $this->get_field_name( 'show_links' ) ); ?>"
                        value="1"
                        <?php checked( $show_links ); ?>>
-                <?php esc_html_e( 'Show action links below form', 'wp-frontend-auth' ); ?>
+                <?php esc_html_e( 'Show action links below form', 'frontend-auth' ); ?>
             </label>
         </p>
         <?php
@@ -245,9 +245,9 @@ class WPFA_Login_Widget extends WPFA_Abstract_Widget {
     public function __construct() {
         $this->init_widget(
             'wpfa_login_widget',
-            __( 'WP Frontend Auth: Login', 'wp-frontend-auth' ),
+            __( 'Frontend Auth: Login', 'frontend-auth' ),
             [
-                'description' => __( 'Displays the login form. Shows a welcome panel when the user is logged in.', 'wp-frontend-auth' ),
+                'description' => __( 'Displays the login form. Shows a welcome panel when the user is logged in.', 'frontend-auth' ),
                 'classname'   => 'widget_wpfa widget_wpfa_login',
             ]
         );
@@ -255,7 +255,7 @@ class WPFA_Login_Widget extends WPFA_Abstract_Widget {
 
     protected function get_instance_defaults(): array {
         return array_merge( parent::get_instance_defaults(), [
-            'title'          => __( 'Login', 'wp-frontend-auth' ),
+            'title'          => __( 'Login', 'frontend-auth' ),
         ] );
     }
 
@@ -268,7 +268,7 @@ class WPFA_Login_Widget extends WPFA_Abstract_Widget {
 
     public function form( $instance ): void {
         $instance = $this->parse_instance( $instance );
-        $this->render_title_field( $instance, __( 'Login', 'wp-frontend-auth' ) ); // [F1]
+        $this->render_title_field( $instance, __( 'Login', 'frontend-auth' ) ); // [F1]
         $this->render_redirect_field( $instance );
         $this->render_show_links_field( $instance );
         ?>
@@ -292,9 +292,9 @@ class WPFA_Register_Widget extends WPFA_Abstract_Widget {
     public function __construct() {
         $this->init_widget(
             'wpfa_register_widget',
-            __( 'WP Frontend Auth: Register', 'wp-frontend-auth' ),
+            __( 'Frontend Auth: Register', 'frontend-auth' ),
             [
-                'description' => __( 'Displays the user registration form.', 'wp-frontend-auth' ),
+                'description' => __( 'Displays the user registration form.', 'frontend-auth' ),
                 'classname'   => 'widget_wpfa widget_wpfa_register',
             ]
         );
@@ -302,7 +302,7 @@ class WPFA_Register_Widget extends WPFA_Abstract_Widget {
 
     protected function get_instance_defaults(): array {
         return array_merge( parent::get_instance_defaults(), [
-            'title' => __( 'Register', 'wp-frontend-auth' ),
+            'title' => __( 'Register', 'frontend-auth' ),
         ] );
     }
 
@@ -322,7 +322,7 @@ class WPFA_Register_Widget extends WPFA_Abstract_Widget {
             // Admins: show the notice inside the theme wrapper. [F9]
             echo $args['before_widget']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
             echo '<p class="wpfa-notice">'
-                . esc_html__( 'User registration is currently disabled. Enable it under Settings → General.', 'wp-frontend-auth' )
+                . esc_html__( 'User registration is currently disabled. Enable it under Settings → General.', 'frontend-auth' )
                 . '</p>';
             echo $args['after_widget']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
             return;
@@ -341,8 +341,8 @@ class WPFA_Register_Widget extends WPFA_Abstract_Widget {
 
     public function form( $instance ): void {
         $instance = $this->parse_instance( $instance );
-        $this->render_title_field( $instance, __( 'Register', 'wp-frontend-auth' ) ); // [F1]
-        $this->render_redirect_field( $instance, __( 'Redirect URL after registration:', 'wp-frontend-auth' ) );
+        $this->render_title_field( $instance, __( 'Register', 'frontend-auth' ) ); // [F1]
+        $this->render_redirect_field( $instance, __( 'Redirect URL after registration:', 'frontend-auth' ) );
         $this->render_show_links_field( $instance );
     }
 }
@@ -358,9 +358,9 @@ class WPFA_Lost_Password_Widget extends WPFA_Abstract_Widget {
     public function __construct() {
         $this->init_widget(
             'wpfa_lost_password_widget',
-            __( 'WP Frontend Auth: Lost Password', 'wp-frontend-auth' ),
+            __( 'Frontend Auth: Lost Password', 'frontend-auth' ),
             [
-                'description' => __( 'Displays the lost password / password reset form.', 'wp-frontend-auth' ),
+                'description' => __( 'Displays the lost password / password reset form.', 'frontend-auth' ),
                 'classname'   => 'widget_wpfa widget_wpfa_lostpassword',
             ]
         );
@@ -368,7 +368,7 @@ class WPFA_Lost_Password_Widget extends WPFA_Abstract_Widget {
 
     protected function get_instance_defaults(): array {
         return array_merge( parent::get_instance_defaults(), [
-            'title' => __( 'Reset Password', 'wp-frontend-auth' ),
+            'title' => __( 'Reset Password', 'frontend-auth' ),
         ] );
     }
 
@@ -381,7 +381,7 @@ class WPFA_Lost_Password_Widget extends WPFA_Abstract_Widget {
 
     public function form( $instance ): void {
         $instance = $this->parse_instance( $instance );
-        $this->render_title_field( $instance, __( 'Reset Password', 'wp-frontend-auth' ) ); // [F1]
+        $this->render_title_field( $instance, __( 'Reset Password', 'frontend-auth' ) ); // [F1]
         $this->render_show_links_field( $instance );
     }
 }
@@ -400,7 +400,7 @@ class WPFA_Lost_Password_Widget extends WPFA_Abstract_Widget {
  *  1. Create a real WordPress page (e.g. /reset-password/).
  *  2. Set that page's slug to match the wpfa_slug_resetpass option.
  *  3. Drop this widget into any Elementor widget area on that page,
- *     OR use Elementor's Shortcode widget with [wp-frontend-auth action="resetpass"].
+ *     OR use Elementor's Shortcode widget with [frontend-auth action="resetpass"].
  *  4. Apply any Elementor Theme Builder template to it normally.
  *
  * The widget reads rp_key and rp_login from the GET parameters that
@@ -417,9 +417,9 @@ class WPFA_Reset_Password_Widget extends WPFA_Abstract_Widget {
     public function __construct() {
         $this->init_widget(
             'wpfa_reset_password_widget',
-            __( 'WP Frontend Auth: Reset Password', 'wp-frontend-auth' ),
+            __( 'Frontend Auth: Reset Password', 'frontend-auth' ),
             [
-                'description' => __( 'Displays the password reset form. Place on the page your reset-password email links point to.', 'wp-frontend-auth' ),
+                'description' => __( 'Displays the password reset form. Place on the page your reset-password email links point to.', 'frontend-auth' ),
                 'classname'   => 'widget_wpfa widget_wpfa_resetpass',
             ]
         );
@@ -427,7 +427,7 @@ class WPFA_Reset_Password_Widget extends WPFA_Abstract_Widget {
 
     protected function get_instance_defaults(): array {
         return array_merge( parent::get_instance_defaults(), [
-            'title'            => __( 'Reset Password', 'wp-frontend-auth' ),
+            'title'            => __( 'Reset Password', 'frontend-auth' ),
             'show_links'       => 0,   // links rarely make sense on a reset page
             'invalid_key_text' => '',  // empty = use built-in default message
         ] );
@@ -466,14 +466,14 @@ class WPFA_Reset_Password_Widget extends WPFA_Abstract_Widget {
             // No valid reset-link parameters in the URL.
             $invalid_text = ! empty( $instance['invalid_key_text'] )
                 ? $instance['invalid_key_text']
-                : __( 'This password reset link is invalid or has expired. Please request a new one.', 'wp-frontend-auth' );
+                : __( 'This password reset link is invalid or has expired. Please request a new one.', 'frontend-auth' );
 
             echo '<div class="wpfa wpfa-form wpfa-form-resetpass">'
                 . '<ul class="wpfa-errors" role="alert">'
                 . '<li class="wpfa-error">' . esc_html( $invalid_text ) . '</li>'
                 . '</ul>'
                 . '<p class="wpfa-links"><a href="' . esc_url( wpfa_get_action_url( 'lostpassword' ) ) . '">'
-                . esc_html__( 'Request a new password reset link', 'wp-frontend-auth' )
+                . esc_html__( 'Request a new password reset link', 'frontend-auth' )
                 . '</a></p>'
                 . '</div>';
         } else {
@@ -492,21 +492,21 @@ class WPFA_Reset_Password_Widget extends WPFA_Abstract_Widget {
 
     public function form( $instance ): void {
         $instance = $this->parse_instance( $instance );
-        $this->render_title_field( $instance, __( 'Reset Password', 'wp-frontend-auth' ) );
+        $this->render_title_field( $instance, __( 'Reset Password', 'frontend-auth' ) );
         $this->render_show_links_field( $instance );
         ?>
         <p>
             <label for="<?php echo esc_attr( $this->get_field_id( 'invalid_key_text' ) ); ?>">
-                <?php esc_html_e( 'Message when reset link is missing or expired:', 'wp-frontend-auth' ); ?>
+                <?php esc_html_e( 'Message when reset link is missing or expired:', 'frontend-auth' ); ?>
             </label>
             <textarea class="widefat"
                       id="<?php echo esc_attr( $this->get_field_id( 'invalid_key_text' ) ); ?>"
                       name="<?php echo esc_attr( $this->get_field_name( 'invalid_key_text' ) ); ?>"
                       rows="3"
-                      placeholder="<?php esc_attr_e( 'Leave empty to use the default message.', 'wp-frontend-auth' ); ?>"><?php echo esc_textarea( $instance['invalid_key_text'] ); ?></textarea>
+                      placeholder="<?php esc_attr_e( 'Leave empty to use the default message.', 'frontend-auth' ); ?>"><?php echo esc_textarea( $instance['invalid_key_text'] ); ?></textarea>
         </p>
         <p class="description">
-            <?php esc_html_e( 'Place this widget on the page your reset-password email links point to. Make sure that page\'s slug matches the "resetpass slug" in WP Frontend Auth settings.', 'wp-frontend-auth' ); ?>
+            <?php esc_html_e( 'Place this widget on the page your reset-password email links point to. Make sure that page\'s slug matches the "resetpass slug" in Frontend Auth settings.', 'frontend-auth' ); ?>
         </p>
         <?php
     }

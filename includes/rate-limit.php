@@ -1,11 +1,11 @@
 <?php
 /**
- * WP Frontend Auth – Rate Limiting
+ * Frontend Auth – Rate Limiting
  *
  * Uses transients to track failed attempts per IP address.
  * Works on both single-site and multisite.
  *
- * @package WP_Frontend_Auth
+ * @package Frontend_Auth
  */
 
 defined( 'ABSPATH' ) || exit;
