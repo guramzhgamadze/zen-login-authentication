@@ -425,9 +425,11 @@ function fauth_maybe_inject_form( string $content ): string {
 
     // Reset password: show error if key/login params are absent.
     if ( 'resetpass' === $action ) {
-        $rp_key   = $_GET['key']   ?? ''; // phpcs:ignore WordPress.Security.NonceVerification
-        $rp_login = $_GET['login'] ?? ''; // phpcs:ignore WordPress.Security.NonceVerification
-        if ( ! is_string( $rp_key ) || ! is_string( $rp_login ) || '' === $rp_key || '' === $rp_login ) {
+        // phpcs:disable WordPress.Security.NonceVerification -- presence check on a GET landing page; the reset itself is nonce-verified on POST.
+        $rp_key   = isset( $_GET['key'] ) && is_string( $_GET['key'] ) ? sanitize_text_field( wp_unslash( $_GET['key'] ) ) : '';
+        $rp_login = isset( $_GET['login'] ) && is_string( $_GET['login'] ) ? sanitize_text_field( wp_unslash( $_GET['login'] ) ) : '';
+        // phpcs:enable WordPress.Security.NonceVerification
+        if ( '' === $rp_key || '' === $rp_login ) {
             return '<div class="fauth fauth-form fauth-form-resetpass">'
                 . '<ul class="fauth-errors" role="alert">'
                 . '<li class="fauth-error">' . esc_html__( 'This password reset link is invalid or has expired. Please request a new one.', 'frontend-auth' ) . '</li>'
@@ -596,7 +598,7 @@ function fauth_filter_site_url( string $url, string $path, $scheme ): string {
     if ( 'wp-login.php' === $pagenow || is_customize_preview() ) {
         return $url;
     }
-    $parsed = parse_url( $url );
+    $parsed = wp_parse_url( $url );
     $base   = ! empty( $parsed['path'] ) ? basename( trim( $parsed['path'], '/' ) ) : '';
     $query  = [];
     if ( ! empty( $parsed['query'] ) ) {

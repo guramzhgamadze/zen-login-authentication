@@ -13,6 +13,7 @@ defined( 'ABSPATH' ) || exit;
 
 function fauth_get_request_value( string $key, string $type = 'any' ) {
     $type = strtoupper( $type );
+    // phpcs:disable WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput -- central raw-input accessor: nonce verification and per-field sanitization happen at every call site, which knows the field's type.
     if ( 'POST' === $type ) {
         $value = $_POST[ $key ] ?? '';
     } elseif ( 'GET' === $type ) {
@@ -20,6 +21,7 @@ function fauth_get_request_value( string $key, string $type = 'any' ) {
     } else {
         $value = $_REQUEST[ $key ] ?? '';
     }
+    // phpcs:enable WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput
     // FIX (v1.4.14): Reject non-string input to prevent PHP 8.0+ TypeError.
     //
     // If an attacker sends array-valued parameters (e.g. log[]=foo), the raw
@@ -123,8 +125,8 @@ function fauth_honeypot_is_spam(): bool {
     $field_current  = fauth_honeypot_field_name( $current_hour );
     $field_previous = fauth_honeypot_field_name( $previous_hour );
 
-    $value_current  = wp_unslash( $_POST[ $field_current ]  ?? '' ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
-    $value_previous = wp_unslash( $_POST[ $field_previous ] ?? '' ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+    $value_current  = wp_unslash( $_POST[ $field_current ]  ?? '' ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput, WordPress.Security.NonceVerification.Missing -- anti-bot trap field, checked for emptiness only and intentionally evaluated before (alongside) nonce verification.
+    $value_previous = wp_unslash( $_POST[ $field_previous ] ?? '' ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput, WordPress.Security.NonceVerification.Missing -- anti-bot trap field, checked for emptiness only and intentionally evaluated before (alongside) nonce verification.
 
     return ! empty( $value_current ) || ! empty( $value_previous );
 }
@@ -177,6 +179,7 @@ function fauth_is_elementor_context(): bool {
         }
     }
 
+    // phpcs:disable WordPress.Security.NonceVerification.Recommended -- read-only environment detection (is this an Elementor editor/preview request?); no data is processed or persisted.
     if ( is_admin() && isset( $_GET['action'] ) && 'elementor' === $_GET['action'] ) {
         return true;
     }
@@ -189,6 +192,7 @@ function fauth_is_elementor_context(): bool {
             return true;
         }
     }
+    // phpcs:enable WordPress.Security.NonceVerification.Recommended
     if (
         isset( \Elementor\Plugin::$instance )
         && isset( \Elementor\Plugin::$instance->preview )

@@ -230,7 +230,7 @@ function fauth_create_action_pages(): void {
 
         if ( $page_id instanceof WP_Error ) {
             if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-                error_log( 'FAUTH: failed to create page for action ' . $action . ': ' . $page_id->get_error_message() );
+                error_log( 'FAUTH: failed to create page for action ' . $action . ': ' . $page_id->get_error_message() ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- WP_DEBUG-gated diagnostic.
             }
             continue;
         }

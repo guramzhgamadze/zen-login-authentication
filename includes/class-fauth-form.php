@@ -267,7 +267,7 @@ class FAUTH_Form {
                 'resetpass'    => 'resetpass_form',
             ];
             if ( isset( $wp_hooks[ $this->name ] ) ) {
-                do_action( $wp_hooks[ $this->name ] );
+                do_action( $wp_hooks[ $this->name ] ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.DynamicHooknameFound -- fires WordPress core's own login_form/register_form/etc. hooks for third-party compatibility.
             }
             return;
         }
@@ -277,7 +277,7 @@ class FAUTH_Form {
         $is_checkbox = ( 'checkbox' === $type );
 
         if ( $label && ! $is_checkbox ) {
-            echo '<label class="fauth-label" for="' . $id . '">' . esc_html( $label );
+            echo '<label class="fauth-label" for="' . esc_attr( $id ) . '">' . esc_html( $label );
             if ( $field['required'] ) {
                 echo ' <span class="fauth-required" aria-hidden="true">*</span>';
             }
@@ -333,7 +333,7 @@ class FAUTH_Form {
         echo '>';
 
         if ( $label && $is_checkbox ) {
-            echo '<label class="fauth-label fauth-checkbox-label" for="' . $id . '">'
+            echo '<label class="fauth-label fauth-checkbox-label" for="' . esc_attr( $id ) . '">'
                 . esc_html( $label ) . '</label>';
         }
 

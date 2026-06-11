@@ -128,12 +128,14 @@ function fauth_handle_login(): void {
         return;
     }
 
+    // phpcs:disable WordPress.Security.NonceVerification.Missing -- the nonce is verified in fauth_route_post_request() before any handler is dispatched.
     $credentials = [
         'user_login'    => sanitize_user( fauth_get_request_value( 'log', 'post' ) ),
         'user_password' => fauth_get_request_value( 'pwd', 'post' ),
         'remember'      => isset( $_POST['rememberme'] ) && is_string( $_POST['rememberme'] )
                            && 'forever' === sanitize_key( wp_unslash( $_POST['rememberme'] ) ),
     ];
+    // phpcs:enable WordPress.Security.NonceVerification.Missing
 
     $user = wp_signon( $credentials, is_ssl() );
 

@@ -450,8 +450,8 @@ class FAUTH_Reset_Password_Widget extends FAUTH_Abstract_Widget {
     public function widget( $args, $instance ): void {
         $instance = $this->parse_instance( $instance );
 
-        $raw_key   = $_GET['key']   ?? ''; // phpcs:ignore WordPress.Security.NonceVerification
-        $raw_login = $_GET['login'] ?? ''; // phpcs:ignore WordPress.Security.NonceVerification
+        $raw_key   = $_GET['key']   ?? ''; // phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput -- type-checked and sanitized on the next line.
+        $raw_login = $_GET['login'] ?? ''; // phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput -- type-checked and sanitized on the next line.
         $rp_key   = is_string( $raw_key )   ? sanitize_text_field( wp_unslash( $raw_key ) )   : '';
         $rp_login = is_string( $raw_login ) ? sanitize_text_field( wp_unslash( $raw_login ) ) : '';
 

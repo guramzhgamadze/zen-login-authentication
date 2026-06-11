@@ -43,6 +43,7 @@ if ( version_compare( PHP_VERSION, '8.0.0', '<' ) ) {
         echo '<div class="notice notice-error"><p>';
         echo '<strong>Frontend Auth</strong> requires PHP 8.0 or higher. ';
         printf(
+            /* translators: %s: the PHP version the server is currently running. */
             esc_html__( 'Your server is running PHP %s. Please upgrade to PHP 8.0 or higher, or deactivate the plugin.', 'frontend-auth' ),
             esc_html( PHP_VERSION )
         );
@@ -199,6 +200,10 @@ function fauth_migrate_legacy_wpfa_prefix(): void {
         return; // nothing to migrate
     }
 
+    // phpcs:disable WordPress.DB.DirectDatabaseQuery -- one-time schema-level
+    // rename of this plugin's own rows; no API exists for renaming option/meta
+    // keys, and caches are flushed at the end of the migration.
+
     // 1. Options: wpfa_* -> fauth_* and widget_wpfa_* -> widget_fauth_*.
     //    Row by row via add_option() so a pre-existing fauth_* row (unique
     //    key) can never abort the rename half-way.
@@ -265,6 +270,7 @@ function fauth_migrate_legacy_wpfa_prefix(): void {
 
     // Old per-user dismissals or caches under the legacy prefix, if any.
     wp_cache_flush();
+    // phpcs:enable WordPress.DB.DirectDatabaseQuery
 }
 
 /**
@@ -290,7 +296,7 @@ function fauth_upgrade_cleanup_1_4_17(): void {
         if ( ! in_array( $action, $known_slugs, true ) ) {
             delete_option( $opt_name );
             if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-                error_log( 'FAUTH 1.4.17 cleanup: deleted orphaned option ' . $opt_name );
+                error_log( 'FAUTH 1.4.17 cleanup: deleted orphaned option ' . $opt_name ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- WP_DEBUG-gated diagnostic.
             }
         }
     }
@@ -322,7 +328,7 @@ function fauth_upgrade_cleanup_1_4_17(): void {
         }
 
         if ( defined( 'WP_DEBUG' ) && WP_DEBUG && $deleted > 0 ) {
-            error_log( sprintf(
+            error_log( sprintf( // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- WP_DEBUG-gated diagnostic.
                 'FAUTH 1.4.17 cleanup: pruned %d revisions from %s page (ID %d), kept 5',
                 $deleted,
                 $action,

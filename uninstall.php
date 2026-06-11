@@ -13,7 +13,7 @@
 
 defined( 'WP_UNINSTALL_PLUGIN' ) || exit;
 
-$options = [
+$fauth_options = [
     'fauth_version',
     'fauth_rate_limit',
     'fauth_rate_limit_window',
@@ -35,17 +35,17 @@ $options = [
     'fauth_slug_resetpass',
 ];
 
-$page_actions = [ 'login', 'register', 'lostpassword', 'resetpass' ];
+$fauth_page_actions = [ 'login', 'register', 'lostpassword', 'resetpass' ];
 
 if ( is_multisite() ) {
-    $sites = get_sites( [ 'fields' => 'ids', 'number' => 0 ] );
-    foreach ( $sites as $site_id ) {
-        switch_to_blog( $site_id );
-        fauth_uninstall_site( $options, $page_actions );
+    $fauth_sites = get_sites( [ 'fields' => 'ids', 'number' => 0 ] );
+    foreach ( $fauth_sites as $fauth_site_id ) {
+        switch_to_blog( $fauth_site_id );
+        fauth_uninstall_site( $fauth_options, $fauth_page_actions );
         restore_current_blog();
     }
 } else {
-    fauth_uninstall_site( $options, $page_actions );
+    fauth_uninstall_site( $fauth_options, $fauth_page_actions );
 }
 
 function fauth_uninstall_site( array $options, array $page_actions ): void {
@@ -56,11 +56,13 @@ function fauth_uninstall_site( array $options, array $page_actions ): void {
     }
 
     // Catch any orphaned fauth_slug_* options.
+    // phpcs:disable WordPress.DB.DirectDatabaseQuery -- option-table maintenance at uninstall; no API exists for LIKE deletes and caching is irrelevant here.
     $like     = $wpdb->esc_like( 'fauth_slug_' ) . '%';
     $orphaned = $wpdb->get_col( $wpdb->prepare(
         "SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE %s",
         $like
     ) );
+    // phpcs:enable WordPress.DB.DirectDatabaseQuery
     foreach ( $orphaned as $opt ) {
         delete_option( $opt );
     }
@@ -105,6 +107,7 @@ function fauth_uninstall_site( array $options, array $page_actions ): void {
 
     // Legacy pre-release "wpfa" prefix leftovers, for installs that never ran
     // the wpfa -> fauth migration before being uninstalled.
+    // phpcs:disable WordPress.DB.DirectDatabaseQuery -- uninstall-time cleanup of legacy rows; no API exists for LIKE deletes.
     $wpdb->query(
         "DELETE FROM {$wpdb->options}
          WHERE option_name LIKE 'wpfa\\_%'
@@ -112,5 +115,6 @@ function fauth_uninstall_site( array $options, array $page_actions ): void {
             OR option_name LIKE '\\_transient\\_wpfa\\_%'
             OR option_name LIKE '\\_transient\\_timeout\\_wpfa\\_%'"
     );
+    // phpcs:enable WordPress.DB.DirectDatabaseQuery
     delete_metadata( 'user', 0, 'wpfa_google_sub', '', true );
 }

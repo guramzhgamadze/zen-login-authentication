@@ -763,7 +763,7 @@ abstract class FAUTH_Elementor_Base_Widget extends \Elementor\Widget_Base {
         // Source: developers.elementor.com/docs/widgets/rendering-inline-editing/
         $this->add_render_attribute( 'form_title_text', 'class', 'fauth-form-title' );
         $this->add_inline_editing_attributes( 'form_title_text', 'none' );
-        echo '<' . esc_attr( $tag ) . ' ' . $this->get_render_attribute_string( 'form_title_text' ) . '>' . esc_html( $title ) . '</' . esc_attr( $tag ) . '>';
+        echo '<' . esc_attr( $tag ) . ' ' . $this->get_render_attribute_string( 'form_title_text' ) . '>' . esc_html( $title ) . '</' . esc_attr( $tag ) . '>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- get_render_attribute_string() is Elementor's escaping API; all other parts escaped above.
     }
 
     /**
@@ -1280,8 +1280,8 @@ class FAUTH_Elementor_Reset_Password_Widget extends FAUTH_Elementor_Base_Widget 
         // The previous code used `is_string( $_GET['key'] ?? '' )` which returns true
         // for the '' default, then re-accessed `$_GET['key']` in the true branch —
         // triggering "Undefined array key" when the param is absent.
-        $raw_key  = $_GET['key']   ?? ''; // phpcs:ignore WordPress.Security.NonceVerification
-        $raw_login = $_GET['login'] ?? ''; // phpcs:ignore WordPress.Security.NonceVerification
+        $raw_key  = $_GET['key']   ?? ''; // phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput -- type-checked and sanitized on the next line.
+        $raw_login = $_GET['login'] ?? ''; // phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput -- type-checked and sanitized on the next line.
         $rp_key   = is_string( $raw_key )   ? sanitize_text_field( wp_unslash( $raw_key ) )   : '';
         $rp_login = is_string( $raw_login ) ? sanitize_text_field( wp_unslash( $raw_login ) ) : '';
         $is_editor = \Elementor\Plugin::$instance->editor && \Elementor\Plugin::$instance->editor->is_edit_mode();
