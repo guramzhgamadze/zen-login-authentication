@@ -116,6 +116,7 @@ Only pages the plugin created that you never edited (no content, no Elementor da
 2. A login form rendered on the frontend.
 3. An Elementor Login Form widget with its style controls.
 4. The registration form with the password strength meter.
+5. The Sign in with Google settings panel — enable the feature, add your Client ID and Secret (stored encrypted), and choose whether new accounts are created automatically.
 
 == Changelog ==
 
