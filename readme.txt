@@ -112,11 +112,14 @@ Only pages the plugin created that you never edited (no content, no Elementor da
 
 == Screenshots ==
 
-1. The Frontend Auth settings screen (general options, rate limiting, page slugs).
-2. A login form rendered on the frontend.
-3. An Elementor Login Form widget with its style controls.
-4. The registration form with the password strength meter.
-5. The Sign in with Google settings panel — enable the feature, add your Client ID and Secret (stored encrypted), and choose whether new accounts are created automatically.
+1. The frontend Login form with the optional "Continue with Google" button, rendered on a live theme.
+2. The frontend Registration form (username, email, and user-chosen passwords).
+3. The frontend Lost Password (password recovery) form.
+4. The frontend Reset Password form with the in-field show/hide toggle.
+5. Settings &mdash; General: login identifier, pretty URLs, AJAX submission, user-chosen passwords, honeypot, and the subscriber redirect.
+6. Settings &mdash; Rate limiting, with optional per-form thresholds.
+7. Settings &mdash; Page slugs and page management (adopt-or-create auth pages).
+8. The Sign in with Google settings panel &mdash; enable the feature, add your Client ID and Secret (stored encrypted), and choose whether new accounts are created automatically.
 
 == Changelog ==
 
