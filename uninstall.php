@@ -14,25 +14,25 @@
 defined( 'WP_UNINSTALL_PLUGIN' ) || exit;
 
 $options = [
-    'wpfa_version',
-    'wpfa_rate_limit',
-    'wpfa_rate_limit_window',
-    'wpfa_use_ajax',
-    'wpfa_user_passwords',
-    'wpfa_auto_login',
-    'wpfa_honeypot',
-    'wpfa_login_type',
-    'wpfa_use_permalinks',
-    'wpfa_subscriber_redirect',
-    'wpfa_google_enabled',
-    'wpfa_google_client_id',
-    'wpfa_google_client_secret',
-    'wpfa_google_allow_registration',
-    'wpfa_slug_login',
-    'wpfa_slug_logout',
-    'wpfa_slug_register',
-    'wpfa_slug_lostpassword',
-    'wpfa_slug_resetpass',
+    'fauth_version',
+    'fauth_rate_limit',
+    'fauth_rate_limit_window',
+    'fauth_use_ajax',
+    'fauth_user_passwords',
+    'fauth_auto_login',
+    'fauth_honeypot',
+    'fauth_login_type',
+    'fauth_use_permalinks',
+    'fauth_subscriber_redirect',
+    'fauth_google_enabled',
+    'fauth_google_client_id',
+    'fauth_google_client_secret',
+    'fauth_google_allow_registration',
+    'fauth_slug_login',
+    'fauth_slug_logout',
+    'fauth_slug_register',
+    'fauth_slug_lostpassword',
+    'fauth_slug_resetpass',
 ];
 
 $page_actions = [ 'login', 'register', 'lostpassword', 'resetpass' ];
@@ -41,22 +41,22 @@ if ( is_multisite() ) {
     $sites = get_sites( [ 'fields' => 'ids', 'number' => 0 ] );
     foreach ( $sites as $site_id ) {
         switch_to_blog( $site_id );
-        wpfa_uninstall_site( $options, $page_actions );
+        fauth_uninstall_site( $options, $page_actions );
         restore_current_blog();
     }
 } else {
-    wpfa_uninstall_site( $options, $page_actions );
+    fauth_uninstall_site( $options, $page_actions );
 }
 
-function wpfa_uninstall_site( array $options, array $page_actions ): void {
+function fauth_uninstall_site( array $options, array $page_actions ): void {
     global $wpdb;
 
     foreach ( $options as $option ) {
         delete_option( $option );
     }
 
-    // Catch any orphaned wpfa_slug_* options.
-    $like     = $wpdb->esc_like( 'wpfa_slug_' ) . '%';
+    // Catch any orphaned fauth_slug_* options.
+    $like     = $wpdb->esc_like( 'fauth_slug_' ) . '%';
     $orphaned = $wpdb->get_col( $wpdb->prepare(
         "SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE %s",
         $like
@@ -66,7 +66,7 @@ function wpfa_uninstall_site( array $options, array $page_actions ): void {
     }
 
     // Delete pages the plugin created, but ONLY when they are still untouched:
-    //   1. Created by the plugin    — has _wpfa_auto_created meta. Adopted pages
+    //   1. Created by the plugin    — has _fauth_auto_created meta. Adopted pages
     //      (pre-existing pages the plugin merely reused) never get this flag, so
     //      they are always preserved.
     //   2. Never edited in Elementor — no _elementor_edit_mode meta.
@@ -75,12 +75,12 @@ function wpfa_uninstall_site( array $options, array $page_actions ): void {
     // removed. These guards are what prevent the data loss seen in older builds,
     // which force-deleted every stored page — including ones edited in Elementor.
     foreach ( $page_actions as $action ) {
-        $opt     = "wpfa_page_id_{$action}";
+        $opt     = "fauth_page_id_{$action}";
         $page_id = (int) get_option( $opt, 0 );
 
         if ( $page_id ) {
             $post        = get_post( $page_id );
-            $is_auto     = (bool) get_post_meta( $page_id, '_wpfa_auto_created', true );
+            $is_auto     = (bool) get_post_meta( $page_id, '_fauth_auto_created', true );
             $has_el      = (bool) get_post_meta( $page_id, '_elementor_edit_mode', true );
             $has_content = $post instanceof WP_Post && '' !== trim( $post->post_content );
 
@@ -94,12 +94,23 @@ function wpfa_uninstall_site( array $options, array $page_actions ): void {
 
     // Per-action rate limit options (v1.4.18).
     foreach ( [ 'login', 'register', 'lostpassword', 'resetpass' ] as $action ) {
-        delete_option( "wpfa_rl_enabled_{$action}" );
-        delete_option( "wpfa_rl_max_{$action}" );
+        delete_option( "fauth_rl_enabled_{$action}" );
+        delete_option( "fauth_rl_max_{$action}" );
     }
-    delete_option( 'wpfa_lostpassword_count_all' );
+    delete_option( 'fauth_lostpassword_count_all' );
 
     // Google account links (v1.5.0). delete_all = true removes the meta for
     // every user; harmless to repeat per-site on multisite (users are global).
+    delete_metadata( 'user', 0, 'fauth_google_sub', '', true );
+
+    // Legacy pre-release "wpfa" prefix leftovers, for installs that never ran
+    // the wpfa -> fauth migration before being uninstalled.
+    $wpdb->query(
+        "DELETE FROM {$wpdb->options}
+         WHERE option_name LIKE 'wpfa\\_%'
+            OR option_name LIKE 'widget\\_wpfa\\_%'
+            OR option_name LIKE '\\_transient\\_wpfa\\_%'
+            OR option_name LIKE '\\_transient\\_timeout\\_wpfa\\_%'"
+    );
     delete_metadata( 'user', 0, 'wpfa_google_sub', '', true );
 }

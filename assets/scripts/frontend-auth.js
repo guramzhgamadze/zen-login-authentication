@@ -4,7 +4,7 @@
  * Bug 10 fix: rewritten from jQuery IIFE to ES6 arrow-function IIFE.
  * jQuery is still used for $.ajax (required because jquery is a dependency)
  * but the outer structure is now ES6. ajaxUrl was previously passed via
- * wpFrontendAuth but never used (JS posted to the form's action URL, not
+ * fauthConfig but never used (JS posted to the form's action URL, not
  * admin-ajax.php). That is correct — forms post to their own page URL
  * so WordPress processes them via template_redirect. ajaxUrl removed from
  * the data object to avoid confusion.
@@ -22,7 +22,7 @@
  *         make.wordpress.org/core/2023/07/14/registering-scripts-with-async-and-defer-attributes-in-wordpress-6-3/
  */
 
-/* global wpFrontendAuth, jQuery */
+/* global fauthConfig, jQuery */
 
 ( () => {
     'use strict';
@@ -32,11 +32,11 @@
     // -----------------------------------------------------------------------
 
     const bindForms = () => {
-        if ( ! wpFrontendAuth.useAjax ) {
+        if ( ! fauthConfig.useAjax ) {
             return;
         }
 
-        document.querySelectorAll( '.wpfa-inner-form[data-ajax="1"]' ).forEach( form => {
+        document.querySelectorAll( '.fauth-inner-form[data-ajax="1"]' ).forEach( form => {
             form.addEventListener( 'submit', e => {
                 e.preventDefault();
                 submitForm( form );
@@ -45,15 +45,15 @@
     };
 
     const submitForm = ( form ) => {
-        const container = form.closest( '.wpfa-form' );
-        const btn       = form.querySelector( '.wpfa-submit-button' );
+        const container = form.closest( '.fauth-form' );
+        const btn       = form.querySelector( '.fauth-submit-button' );
         const origText  = btn ? btn.textContent : '';
 
         clearNotices( container );
 
         if ( btn ) {
             btn.disabled  = true;
-            btn.innerHTML = '<span class="wpfa-spinner" aria-hidden="true"></span>' + escHtml( origText );
+            btn.innerHTML = '<span class="fauth-spinner" aria-hidden="true"></span>' + escHtml( origText );
         }
 
         // BUG-I fix: FormData was created but never used — jQuery serialize() is used instead.
@@ -61,7 +61,7 @@
         jQuery.ajax( {
             url:         form.getAttribute( 'action' ) || window.location.href,
             method:      'POST',
-            data:        jQuery( form ).serialize() + '&wpfa_ajax=1',
+            data:        jQuery( form ).serialize() + '&fauth_ajax=1',
             dataType:    'json',
         } )
         .done( response => {
@@ -81,13 +81,13 @@
             } else {
                 const errors = ( response && response.data && response.data.errors )
                     ? response.data.errors
-                    : [ wpFrontendAuth.i18n.genericError ];
+                    : [ fauthConfig.i18n.genericError ];
 
                 showErrors( container, errors );
             }
         } )
         .fail( () => {
-            showErrors( container, [ wpFrontendAuth.i18n.genericError ] );
+            showErrors( container, [ fauthConfig.i18n.genericError ] );
         } )
         .always( () => {
             if ( btn ) {
@@ -102,7 +102,7 @@
     // -----------------------------------------------------------------------
 
     const clearNotices = ( container ) => {
-        container.querySelectorAll( '.wpfa-errors, .wpfa-messages' ).forEach( el => {
+        container.querySelectorAll( '.fauth-errors, .fauth-messages' ).forEach( el => {
             el.innerHTML = '';
         } );
     };
@@ -121,19 +121,19 @@
     };
 
     const showErrors = ( container, messages ) => {
-        const list = getOrCreateList( container, 'wpfa-errors', 'alert' );
+        const list = getOrCreateList( container, 'fauth-errors', 'alert' );
         messages.forEach( msg => {
             const li = document.createElement( 'li' );
-            li.className   = 'wpfa-error';
+            li.className   = 'fauth-error';
             li.textContent = msg;
             list.appendChild( li );
         } );
     };
 
     const showMessage = ( container, message ) => {
-        const list = getOrCreateList( container, 'wpfa-messages', 'status' );
+        const list = getOrCreateList( container, 'fauth-messages', 'status' );
         const li   = document.createElement( 'li' );
-        li.className   = 'wpfa-message';
+        li.className   = 'fauth-message';
         li.textContent = message;
         list.appendChild( li );
     };
@@ -146,8 +146,8 @@
     const bindPasswordToggle = ( scope = document ) => {
         // Inject toggle buttons next to each password field.
         // Guard: skip inputs that already have a toggle sibling to prevent duplicates.
-        scope.querySelectorAll( '.wpfa-inner-form input[type="password"]' ).forEach( input => {
-            if ( input.nextElementSibling && input.nextElementSibling.classList.contains( 'wpfa-password-toggle' ) ) {
+        scope.querySelectorAll( '.fauth-inner-form input[type="password"]' ).forEach( input => {
+            if ( input.nextElementSibling && input.nextElementSibling.classList.contains( 'fauth-password-toggle' ) ) {
                 return; // already processed
             }
             if ( ! input.id ) {
@@ -156,23 +156,23 @@
 
             const btn = document.createElement( 'button' );
             btn.type           = 'button';
-            btn.className      = 'wpfa-password-toggle';
+            btn.className      = 'fauth-password-toggle';
             btn.dataset.target = input.id;
             // Per-field values override global i18n — set by Elementor widget controls
             // via data-toggle-show / data-toggle-hide attrs rendered on the <input>.
-            btn.dataset.show   = input.dataset.toggleShow || wpFrontendAuth.i18n.show;
-            btn.dataset.hide   = input.dataset.toggleHide || wpFrontendAuth.i18n.hide;
+            btn.dataset.show   = input.dataset.toggleShow || fauthConfig.i18n.show;
+            btn.dataset.hide   = input.dataset.toggleHide || fauthConfig.i18n.hide;
             btn.setAttribute( 'aria-pressed', 'false' );
             // BUG-J fix: use translatable string from PHP data object.
-            btn.setAttribute( 'aria-label', wpFrontendAuth.i18n.passwordToggle );
+            btn.setAttribute( 'aria-label', fauthConfig.i18n.passwordToggle );
             btn.textContent = btn.dataset.show;
 
             input.insertAdjacentElement( 'afterend', btn );
 
             // Fix J — add flex-layout modifier class to the parent field wrap
-            const wrap = input.closest( '.wpfa-field-wrap' );
+            const wrap = input.closest( '.fauth-field-wrap' );
             if ( wrap ) {
-                wrap.classList.add( 'wpfa-field-wrap--password' );
+                wrap.classList.add( 'fauth-field-wrap--password' );
             }
         } );
 
@@ -196,7 +196,7 @@
      */
     const initPasswordToggleDelegate = () => {
         document.addEventListener( 'click', e => {
-            const btn = e.target.closest( '.wpfa-password-toggle' );
+            const btn = e.target.closest( '.fauth-password-toggle' );
             if ( ! btn ) {
                 return;
             }
@@ -229,7 +229,7 @@
             meter            = document.createElement( 'div' );
             meter.id         = 'pass-strength-result';
             meter.setAttribute( 'aria-live', 'polite' );
-            pass1.closest( '.wpfa-field-wrap' )?.insertAdjacentElement( 'afterend', meter );
+            pass1.closest( '.fauth-field-wrap' )?.insertAdjacentElement( 'afterend', meter );
         }
 
         const update = () => checkStrength( pass1.value, pass2 ? pass2.value : '', meter );
@@ -270,10 +270,10 @@
         // BUG-6 fix: labels come from PHP i18n data — fully translatable.
         const labels  = [
             '',
-            wpFrontendAuth.i18n.strengthVeryWeak,
-            wpFrontendAuth.i18n.strengthWeak,
-            wpFrontendAuth.i18n.strengthGood,
-            wpFrontendAuth.i18n.strengthStrong,
+            fauthConfig.i18n.strengthVeryWeak,
+            fauthConfig.i18n.strengthWeak,
+            fauthConfig.i18n.strengthGood,
+            fauthConfig.i18n.strengthStrong,
         ];
         const classes = [ '', 'short', 'bad', 'good', 'strong' ];
 
@@ -287,7 +287,7 @@
     // -----------------------------------------------------------------------
 
     const handleQueryMessages = () => {
-        const container = document.querySelector( '.wpfa-form' );
+        const container = document.querySelector( '.fauth-form' );
         if ( ! container ) {
             return;
         }
@@ -296,15 +296,15 @@
 
         // BUG-7 fix: messages now come from PHP i18n data — fully translatable.
         if ( params.get( 'password' ) === 'changed' ) {
-            showMessage( container, wpFrontendAuth.i18n.msgPasswordChanged );
+            showMessage( container, fauthConfig.i18n.msgPasswordChanged );
         }
 
         if ( params.has( 'registered' ) ) {
-            showMessage( container, wpFrontendAuth.i18n.msgRegistered );
+            showMessage( container, fauthConfig.i18n.msgRegistered );
         }
 
         if ( params.has( 'checkemail' ) ) {
-            showMessage( container, wpFrontendAuth.i18n.msgCheckEmail );
+            showMessage( container, fauthConfig.i18n.msgCheckEmail );
         }
     };
 
@@ -327,7 +327,7 @@
     // Guard: bail out if the PHP-generated config object is missing.
     // This can happen if wp_add_inline_script() failed or the script loaded
     // on a page without the inline config block.
-    if ( typeof wpFrontendAuth === 'undefined' ) {
+    if ( typeof fauthConfig === 'undefined' ) {
         return;
     }
 
@@ -360,7 +360,7 @@
     //         (elementorFrontend.trigger('elementor/frontend/init'))
     if ( typeof jQuery !== 'undefined' ) {
         jQuery( window ).on( 'elementor/frontend/init', () => {
-            const widgetNames = [ 'wpfa-login', 'wpfa-register', 'wpfa-reset-password' ];
+            const widgetNames = [ 'fauth-login', 'fauth-register', 'fauth-reset-password' ];
             widgetNames.forEach( name => {
                 window.elementorFrontend.hooks.addAction(
                     `frontend/element_ready/${ name }.default`,

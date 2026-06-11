@@ -20,11 +20,11 @@ defined( 'ABSPATH' ) || exit;
  * an attacker could rotate the header on each request to land in a fresh
  * rate-limit bucket and bypass throttling entirely. Sites genuinely behind
  * Cloudflare (or another trusted reverse proxy) can opt the real-client header
- * back in via the 'wpfa_rate_limit_ip_headers' filter — see below.
+ * back in via the 'fauth_rate_limit_ip_headers' filter — see below.
  *
  * @return string
  */
-function wpfa_rate_limit_get_ip(): string {
+function fauth_rate_limit_get_ip(): string {
     $ip = '';
 
     /**
@@ -34,11 +34,11 @@ function wpfa_rate_limit_get_ip(): string {
      * forged). If — and only if — your site is behind Cloudflare AND your origin
      * firewall restricts inbound traffic to Cloudflare's IP ranges, you may safely
      * prepend the real-client header:
-     *   add_filter( 'wpfa_rate_limit_ip_headers', fn() => [ 'HTTP_CF_CONNECTING_IP', 'REMOTE_ADDR' ] );
+     *   add_filter( 'fauth_rate_limit_ip_headers', fn() => [ 'HTTP_CF_CONNECTING_IP', 'REMOTE_ADDR' ] );
      *
      * @param string[] $headers Ordered list of $_SERVER keys to try.
      */
-    $headers = (array) apply_filters( 'wpfa_rate_limit_ip_headers', [ 'REMOTE_ADDR' ] );
+    $headers = (array) apply_filters( 'fauth_rate_limit_ip_headers', [ 'REMOTE_ADDR' ] );
 
     foreach ( $headers as $key ) {
         if ( ! empty( $_SERVER[ $key ] ) ) {
@@ -76,12 +76,12 @@ function wpfa_rate_limit_get_ip(): string {
  * @param string $ip
  * @return string
  */
-function wpfa_rate_limit_key( $action, $ip = '' ) {
+function fauth_rate_limit_key( $action, $ip = '' ) {
     if ( '' === $ip ) {
-        $ip = wpfa_rate_limit_get_ip();
+        $ip = fauth_rate_limit_get_ip();
     }
     // Max transient key length is 172 chars; md5 keeps us safe.
-    return 'wpfa_rl_' . $action . '_' . md5( $ip );
+    return 'fauth_rl_' . $action . '_' . md5( $ip );
 }
 
 /**
@@ -90,12 +90,12 @@ function wpfa_rate_limit_key( $action, $ip = '' ) {
  * @param string $action
  * @return bool  true = locked out.
  */
-function wpfa_rate_limit_is_locked( $action ) {
-    if ( ! wpfa_rate_limit_action_enabled( $action ) ) {
+function fauth_rate_limit_is_locked( $action ) {
+    if ( ! fauth_rate_limit_action_enabled( $action ) ) {
         return false;
     }
-    $attempts = (int) get_transient( wpfa_rate_limit_key( $action ) );
-    $limit    = wpfa_get_rate_limit_for( $action );
+    $attempts = (int) get_transient( fauth_rate_limit_key( $action ) );
+    $limit    = fauth_get_rate_limit_for( $action );
 
     return $limit > 0 && $attempts >= $limit;
 }
@@ -104,21 +104,21 @@ function wpfa_rate_limit_is_locked( $action ) {
  * Per-action enable/disable check.
  *
  * Each action (login, register, lostpassword, resetpass) has its own toggle
- * stored as wpfa_rl_enabled_{action}. Default is true (enabled) for all.
- * When false, wpfa_rate_limit_is_locked() returns false and wpfa_rate_limit_bump()
+ * stored as fauth_rl_enabled_{action}. Default is true (enabled) for all.
+ * When false, fauth_rate_limit_is_locked() returns false and fauth_rate_limit_bump()
  * is a no-op for that action — so the form is never blocked on that path.
  *
- * Setting the global wpfa_rate_limit option to 0 still disables everything
- * via wpfa_rate_limit_is_locked()'s `$limit > 0` check (preserved as a
+ * Setting the global fauth_rate_limit option to 0 still disables everything
+ * via fauth_rate_limit_is_locked()'s `$limit > 0` check (preserved as a
  * master kill-switch).
  *
  * @param string $action
  * @return bool
  */
-function wpfa_rate_limit_action_enabled( $action ) {
+function fauth_rate_limit_action_enabled( $action ) {
     return (bool) apply_filters(
-        "wpfa_rate_limit_enabled_{$action}",
-        (bool) get_option( "wpfa_rl_enabled_{$action}", true )
+        "fauth_rate_limit_enabled_{$action}",
+        (bool) get_option( "fauth_rl_enabled_{$action}", true )
     );
 }
 
@@ -128,12 +128,12 @@ function wpfa_rate_limit_action_enabled( $action ) {
  * @param string $action
  * @return int
  */
-function wpfa_get_rate_limit_for( $action ) {
-    $override = (int) get_option( "wpfa_rl_max_{$action}", 0 );
+function fauth_get_rate_limit_for( $action ) {
+    $override = (int) get_option( "fauth_rl_max_{$action}", 0 );
     if ( $override > 0 ) {
-        return (int) apply_filters( "wpfa_rate_limit_{$action}", $override );
+        return (int) apply_filters( "fauth_rate_limit_{$action}", $override );
     }
-    return wpfa_get_rate_limit();
+    return fauth_get_rate_limit();
 }
 
 /**
@@ -141,14 +141,14 @@ function wpfa_get_rate_limit_for( $action ) {
  *
  * @param string $action
  */
-function wpfa_rate_limit_clear( $action ) {
-    $key = wpfa_rate_limit_key( $action );
+function fauth_rate_limit_clear( $action ) {
+    $key = fauth_rate_limit_key( $action );
     delete_transient( $key );
     // FIX (v1.4.14): Also clear the timestamp transient.
     //
-    // wpfa_rate_limit_bump() stores a companion _ts transient alongside the
+    // fauth_rate_limit_bump() stores a companion _ts transient alongside the
     // counter to track when the lockout window started. Without clearing it
-    // here, wpfa_rate_limit_remaining_seconds() returns a stale non-zero
+    // here, fauth_rate_limit_remaining_seconds() returns a stale non-zero
     // value after a successful login — misleading any theme or plugin that
     // calls it to display "try again in X minutes" even though the user is
     // no longer locked out. The orphaned _ts also wastes a database row
@@ -165,32 +165,32 @@ function wpfa_rate_limit_clear( $action ) {
  * @param string $action
  * @return int
  */
-function wpfa_rate_limit_remaining_seconds( $action ) {
-    $ts_key   = wpfa_rate_limit_key( $action ) . '_ts';
+function fauth_rate_limit_remaining_seconds( $action ) {
+    $ts_key   = fauth_rate_limit_key( $action ) . '_ts';
     $set_at   = (int) get_transient( $ts_key );
     if ( ! $set_at ) {
         return 0;
     }
-    $window  = wpfa_get_rate_limit_window() * MINUTE_IN_SECONDS;
+    $window  = fauth_get_rate_limit_window() * MINUTE_IN_SECONDS;
     $elapsed = time() - $set_at;
     return max( 0, $window - $elapsed );
 }
 
 /**
- * Like wpfa_rate_limit_record() but also stores the timestamp.
+ * Like fauth_rate_limit_record() but also stores the timestamp.
  *
  * Call this version from handlers.
  *
  * @param string $action
  * @return int  New attempt count.
  */
-function wpfa_rate_limit_bump( $action ) {
-    if ( ! wpfa_rate_limit_action_enabled( $action ) ) {
+function fauth_rate_limit_bump( $action ) {
+    if ( ! fauth_rate_limit_action_enabled( $action ) ) {
         return 0;
     }
-    $key    = wpfa_rate_limit_key( $action );
+    $key    = fauth_rate_limit_key( $action );
     $ts_key = $key . '_ts';
-    $window = wpfa_get_rate_limit_window() * MINUTE_IN_SECONDS;
+    $window = fauth_get_rate_limit_window() * MINUTE_IN_SECONDS;
 
     $attempts = (int) get_transient( $key );
 
@@ -202,7 +202,7 @@ function wpfa_rate_limit_bump( $action ) {
     $attempts++;
     set_transient( $key, $attempts, $window );
 
-    do_action( 'wpfa_rate_limit_recorded', $action, $attempts );
+    do_action( 'fauth_rate_limit_recorded', $action, $attempts );
 
     return $attempts;
 }

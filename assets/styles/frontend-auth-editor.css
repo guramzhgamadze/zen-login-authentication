@@ -10,7 +10,7 @@
  */
 
 /* Editor-only preview wrapper (Reset Password widget) */
-.wpfa-editor-preview-wrap {
+.fauth-editor-preview-wrap {
     margin-top: 1em;
     padding: 1.1em 1.2em;
     border: 1px dashed var(--wp-admin-theme-color, #2271b1);
@@ -18,7 +18,7 @@
     opacity: 0.9;
 }
 
-.wpfa-editor-preview-label {
+.fauth-editor-preview-label {
     font-size: 12px;
     color: var(--wp-admin-theme-color, #0073aa);
     margin: 0 0 0.8em;
@@ -26,7 +26,7 @@
 }
 
 /* Fix B — render_editor_placeholder() notices (registration disabled, etc.) */
-.wpfa-editor-notice {
+.fauth-editor-notice {
     font-size: 13px;
     color: var(--wp-admin-theme-color, #0073aa);
 }

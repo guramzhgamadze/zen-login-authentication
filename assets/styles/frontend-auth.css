@@ -2,13 +2,13 @@
  * Frontend Auth – Frontend Styles
  *
  * Alignment model (Elementor V4 compatible):
- *   {{WRAPPER}}        = .elementor-widget-wpfa-login (widget root, managed by Elementor)
- *   .wpfa-form-wrap    = our content wrapper — width/max-width/alignment target this element
- *   .wpfa-form-title   = lives INSIDE .wpfa-form-wrap (above the form)
- *   .wpfa-form         = the actual form card (bg, padding, border, shadow)
+ *   {{WRAPPER}}        = .elementor-widget-fauth-login (widget root, managed by Elementor)
+ *   .fauth-form-wrap    = our content wrapper — width/max-width/alignment target this element
+ *   .fauth-form-title   = lives INSIDE .fauth-form-wrap (above the form)
+ *   .fauth-form         = the actual form card (bg, padding, border, shadow)
  *
  * NEVER target .elementor-widget-container (removed in V4 Atomic).
- * NEVER set width !important on [class*="elementor-widget-wpfa-"].
+ * NEVER set width !important on [class*="elementor-widget-fauth-"].
  * NEVER add display:flex to {{WRAPPER}} — the widget root is already a flex
  * item inside Elementor's column/container; mutating its display property
  * breaks cross-axis behaviour in both legacy and Flexbox Container contexts.
@@ -22,48 +22,48 @@
 /* -----------------------------------------------------------------------
    CSS Custom Properties
 ------------------------------------------------------------------------- */
-.wpfa {
+.fauth {
     /* Modern, polished defaults. Every value is overridable via theme CSS
        (just redefine the custom property) or per-widget Elementor controls. */
-    --wpfa-font-size: 1rem;
-    --wpfa-line-height: 1.55;
-    --wpfa-text-color: inherit;
-    --wpfa-label-color: inherit;
-    --wpfa-label-weight: 600;
-    --wpfa-required-color: #ef4444;
+    --fauth-font-size: 1rem;
+    --fauth-line-height: 1.55;
+    --fauth-text-color: inherit;
+    --fauth-label-color: inherit;
+    --fauth-label-weight: 600;
+    --fauth-required-color: #ef4444;
 
-    --wpfa-field-bg: #ffffff;
-    --wpfa-field-color: #1f2937;
-    --wpfa-field-border: 1px solid #d0d5dd;
-    --wpfa-field-radius: 10px;
-    --wpfa-field-padding: 0.7em 0.95em;
-    --wpfa-field-focus-color: #3b82f6;
-    --wpfa-field-focus-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18);
-    --wpfa-field-spacing: 1.15em;
+    --fauth-field-bg: #ffffff;
+    --fauth-field-color: #1f2937;
+    --fauth-field-border: 1px solid #d0d5dd;
+    --fauth-field-radius: 10px;
+    --fauth-field-padding: 0.7em 0.95em;
+    --fauth-field-focus-color: #3b82f6;
+    --fauth-field-focus-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18);
+    --fauth-field-spacing: 1.15em;
 
-    --wpfa-btn-bg: #3b82f6;
-    --wpfa-btn-color: #ffffff;
-    --wpfa-btn-border: 1px solid transparent;
-    --wpfa-btn-radius: 10px;
-    --wpfa-btn-padding: 0.72em 1.5em;
-    --wpfa-btn-hover-bg: #2563eb;
-    --wpfa-btn-hover-color: #ffffff;
-    --wpfa-btn-shadow: 0 1px 2px rgba(16, 24, 40, 0.06);
-    --wpfa-btn-hover-shadow: 0 6px 18px rgba(59, 130, 246, 0.30);
+    --fauth-btn-bg: #3b82f6;
+    --fauth-btn-color: #ffffff;
+    --fauth-btn-border: 1px solid transparent;
+    --fauth-btn-radius: 10px;
+    --fauth-btn-padding: 0.72em 1.5em;
+    --fauth-btn-hover-bg: #2563eb;
+    --fauth-btn-hover-color: #ffffff;
+    --fauth-btn-shadow: 0 1px 2px rgba(16, 24, 40, 0.06);
+    --fauth-btn-hover-shadow: 0 6px 18px rgba(59, 130, 246, 0.30);
 
-    --wpfa-link-color: #2563eb;
-    --wpfa-link-hover-color: #1d4ed8;
+    --fauth-link-color: #2563eb;
+    --fauth-link-hover-color: #1d4ed8;
 
-    --wpfa-radius: 12px;
-    --wpfa-error-bg: #fef2f2;
-    --wpfa-error-color: #991b1b;
-    --wpfa-error-border: #ef4444;
-    --wpfa-msg-bg: #eff6ff;
-    --wpfa-msg-color: #1e40af;
-    --wpfa-msg-border: #3b82f6;
+    --fauth-radius: 12px;
+    --fauth-error-bg: #fef2f2;
+    --fauth-error-color: #991b1b;
+    --fauth-error-border: #ef4444;
+    --fauth-msg-bg: #eff6ff;
+    --fauth-msg-color: #1e40af;
+    --fauth-msg-border: #3b82f6;
 
-    --wpfa-description-color: #6b7280;
-    --wpfa-strength-text-color: #374151;
+    --fauth-description-color: #6b7280;
+    --fauth-strength-text-color: #374151;
 }
 
 /* -----------------------------------------------------------------------
@@ -78,7 +78,7 @@
    element's sizing — Elementor manages it via --container-widget-width.
 ------------------------------------------------------------------------- */
 
-.wpfa-form-wrap {
+.fauth-form-wrap {
     display: block;
     width: 100%;
     max-width: 100%;
@@ -86,7 +86,7 @@
     box-sizing: border-box;
     /* Non-flex centering fallback — used when form_width is set but
        form_align is not. The form_align control overrides these to 0
-       via its {{WRAPPER}} .wpfa-form-wrap selector when active. */
+       via its {{WRAPPER}} .fauth-form-wrap selector when active. */
     margin-left: auto;
     margin-right: auto;
 }
@@ -94,20 +94,20 @@
 /* -----------------------------------------------------------------------
    Base container
 ------------------------------------------------------------------------- */
-.wpfa {
-    font-size: var(--wpfa-font-size);
-    line-height: var(--wpfa-line-height);
-    color: var(--wpfa-text-color);
+.fauth {
+    font-size: var(--fauth-font-size);
+    line-height: var(--fauth-line-height);
+    color: var(--fauth-text-color);
 }
 
-.wpfa *,
-.wpfa *::before,
-.wpfa *::after {
+.fauth *,
+.fauth *::before,
+.fauth *::after {
     box-sizing: border-box;
 }
 
 /* The form card itself — bg, padding, shadow go here */
-.wpfa-form {
+.fauth-form {
     display: block;
     width: 100%;
     box-sizing: border-box;
@@ -115,7 +115,7 @@
 
 /* Editor preview form in Reset Password — suppress visual control styles
    so the dashed-border wrapper isn't double-decorated */
-.wpfa-form--preview {
+.fauth-form--preview {
     background: none !important;
     border: none !important;
     padding: 0 !important;
@@ -126,81 +126,81 @@
 /* -----------------------------------------------------------------------
    Notices (errors / messages)
 ------------------------------------------------------------------------- */
-.wpfa-errors,
-.wpfa-messages {
+.fauth-errors,
+.fauth-messages {
     list-style: none;
     margin: 0 0 1em;
     padding: 0;
 }
 
-.wpfa-error,
-.wpfa-message {
+.fauth-error,
+.fauth-message {
     box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05);
     display: block;
     margin: 0 0 0.5em;
     padding: 0.8em 1em;
-    border-radius: var(--wpfa-radius);
+    border-radius: var(--fauth-radius);
     font-size: 0.92em;
 }
 
-.wpfa-error {
-    background: var(--wpfa-error-bg);
-    border-left: 4px solid var(--wpfa-error-border);
-    color: var(--wpfa-error-color);
+.fauth-error {
+    background: var(--fauth-error-bg);
+    border-left: 4px solid var(--fauth-error-border);
+    color: var(--fauth-error-color);
 }
 
-.wpfa-message {
-    background: var(--wpfa-msg-bg);
-    border-left: 4px solid var(--wpfa-msg-border);
-    color: var(--wpfa-msg-color);
+.fauth-message {
+    background: var(--fauth-msg-bg);
+    border-left: 4px solid var(--fauth-msg-border);
+    color: var(--fauth-msg-color);
 }
 
 /* -----------------------------------------------------------------------
    Form fields
 ------------------------------------------------------------------------- */
-.wpfa-field-wrap {
-    margin-bottom: var(--wpfa-field-spacing);
+.fauth-field-wrap {
+    margin-bottom: var(--fauth-field-spacing);
 }
 
-.wpfa-label {
+.fauth-label {
     display: block;
-    font-weight: var(--wpfa-label-weight);
-    color: var(--wpfa-label-color);
+    font-weight: var(--fauth-label-weight);
+    color: var(--fauth-label-color);
     margin-bottom: 0.35em;
 }
 
-.wpfa .wpfa-required {
-    color: var(--wpfa-required-color);
+.fauth .fauth-required {
+    color: var(--fauth-required-color);
     margin-left: 2px;
 }
 
-.wpfa-field {
-    background: var(--wpfa-field-bg);
-    border: var(--wpfa-field-border);
-    border-radius: var(--wpfa-field-radius);
-    color: var(--wpfa-field-color);
+.fauth-field {
+    background: var(--fauth-field-bg);
+    border: var(--fauth-field-border);
+    border-radius: var(--fauth-field-radius);
+    color: var(--fauth-field-color);
     display: block;
-    padding: var(--wpfa-field-padding);
+    padding: var(--fauth-field-padding);
     width: 100%;
     font-size: inherit;
     transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-.wpfa-field:focus {
-    border-color: var(--wpfa-field-focus-color);
-    box-shadow: var(--wpfa-field-focus-shadow);
+.fauth-field:focus {
+    border-color: var(--fauth-field-focus-color);
+    box-shadow: var(--fauth-field-focus-shadow);
     outline: none; /* hidden for mouse — see :focus-visible below */
 }
 
 /* Fix E — restore keyboard focus indicator per WCAG 2.2 SC 2.4.11 */
-.wpfa-field:focus-visible {
-    outline: 2px solid var(--wpfa-field-focus-color);
+.fauth-field:focus-visible {
+    outline: 2px solid var(--fauth-field-focus-color);
     outline-offset: 2px;
 }
 
-.wpfa-description {
+.fauth-description {
     display: block;
-    color: var(--wpfa-description-color); /* Fix L */
+    color: var(--fauth-description-color); /* Fix L */
     font-size: 0.85em;
     margin-top: 0.25em;
 }
@@ -208,8 +208,8 @@
 /* -----------------------------------------------------------------------
    Checkbox
 ------------------------------------------------------------------------- */
-.wpfa-checkbox {
-    accent-color: var(--wpfa-field-focus-color);
+.fauth-checkbox {
+    accent-color: var(--fauth-field-focus-color);
     width: 1.05em;
     height: 1.05em;
     margin: 0;
@@ -217,7 +217,7 @@
     cursor: pointer;
 }
 
-.wpfa-checkbox-label {
+.fauth-checkbox-label {
     display: inline;
     font-weight: normal;
     margin-left: 0.5em;
@@ -229,60 +229,60 @@
 /* -----------------------------------------------------------------------
    Submit button
 ------------------------------------------------------------------------- */
-.wpfa-submit {
+.fauth-submit {
     margin-top: 0.5em;
 }
 
-.wpfa-button {
-    background: var(--wpfa-btn-bg);
-    border: var(--wpfa-btn-border);
-    border-radius: var(--wpfa-btn-radius);
-    box-shadow: var(--wpfa-btn-shadow);
-    color: var(--wpfa-btn-color);
+.fauth-button {
+    background: var(--fauth-btn-bg);
+    border: var(--fauth-btn-border);
+    border-radius: var(--fauth-btn-radius);
+    box-shadow: var(--fauth-btn-shadow);
+    color: var(--fauth-btn-color);
     cursor: pointer;
     font-size: 0.95rem;
     font-weight: 600;
     line-height: 1.4;
-    padding: var(--wpfa-btn-padding);
+    padding: var(--fauth-btn-padding);
     text-decoration: none;
     transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
 }
 
-.wpfa-button:hover,
-.wpfa-button:focus {
-    background: var(--wpfa-btn-hover-bg);
-    color: var(--wpfa-btn-hover-color);
-    box-shadow: var(--wpfa-btn-hover-shadow);
+.fauth-button:hover,
+.fauth-button:focus {
+    background: var(--fauth-btn-hover-bg);
+    color: var(--fauth-btn-hover-color);
+    box-shadow: var(--fauth-btn-hover-shadow);
     outline: none;
 }
 
-.wpfa-button:hover {
+.fauth-button:hover {
     transform: translateY(-1px);
 }
 
 /* Fix E */
-.wpfa-button:focus-visible {
+.fauth-button:focus-visible {
     outline: 2px solid currentColor;
     outline-offset: 2px;
 }
 
-.wpfa-button:active {
+.fauth-button:active {
     transform: translateY(0);
-    box-shadow: var(--wpfa-btn-shadow);
+    box-shadow: var(--fauth-btn-shadow);
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .wpfa-button,
-    .wpfa-field {
+    .fauth-button,
+    .fauth-field {
         transition: none;
     }
-    .wpfa-button:hover {
+    .fauth-button:hover {
         transform: none;
     }
 }
 
-.wpfa-button[disabled],
-.wpfa-button.wpfa-loading {
+.fauth-button[disabled],
+.fauth-button.fauth-loading {
     cursor: not-allowed;
     opacity: 0.65;
 }
@@ -290,27 +290,27 @@
 /* -----------------------------------------------------------------------
    Action links
 ------------------------------------------------------------------------- */
-.wpfa-links {
+.fauth-links {
     margin-top: 0.75em;
     font-size: 0.9em;
 }
 
-.wpfa-links a {
-    color: var(--wpfa-link-color);
+.fauth-links a {
+    color: var(--fauth-link-color);
     text-decoration: none;
 }
 
-.wpfa-links a:hover,
-.wpfa-links a:focus {
-    color: var(--wpfa-link-hover-color);
+.fauth-links a:hover,
+.fauth-links a:focus {
+    color: var(--fauth-link-hover-color);
     text-decoration: underline;
 }
 
 /* -----------------------------------------------------------------------
    Password field-wrap flex layout (Fix J)
-   JS adds .wpfa-field-wrap--password when injecting the toggle button.
+   JS adds .fauth-field-wrap--password when injecting the toggle button.
 ------------------------------------------------------------------------- */
-.wpfa-field-wrap--password {
+.fauth-field-wrap--password {
     display: grid;
     grid-template-columns: 1fr auto;
     align-items: center;
@@ -318,14 +318,14 @@
 }
 
 /* Label on its own row, above the input (consistent with the other fields). */
-.wpfa-field-wrap--password .wpfa-label {
+.fauth-field-wrap--password .fauth-label {
     grid-column: 1 / -1;
     grid-row: 1;
 }
 
 /* The input spans the FULL width — so it lines up with the other fields and is
    not shortened by the toggle. The Show/Hide toggle overlays its right edge. */
-.wpfa-field-wrap--password .wpfa-field {
+.fauth-field-wrap--password .fauth-field {
     grid-column: 1 / -1;
     grid-row: 2;
     width: 100%;
@@ -336,7 +336,7 @@
 /* Toggle sits inside the input's right edge (grid overlay), vertically centred
    regardless of field height. Borderless by default for a clean in-field look;
    the Elementor "Password Toggle" controls still override bg/border/padding. */
-.wpfa-field-wrap--password .wpfa-password-toggle {
+.fauth-field-wrap--password .fauth-password-toggle {
     grid-column: 2;
     grid-row: 2;
     justify-self: end;
@@ -351,11 +351,11 @@
 /* -----------------------------------------------------------------------
    Password toggle button (Fix J — removed margin-top, inline-block)
 ------------------------------------------------------------------------- */
-.wpfa-password-toggle {
+.fauth-password-toggle {
     background: #fff;
     border: 1px solid #d0d5dd;
-    border-radius: var(--wpfa-field-radius);
-    color: var(--wpfa-link-color);
+    border-radius: var(--fauth-field-radius);
+    color: var(--fauth-link-color);
     cursor: pointer;
     font-size: 0.8rem;
     font-weight: 500;
@@ -368,16 +368,16 @@
     transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
 }
 
-.wpfa-password-toggle:hover,
-.wpfa-password-toggle:focus {
-    border-color: var(--wpfa-link-color);
-    color: var(--wpfa-link-hover-color);
+.fauth-password-toggle:hover,
+.fauth-password-toggle:focus {
+    border-color: var(--fauth-link-color);
+    color: var(--fauth-link-hover-color);
     outline: none;
 }
 
 /* Fix E */
-.wpfa-password-toggle:focus-visible {
-    outline: 2px solid var(--wpfa-link-color);
+.fauth-password-toggle:focus-visible {
+    outline: 2px solid var(--fauth-link-color);
     outline-offset: 2px;
 }
 
@@ -387,8 +387,8 @@
 #pass-strength-result {
     background: #f3f4f6;
     border: 1px solid #e5e7eb;
-    border-radius: var(--wpfa-field-radius);
-    color: var(--wpfa-strength-text-color); /* Fix L */
+    border-radius: var(--fauth-field-radius);
+    color: var(--fauth-strength-text-color); /* Fix L */
     font-size: 0.82em;
     font-weight: 600;
     margin-bottom: 0.75em;
@@ -405,8 +405,8 @@
 /* -----------------------------------------------------------------------
    AJAX spinner
 ------------------------------------------------------------------------- */
-.wpfa-spinner {
-    animation: wpfa-spin 0.7s linear infinite;
+.fauth-spinner {
+    animation: fauth-spin 0.7s linear infinite;
     border: 2px solid rgba(255,255,255,0.4);
     border-top-color: #fff;
     border-radius: 50%;
@@ -417,51 +417,51 @@
     width: 1em;
 }
 
-@keyframes wpfa-spin {
+@keyframes fauth-spin {
     to { transform: rotate(360deg); }
 }
 
 /* -----------------------------------------------------------------------
    Social sign-in (Google) — rendered below the login/register forms
 ------------------------------------------------------------------------- */
-.wpfa-sso {
+.fauth-sso {
     margin-top: 1em;
 }
 
-.wpfa-sso-divider {
+.fauth-sso-divider {
     display: flex;
     align-items: center;
     gap: 0.75em;
-    color: var(--wpfa-sso-divider-text, #9aa3b2);
+    color: var(--fauth-sso-divider-text, #9aa3b2);
     font-size: 0.78em;
     margin: 0 0 1em;
 }
 
-.wpfa-sso-divider::before,
-.wpfa-sso-divider::after {
+.fauth-sso-divider::before,
+.fauth-sso-divider::after {
     content: "";
     flex: 1 1 auto;
     height: 1px;
-    background: var(--wpfa-sso-divider-color, #e5e7eb);
+    background: var(--fauth-sso-divider-color, #e5e7eb);
 }
 
-.wpfa-sso-divider span {
+.fauth-sso-divider span {
     text-transform: uppercase;
     letter-spacing: 0.07em;
     font-weight: 600;
 }
 
-.wpfa-google-btn {
+.fauth-google-btn {
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 0.6em;
     width: 100%;
     box-sizing: border-box;
-    background: var(--wpfa-google-btn-bg, #ffffff);
-    color: var(--wpfa-google-btn-color, #374151);
-    border: 1px solid var(--wpfa-google-btn-border, #d0d5dd);
-    border-radius: var(--wpfa-btn-radius);
+    background: var(--fauth-google-btn-bg, #ffffff);
+    color: var(--fauth-google-btn-color, #374151);
+    border: 1px solid var(--fauth-google-btn-border, #d0d5dd);
+    border-radius: var(--fauth-btn-radius);
     padding: 0.66em 1.25em;
     font-size: 0.95rem;
     font-weight: 600;
@@ -470,21 +470,21 @@
     transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
 }
 
-.wpfa-google-btn:hover,
-.wpfa-google-btn:focus {
+.fauth-google-btn:hover,
+.fauth-google-btn:focus {
     border-color: #b6bcc8;
     box-shadow: 0 2px 8px rgba(16, 24, 40, 0.08);
-    color: var(--wpfa-google-btn-color, #374151);
+    color: var(--fauth-google-btn-color, #374151);
     text-decoration: none;
     outline: none;
 }
 
-.wpfa-google-btn:focus-visible {
-    outline: 2px solid var(--wpfa-field-focus-color);
+.fauth-google-btn:focus-visible {
+    outline: 2px solid var(--fauth-field-focus-color);
     outline-offset: 2px;
 }
 
-.wpfa-google-icon {
+.fauth-google-icon {
     flex-shrink: 0;
 }
 
@@ -492,11 +492,11 @@
    Honeypot (must be invisible)
 
    Scoped to the honeypot's own class. The old selector
-   `.wpfa [aria-hidden="true"]` was over-broad: it also hid legitimate
+   `.fauth [aria-hidden="true"]` was over-broad: it also hid legitimate
    decorative elements such as the required-field asterisks (which carry
    aria-hidden="true" for screen readers) and any inline SVG icons.
 ------------------------------------------------------------------------- */
-.wpfa-hp {
+.fauth-hp {
     display: none !important;
     visibility: hidden !important;
 }

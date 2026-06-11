@@ -30,20 +30,20 @@ defined( 'ABSPATH' ) || exit;
  * Option accessors
  * -------------------------------------------------------------------- */
 
-function wpfa_google_enabled(): bool {
-    return (bool) apply_filters( 'wpfa_google_enabled', get_option( 'wpfa_google_enabled', false ) );
+function fauth_google_enabled(): bool {
+    return (bool) apply_filters( 'fauth_google_enabled', get_option( 'fauth_google_enabled', false ) );
 }
 
-function wpfa_google_client_id(): string {
-    if ( defined( 'WPFA_GOOGLE_CLIENT_ID' ) && '' !== constant( 'WPFA_GOOGLE_CLIENT_ID' ) ) {
-        return (string) constant( 'WPFA_GOOGLE_CLIENT_ID' );
+function fauth_google_client_id(): string {
+    if ( defined( 'FAUTH_GOOGLE_CLIENT_ID' ) && '' !== constant( 'FAUTH_GOOGLE_CLIENT_ID' ) ) {
+        return (string) constant( 'FAUTH_GOOGLE_CLIENT_ID' );
     }
-    return trim( (string) get_option( 'wpfa_google_client_id', '' ) );
+    return trim( (string) get_option( 'fauth_google_client_id', '' ) );
 }
 
 /**
  * The OAuth client secret. Resolution order:
- *  1. the WPFA_GOOGLE_CLIENT_SECRET constant (wp-config.php — never in the DB),
+ *  1. the FAUTH_GOOGLE_CLIENT_SECRET constant (wp-config.php — never in the DB),
  *  2. the stored option, encrypted at rest (see includes/crypto.php).
  *
  * A plaintext value saved before the 1.5.0 storage hardening is re-encrypted
@@ -51,21 +51,21 @@ function wpfa_google_client_id(): string {
  * the ciphertext — the feature then reads as unconfigured until the secret is
  * re-entered.
  */
-function wpfa_google_client_secret(): string {
-    if ( defined( 'WPFA_GOOGLE_CLIENT_SECRET' ) && '' !== constant( 'WPFA_GOOGLE_CLIENT_SECRET' ) ) {
-        return (string) constant( 'WPFA_GOOGLE_CLIENT_SECRET' );
+function fauth_google_client_secret(): string {
+    if ( defined( 'FAUTH_GOOGLE_CLIENT_SECRET' ) && '' !== constant( 'FAUTH_GOOGLE_CLIENT_SECRET' ) ) {
+        return (string) constant( 'FAUTH_GOOGLE_CLIENT_SECRET' );
     }
-    $stored = trim( (string) get_option( 'wpfa_google_client_secret', '' ) );
+    $stored = trim( (string) get_option( 'fauth_google_client_secret', '' ) );
     if ( '' === $stored ) {
         return '';
     }
-    if ( wpfa_crypto_is_encrypted( $stored ) ) {
-        return wpfa_crypto_decrypt( $stored );
+    if ( fauth_crypto_is_encrypted( $stored ) ) {
+        return fauth_crypto_decrypt( $stored );
     }
     // Legacy plaintext — one-time in-place migration to the encrypted format.
-    $encrypted = wpfa_crypto_encrypt( $stored );
+    $encrypted = fauth_crypto_encrypt( $stored );
     if ( $encrypted !== $stored ) {
-        update_option( 'wpfa_google_client_secret', $encrypted, false );
+        update_option( 'fauth_google_client_secret', $encrypted, false );
     }
     return $stored;
 }
@@ -77,15 +77,15 @@ function wpfa_google_client_secret(): string {
  * sanitization twice when an option is saved for the first time
  * (update_option → add_option both sanitize).
  */
-function wpfa_sanitize_google_secret( $value ): string {
+function fauth_sanitize_google_secret( $value ): string {
     $value = trim( sanitize_text_field( (string) $value ) );
     if ( '' === $value ) {
-        return (string) get_option( 'wpfa_google_client_secret', '' );
+        return (string) get_option( 'fauth_google_client_secret', '' );
     }
-    if ( wpfa_crypto_is_encrypted( $value ) ) {
+    if ( fauth_crypto_is_encrypted( $value ) ) {
         return $value;
     }
-    return wpfa_crypto_encrypt( $value );
+    return fauth_crypto_encrypt( $value );
 }
 
 /**
@@ -93,20 +93,20 @@ function wpfa_sanitize_google_secret( $value ): string {
  * Independent of users_can_register — Google sign-ups are vetted by Google
  * (verified email), so sites can allow them while keeping open registration off.
  */
-function wpfa_google_allow_registration(): bool {
-    return (bool) apply_filters( 'wpfa_google_allow_registration', get_option( 'wpfa_google_allow_registration', true ) );
+function fauth_google_allow_registration(): bool {
+    return (bool) apply_filters( 'fauth_google_allow_registration', get_option( 'fauth_google_allow_registration', true ) );
 }
 
-function wpfa_google_is_configured(): bool {
-    return wpfa_google_enabled() && '' !== wpfa_google_client_id() && '' !== wpfa_google_client_secret();
+function fauth_google_is_configured(): bool {
+    return fauth_google_enabled() && '' !== fauth_google_client_id() && '' !== fauth_google_client_secret();
 }
 
 /**
  * The exact redirect URI registered in Google Cloud Console.
  * Must match byte-for-byte at the authorize AND token-exchange steps.
  */
-function wpfa_google_callback_url(): string {
-    return admin_url( 'admin-post.php?action=wpfa_google_auth' );
+function fauth_google_callback_url(): string {
+    return admin_url( 'admin-post.php?action=fauth_google_auth' );
 }
 
 /* -----------------------------------------------------------------------
@@ -114,27 +114,27 @@ function wpfa_google_callback_url(): string {
  * user to Google's consent screen.
  * -------------------------------------------------------------------- */
 
-add_action( 'admin_post_nopriv_wpfa_google_start', 'wpfa_google_start' );
-add_action( 'admin_post_wpfa_google_start',        'wpfa_google_start' );
+add_action( 'admin_post_nopriv_fauth_google_start', 'fauth_google_start' );
+add_action( 'admin_post_fauth_google_start',        'fauth_google_start' );
 
-function wpfa_google_start(): void {
-    if ( ! wpfa_google_is_configured() ) {
-        wp_safe_redirect( wpfa_get_action_url( 'login' ) );
+function fauth_google_start(): void {
+    if ( ! fauth_google_is_configured() ) {
+        wp_safe_redirect( fauth_get_action_url( 'login' ) );
         exit;
     }
-    if ( wpfa_rate_limit_is_locked( 'login' ) ) {
-        wpfa_google_bounce( 'locked' );
+    if ( fauth_rate_limit_is_locked( 'login' ) ) {
+        fauth_google_bounce( 'locked' );
     }
 
-    $redirect_to = wpfa_get_request_value( 'redirect_to', 'get' );
-    $redirect_to = $redirect_to ? wpfa_validate_redirect( $redirect_to ) : '';
+    $redirect_to = fauth_get_request_value( 'redirect_to', 'get' );
+    $redirect_to = $redirect_to ? fauth_validate_redirect( $redirect_to ) : '';
 
     $state = wp_generate_password( 32, false, false );
-    set_transient( 'wpfa_gstate_' . $state, [ 'redirect_to' => $redirect_to ], 10 * MINUTE_IN_SECONDS );
+    set_transient( 'fauth_gstate_' . $state, [ 'redirect_to' => $redirect_to ], 10 * MINUTE_IN_SECONDS );
 
     // Bind the state to this browser. SameSite=Lax still sends the cookie on
     // the top-level GET redirect back from Google.
-    setcookie( 'wpfa_g_state', $state, [
+    setcookie( 'fauth_g_state', $state, [
         'expires'  => time() + 10 * MINUTE_IN_SECONDS,
         'path'     => '/',
         'secure'   => is_ssl(),
@@ -143,8 +143,8 @@ function wpfa_google_start(): void {
     ] );
 
     $auth_url = 'https://accounts.google.com/o/oauth2/v2/auth?' . http_build_query( [
-        'client_id'     => wpfa_google_client_id(),
-        'redirect_uri'  => wpfa_google_callback_url(),
+        'client_id'     => fauth_google_client_id(),
+        'redirect_uri'  => fauth_google_callback_url(),
         'response_type' => 'code',
         'scope'         => 'openid email profile',
         'state'         => $state,
@@ -160,31 +160,31 @@ function wpfa_google_start(): void {
  * Callback — validates state, exchanges the code, signs the user in.
  * -------------------------------------------------------------------- */
 
-add_action( 'admin_post_nopriv_wpfa_google_auth', 'wpfa_google_auth' );
-add_action( 'admin_post_wpfa_google_auth',        'wpfa_google_auth' );
+add_action( 'admin_post_nopriv_fauth_google_auth', 'fauth_google_auth' );
+add_action( 'admin_post_fauth_google_auth',        'fauth_google_auth' );
 
-function wpfa_google_auth(): void {
-    if ( ! wpfa_google_is_configured() ) {
-        wp_safe_redirect( wpfa_get_action_url( 'login' ) );
+function fauth_google_auth(): void {
+    if ( ! fauth_google_is_configured() ) {
+        wp_safe_redirect( fauth_get_action_url( 'login' ) );
         exit;
     }
-    if ( wpfa_rate_limit_is_locked( 'login' ) ) {
-        wpfa_google_bounce( 'locked' );
+    if ( fauth_rate_limit_is_locked( 'login' ) ) {
+        fauth_google_bounce( 'locked' );
     }
 
     // User clicked "Cancel" on Google's consent screen.
-    if ( '' !== wpfa_get_request_value( 'error', 'get' ) ) {
-        wpfa_google_bounce( 'denied' );
+    if ( '' !== fauth_get_request_value( 'error', 'get' ) ) {
+        fauth_google_bounce( 'denied' );
     }
 
-    $state = sanitize_text_field( wpfa_get_request_value( 'state', 'get' ) );
-    $code  = wpfa_get_request_value( 'code', 'get' );
+    $state = sanitize_text_field( fauth_get_request_value( 'state', 'get' ) );
+    $code  = fauth_get_request_value( 'code', 'get' );
 
-    $cookie = isset( $_COOKIE['wpfa_g_state'] ) && is_string( $_COOKIE['wpfa_g_state'] )
-        ? sanitize_text_field( wp_unslash( $_COOKIE['wpfa_g_state'] ) )
+    $cookie = isset( $_COOKIE['fauth_g_state'] ) && is_string( $_COOKIE['fauth_g_state'] )
+        ? sanitize_text_field( wp_unslash( $_COOKIE['fauth_g_state'] ) )
         : '';
     // Always clear the binding cookie — it is single-use.
-    setcookie( 'wpfa_g_state', '', [
+    setcookie( 'fauth_g_state', '', [
         'expires'  => time() - HOUR_IN_SECONDS,
         'path'     => '/',
         'secure'   => is_ssl(),
@@ -193,41 +193,41 @@ function wpfa_google_auth(): void {
     ] );
 
     if ( '' === $state || '' === $code || '' === $cookie || ! hash_equals( $cookie, $state ) ) {
-        wpfa_rate_limit_bump( 'login' );
-        wpfa_google_bounce( 'state' );
+        fauth_rate_limit_bump( 'login' );
+        fauth_google_bounce( 'state' );
     }
 
-    $stored = get_transient( 'wpfa_gstate_' . $state );
-    delete_transient( 'wpfa_gstate_' . $state ); // single-use
+    $stored = get_transient( 'fauth_gstate_' . $state );
+    delete_transient( 'fauth_gstate_' . $state ); // single-use
     if ( ! is_array( $stored ) ) {
-        wpfa_rate_limit_bump( 'login' );
-        wpfa_google_bounce( 'state' );
+        fauth_rate_limit_bump( 'login' );
+        fauth_google_bounce( 'state' );
     }
 
-    $claims = wpfa_google_exchange_code( $code );
+    $claims = fauth_google_exchange_code( $code );
     if ( is_wp_error( $claims ) ) {
-        wpfa_rate_limit_bump( 'login' );
-        wpfa_google_bounce( 'wpfa_google_email' === $claims->get_error_code() ? 'email' : 'failed' );
+        fauth_rate_limit_bump( 'login' );
+        fauth_google_bounce( 'fauth_google_email' === $claims->get_error_code() ? 'email' : 'failed' );
     }
 
-    $user = wpfa_google_find_or_create_user( $claims );
+    $user = fauth_google_find_or_create_user( $claims );
     if ( is_wp_error( $user ) ) {
-        wpfa_google_bounce( 'registration_closed' === $user->get_error_code() ? 'registration' : 'failed' );
+        fauth_google_bounce( 'registration_closed' === $user->get_error_code() ? 'registration' : 'failed' );
     }
 
-    wpfa_rate_limit_clear( 'login' );
+    fauth_rate_limit_clear( 'login' );
 
-    $remember = (bool) apply_filters( 'wpfa_google_remember', true, $user );
+    $remember = (bool) apply_filters( 'fauth_google_remember', true, $user );
     wp_set_auth_cookie( $user->ID, $remember );
 
     /** This action is documented in wp-includes/user.php */
     do_action( 'wp_login', $user->user_login, $user );
-    do_action( 'wpfa_login_success', $user );
-    do_action( 'wpfa_google_login_success', $user );
+    do_action( 'fauth_login_success', $user );
+    do_action( 'fauth_google_login_success', $user );
 
     $requested   = (string) ( $stored['redirect_to'] ?? '' );
     // Runs through 'login_redirect', so the subscriber containment from
-    // wpfa_subscriber_login_redirect() applies exactly like password logins.
+    // fauth_subscriber_login_redirect() applies exactly like password logins.
     $redirect_to = (string) apply_filters( 'login_redirect', '' !== $requested ? $requested : home_url(), $requested, $user );
 
     wp_safe_redirect( '' !== $redirect_to ? $redirect_to : home_url() );
@@ -239,8 +239,8 @@ function wpfa_google_auth(): void {
  *
  * @return never
  */
-function wpfa_google_bounce( string $code ): void {
-    wp_safe_redirect( add_query_arg( 'wpfa_google_error', rawurlencode( $code ), wpfa_get_action_url( 'login' ) ) );
+function fauth_google_bounce( string $code ): void {
+    wp_safe_redirect( add_query_arg( 'fauth_google_error', rawurlencode( $code ), fauth_get_action_url( 'login' ) ) );
     exit;
 }
 
@@ -254,31 +254,31 @@ function wpfa_google_bounce( string $code ): void {
  *
  * @return array|WP_Error
  */
-function wpfa_google_exchange_code( string $code ) {
+function fauth_google_exchange_code( string $code ) {
     $response = wp_remote_post( 'https://oauth2.googleapis.com/token', [
         'timeout' => 15,
         'body'    => [
             'code'          => $code,
-            'client_id'     => wpfa_google_client_id(),
-            'client_secret' => wpfa_google_client_secret(),
-            'redirect_uri'  => wpfa_google_callback_url(),
+            'client_id'     => fauth_google_client_id(),
+            'client_secret' => fauth_google_client_secret(),
+            'redirect_uri'  => fauth_google_callback_url(),
             'grant_type'    => 'authorization_code',
         ],
     ] );
 
     if ( is_wp_error( $response ) ) {
-        return new WP_Error( 'wpfa_google_http', 'Token endpoint unreachable.' );
+        return new WP_Error( 'fauth_google_http', 'Token endpoint unreachable.' );
     }
 
     $body = json_decode( (string) wp_remote_retrieve_body( $response ), true );
     if ( 200 !== (int) wp_remote_retrieve_response_code( $response ) || ! is_array( $body ) ) {
-        return new WP_Error( 'wpfa_google_exchange', 'Code exchange failed.' );
+        return new WP_Error( 'fauth_google_exchange', 'Code exchange failed.' );
     }
 
     $id_token = isset( $body['id_token'] ) && is_string( $body['id_token'] ) ? $body['id_token'] : '';
     $parts    = explode( '.', $id_token );
     if ( 3 !== count( $parts ) ) {
-        return new WP_Error( 'wpfa_google_token', 'Malformed ID token.' );
+        return new WP_Error( 'fauth_google_token', 'Malformed ID token.' );
     }
 
     // Standard JWT payload decoding (base64url). Signature verification is not
@@ -286,27 +286,27 @@ function wpfa_google_exchange_code( string $code ) {
     // over TLS (OIDC Core §3.1.3.7) — claims are validated below instead.
     $claims = json_decode( (string) base64_decode( strtr( $parts[1], '-_', '+/' ) ), true ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode
     if ( ! is_array( $claims ) ) {
-        return new WP_Error( 'wpfa_google_token', 'Unreadable ID token.' );
+        return new WP_Error( 'fauth_google_token', 'Unreadable ID token.' );
     }
 
     $iss = (string) ( $claims['iss'] ?? '' );
     if ( ! in_array( $iss, [ 'https://accounts.google.com', 'accounts.google.com' ], true ) ) {
-        return new WP_Error( 'wpfa_google_iss', 'Unexpected token issuer.' );
+        return new WP_Error( 'fauth_google_iss', 'Unexpected token issuer.' );
     }
-    if ( ! hash_equals( wpfa_google_client_id(), (string) ( $claims['aud'] ?? '' ) ) ) {
-        return new WP_Error( 'wpfa_google_aud', 'Token issued for a different client.' );
+    if ( ! hash_equals( fauth_google_client_id(), (string) ( $claims['aud'] ?? '' ) ) ) {
+        return new WP_Error( 'fauth_google_aud', 'Token issued for a different client.' );
     }
     if ( (int) ( $claims['exp'] ?? 0 ) < time() ) {
-        return new WP_Error( 'wpfa_google_exp', 'Token expired.' );
+        return new WP_Error( 'fauth_google_exp', 'Token expired.' );
     }
     if ( '' === (string) ( $claims['sub'] ?? '' ) ) {
-        return new WP_Error( 'wpfa_google_sub', 'Missing subject.' );
+        return new WP_Error( 'fauth_google_sub', 'Missing subject.' );
     }
 
     $email    = sanitize_email( (string) ( $claims['email'] ?? '' ) );
     $verified = $claims['email_verified'] ?? false; // Google sends bool true or string "true".
     if ( '' === $email || ! ( true === $verified || 'true' === $verified ) ) {
-        return new WP_Error( 'wpfa_google_email', 'Email missing or unverified.' );
+        return new WP_Error( 'fauth_google_email', 'Email missing or unverified.' );
     }
     $claims['email'] = $email;
 
@@ -319,18 +319,18 @@ function wpfa_google_exchange_code( string $code ) {
 
 /**
  * Resolve the WP user for a set of validated Google claims:
- *  1. by stored Google account ID (wpfa_google_sub user meta),
+ *  1. by stored Google account ID (fauth_google_sub user meta),
  *  2. by verified email — links the existing account,
  *  3. otherwise create a new account (if allowed).
  *
  * @return WP_User|WP_Error
  */
-function wpfa_google_find_or_create_user( array $claims ) {
+function fauth_google_find_or_create_user( array $claims ) {
     $sub   = (string) $claims['sub'];
     $email = (string) $claims['email'];
 
     $existing = get_users( [
-        'meta_key'   => 'wpfa_google_sub', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+        'meta_key'   => 'fauth_google_sub', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
         'meta_value' => $sub,              // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
         'number'     => 1,
     ] );
@@ -340,11 +340,11 @@ function wpfa_google_find_or_create_user( array $claims ) {
 
     $user = get_user_by( 'email', $email );
     if ( $user instanceof WP_User ) {
-        update_user_meta( $user->ID, 'wpfa_google_sub', $sub );
+        update_user_meta( $user->ID, 'fauth_google_sub', $sub );
         return $user;
     }
 
-    if ( ! wpfa_google_allow_registration() ) {
+    if ( ! fauth_google_allow_registration() ) {
         return new WP_Error( 'registration_closed', 'No matching account and Google registration is disabled.' );
     }
 
@@ -376,25 +376,25 @@ function wpfa_google_find_or_create_user( array $claims ) {
         return $user_id;
     }
 
-    update_user_meta( $user_id, 'wpfa_google_sub', $sub );
+    update_user_meta( $user_id, 'fauth_google_sub', $sub );
 
-    // Same front-end toolbar default as form registrations (see wpfa_handle_register).
-    if ( apply_filters( 'wpfa_hide_admin_bar_on_register', true, $user_id ) ) {
+    // Same front-end toolbar default as form registrations (see fauth_handle_register).
+    if ( apply_filters( 'fauth_hide_admin_bar_on_register', true, $user_id ) ) {
         update_user_meta( $user_id, 'show_admin_bar_front', 'false' );
     }
 
     // Notify the admin only — the user already has access and no password email
     // makes sense for a Google account. Filter to 'both', 'user', or 'none'.
-    $notify = (string) apply_filters( 'wpfa_google_new_user_notification', 'admin', $user_id );
+    $notify = (string) apply_filters( 'fauth_google_new_user_notification', 'admin', $user_id );
     if ( 'none' !== $notify ) {
         wp_new_user_notification( $user_id, null, $notify );
     }
 
-    do_action( 'wpfa_registration_success', $user_id );
-    do_action( 'wpfa_google_user_created', $user_id, $claims );
+    do_action( 'fauth_registration_success', $user_id );
+    do_action( 'fauth_google_user_created', $user_id, $claims );
 
     $user = get_user_by( 'id', $user_id );
-    return $user instanceof WP_User ? $user : new WP_Error( 'wpfa_google_user', 'User creation failed.' );
+    return $user instanceof WP_User ? $user : new WP_Error( 'fauth_google_user', 'User creation failed.' );
 }
 
 /* -----------------------------------------------------------------------
@@ -402,8 +402,8 @@ function wpfa_google_find_or_create_user( array $claims ) {
  * -------------------------------------------------------------------- */
 
 /** Official multicolour Google "G" mark (18×18). */
-function wpfa_google_button_svg(): string {
-    return '<svg class="wpfa-google-icon" width="18" height="18" viewBox="0 0 18 18" aria-hidden="true" focusable="false">'
+function fauth_google_button_svg(): string {
+    return '<svg class="fauth-google-icon" width="18" height="18" viewBox="0 0 18 18" aria-hidden="true" focusable="false">'
         . '<path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92a8.78 8.78 0 0 0 2.68-6.62z"/>'
         . '<path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.8.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.03-3.71H.96v2.33A9 9 0 0 0 9 18z"/>'
         . '<path fill="#FBBC05" d="M3.97 10.71A5.41 5.41 0 0 1 3.68 9c0-.59.1-1.17.28-1.71V4.96H.96A9 9 0 0 0 0 9c0 1.45.35 2.83.96 4.04l3.01-2.33z"/>'
@@ -416,53 +416,53 @@ function wpfa_google_button_svg(): string {
  * The link is static (state is generated at click time on the start endpoint),
  * so it is safe to cache.
  */
-function wpfa_google_button_html(): string {
-    if ( ! wpfa_google_is_configured() ) {
+function fauth_google_button_html(): string {
+    if ( ! fauth_google_is_configured() ) {
         return '';
     }
 
-    $url = add_query_arg( 'action', 'wpfa_google_start', admin_url( 'admin-post.php' ) );
+    $url = add_query_arg( 'action', 'fauth_google_start', admin_url( 'admin-post.php' ) );
 
     $redirect_to = isset( $_GET['redirect_to'] ) && is_string( $_GET['redirect_to'] ) // phpcs:ignore WordPress.Security.NonceVerification
-        ? wpfa_validate_redirect( wp_unslash( $_GET['redirect_to'] ) ) // phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput
+        ? fauth_validate_redirect( wp_unslash( $_GET['redirect_to'] ) ) // phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput
         : '';
-    $redirect_to = (string) apply_filters( 'wpfa_google_redirect_to', $redirect_to );
+    $redirect_to = (string) apply_filters( 'fauth_google_redirect_to', $redirect_to );
     if ( '' !== $redirect_to ) {
         $url = add_query_arg( 'redirect_to', rawurlencode( $redirect_to ), $url );
     }
 
-    $text = (string) apply_filters( 'wpfa_google_button_text', __( 'Continue with Google', 'frontend-auth' ) );
+    $text = (string) apply_filters( 'fauth_google_button_text', __( 'Continue with Google', 'frontend-auth' ) );
 
-    return '<div class="wpfa-sso">'
-        . '<div class="wpfa-sso-divider" aria-hidden="true"><span>' . esc_html__( 'or', 'frontend-auth' ) . '</span></div>'
-        . '<a class="wpfa-google-btn" href="' . esc_url( $url ) . '">' . wpfa_google_button_svg()
+    return '<div class="fauth-sso">'
+        . '<div class="fauth-sso-divider" aria-hidden="true"><span>' . esc_html__( 'or', 'frontend-auth' ) . '</span></div>'
+        . '<a class="fauth-google-btn" href="' . esc_url( $url ) . '">' . fauth_google_button_svg()
         . '<span>' . esc_html( $text ) . '</span></a>'
         . '</div>';
 }
 
-add_action( 'wpfa_after_form_login',    'wpfa_google_render_button' );
-add_action( 'wpfa_after_form_register', 'wpfa_google_render_button' );
+add_action( 'fauth_after_form_login',    'fauth_google_render_button' );
+add_action( 'fauth_after_form_register', 'fauth_google_render_button' );
 
-function wpfa_google_render_button( $form ): void {
-    $name = $form instanceof WPFA_Form ? $form->get_name() : '';
-    if ( ! apply_filters( 'wpfa_show_google_button', true, $name ) ) {
+function fauth_google_render_button( $form ): void {
+    $name = $form instanceof FAUTH_Form ? $form->get_name() : '';
+    if ( ! apply_filters( 'fauth_show_google_button', true, $name ) ) {
         return;
     }
-    echo wpfa_google_button_html(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped during construction
+    echo fauth_google_button_html(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped during construction
 }
 
 /* -----------------------------------------------------------------------
  * Error feedback on the login form (after a bounced callback)
  * -------------------------------------------------------------------- */
 
-add_action( 'wpfa_before_form_login', 'wpfa_google_maybe_show_error' );
+add_action( 'fauth_before_form_login', 'fauth_google_maybe_show_error' );
 
-function wpfa_google_maybe_show_error( $form ): void {
-    if ( ! $form instanceof WPFA_Form ) {
+function fauth_google_maybe_show_error( $form ): void {
+    if ( ! $form instanceof FAUTH_Form ) {
         return;
     }
-    $code = isset( $_GET['wpfa_google_error'] ) && is_string( $_GET['wpfa_google_error'] ) // phpcs:ignore WordPress.Security.NonceVerification
-        ? sanitize_key( wp_unslash( $_GET['wpfa_google_error'] ) ) // phpcs:ignore WordPress.Security.NonceVerification
+    $code = isset( $_GET['fauth_google_error'] ) && is_string( $_GET['fauth_google_error'] ) // phpcs:ignore WordPress.Security.NonceVerification
+        ? sanitize_key( wp_unslash( $_GET['fauth_google_error'] ) ) // phpcs:ignore WordPress.Security.NonceVerification
         : '';
     if ( '' === $code ) {
         return;

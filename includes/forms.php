@@ -12,27 +12,27 @@ defined( 'ABSPATH' ) || exit;
  *
  * HIGH FIX: Removed is_admin() guard. Forms must be registered in every
  * context including admin-ajax.php (used by Elementor editor). Without
- * this fix, wpfa()->get_form('login') returns false inside the Elementor
+ * this fix, fauth()->get_form('login') returns false inside the Elementor
  * editor context and every widget renders empty.
  */
-function wpfa_register_default_forms(): void {
-    wpfa_register_login_form();
-    wpfa_register_registration_form();
-    wpfa_register_lost_password_form();
-    wpfa_register_password_reset_form();
+function fauth_register_default_forms(): void {
+    fauth_register_login_form();
+    fauth_register_registration_form();
+    fauth_register_lost_password_form();
+    fauth_register_password_reset_form();
 }
 
 /* -----------------------------------------------------------------------
  * Login
  * -------------------------------------------------------------------- */
 
-function wpfa_register_login_form(): void {
-    $form = new WPFA_Form( 'login', wpfa_get_action_url( 'login' ) );
+function fauth_register_login_form(): void {
+    $form = new FAUTH_Form( 'login', fauth_get_action_url( 'login' ) );
 
     $form->add_field( 'log', [
         'type'     => 'text',
-        'label'    => wpfa_get_username_label( 'login' ),
-        'value'    => wpfa_get_request_value( 'log', 'post' ),
+        'label'    => fauth_get_username_label( 'login' ),
+        'value'    => fauth_get_request_value( 'log', 'post' ),
         'id'       => 'user_login',
         'attrs'    => [ 'autocapitalize' => 'off', 'autocomplete' => 'username' ],
         'required' => true,
@@ -67,24 +67,24 @@ function wpfa_register_login_form(): void {
         'priority' => 30,
     ] );
 
-    wpfa()->register_form( $form );
+    fauth()->register_form( $form );
 }
 
 /* -----------------------------------------------------------------------
  * Register
  * -------------------------------------------------------------------- */
 
-function wpfa_register_registration_form(): void {
+function fauth_register_registration_form(): void {
     if ( ! get_option( 'users_can_register' ) ) {
         return;
     }
 
-    $form = new WPFA_Form( 'register', wpfa_get_action_url( 'register' ) );
+    $form = new FAUTH_Form( 'register', fauth_get_action_url( 'register' ) );
 
     $form->add_field( 'user_login', [
         'type'        => 'text',
         'label'       => __( 'Username', 'frontend-auth' ),
-        'value'       => wpfa_get_request_value( 'user_login', 'post' ),
+        'value'       => fauth_get_request_value( 'user_login', 'post' ),
         'id'          => 'user_login',
         'attrs'       => [ 'autocapitalize' => 'off', 'autocomplete' => 'username' ],
         'required'    => true,
@@ -95,14 +95,14 @@ function wpfa_register_registration_form(): void {
     $form->add_field( 'user_email', [
         'type'     => 'email',
         'label'    => __( 'Email Address', 'frontend-auth' ),
-        'value'    => wpfa_get_request_value( 'user_email', 'post' ),
+        'value'    => fauth_get_request_value( 'user_email', 'post' ),
         'id'       => 'user_email',
         'attrs'    => [ 'autocomplete' => 'email' ],
         'required' => true,
         'priority' => 20,
     ] );
 
-    if ( wpfa_allow_user_passwords() ) {
+    if ( fauth_allow_user_passwords() ) {
         $form->add_field( 'user_pass1', [
             'type'     => 'password',
             'label'    => __( 'Password', 'frontend-auth' ),
@@ -132,20 +132,20 @@ function wpfa_register_registration_form(): void {
         'priority' => 40,
     ] );
 
-    wpfa()->register_form( $form );
+    fauth()->register_form( $form );
 }
 
 /* -----------------------------------------------------------------------
  * Lost Password
  * -------------------------------------------------------------------- */
 
-function wpfa_register_lost_password_form(): void {
-    $form = new WPFA_Form( 'lostpassword', wpfa_get_action_url( 'lostpassword' ) );
+function fauth_register_lost_password_form(): void {
+    $form = new FAUTH_Form( 'lostpassword', fauth_get_action_url( 'lostpassword' ) );
 
     $form->add_field( 'user_login', [
         'type'     => 'text',
         'label'    => __( 'Username or Email Address', 'frontend-auth' ),
-        'value'    => wpfa_get_request_value( 'user_login', 'post' ),
+        'value'    => fauth_get_request_value( 'user_login', 'post' ),
         'id'       => 'user_login',
         'attrs'    => [ 'autocapitalize' => 'off', 'autocomplete' => 'username email' ],
         'required' => true,
@@ -163,25 +163,25 @@ function wpfa_register_lost_password_form(): void {
         'priority' => 20,
     ] );
 
-    wpfa()->register_form( $form );
+    fauth()->register_form( $form );
 }
 
 /* -----------------------------------------------------------------------
  * Reset Password
  * -------------------------------------------------------------------- */
 
-function wpfa_register_password_reset_form(): void {
-    $form = new WPFA_Form( 'resetpass', wpfa_get_action_url( 'resetpass' ) );
+function fauth_register_password_reset_form(): void {
+    $form = new FAUTH_Form( 'resetpass', fauth_get_action_url( 'resetpass' ) );
 
     $form->add_field( 'rp_key', [
         'type'     => 'hidden',
-        'value'    => wpfa_get_request_value( 'key', 'get' ),
+        'value'    => fauth_get_request_value( 'key', 'get' ),
         'priority' => 5,
     ] );
 
     $form->add_field( 'rp_login', [
         'type'     => 'hidden',
-        'value'    => wpfa_get_request_value( 'login', 'get' ),
+        'value'    => fauth_get_request_value( 'login', 'get' ),
         'priority' => 5,
     ] );
 
@@ -214,27 +214,27 @@ function wpfa_register_password_reset_form(): void {
         'priority' => 30,
     ] );
 
-    wpfa()->register_form( $form );
+    fauth()->register_form( $form );
 }
 
 /* -----------------------------------------------------------------------
  * Links filters
  * -------------------------------------------------------------------- */
 
-add_filter( 'wpfa_form_links_login', function ( $links ) {
+add_filter( 'fauth_form_links_login', function ( $links ) {
     if ( get_option( 'users_can_register' ) ) {
-        $links[] = [ 'label' => __( 'Register', 'frontend-auth' ), 'url' => wpfa_get_action_url( 'register' ) ];
+        $links[] = [ 'label' => __( 'Register', 'frontend-auth' ), 'url' => fauth_get_action_url( 'register' ) ];
     }
-    $links[] = [ 'label' => __( 'Lost your password?', 'frontend-auth' ), 'url' => wpfa_get_action_url( 'lostpassword' ) ];
+    $links[] = [ 'label' => __( 'Lost your password?', 'frontend-auth' ), 'url' => fauth_get_action_url( 'lostpassword' ) ];
     return $links;
 } );
 
-add_filter( 'wpfa_form_links_register', function ( $links ) {
-    $links[] = [ 'label' => __( 'Log In', 'frontend-auth' ), 'url' => wpfa_get_action_url( 'login' ) ];
+add_filter( 'fauth_form_links_register', function ( $links ) {
+    $links[] = [ 'label' => __( 'Log In', 'frontend-auth' ), 'url' => fauth_get_action_url( 'login' ) ];
     return $links;
 } );
 
-add_filter( 'wpfa_form_links_lostpassword', function ( $links ) {
-    $links[] = [ 'label' => __( 'Log In', 'frontend-auth' ), 'url' => wpfa_get_action_url( 'login' ) ];
+add_filter( 'fauth_form_links_lostpassword', function ( $links ) {
+    $links[] = [ 'label' => __( 'Log In', 'frontend-auth' ), 'url' => fauth_get_action_url( 'login' ) ];
     return $links;
 } );

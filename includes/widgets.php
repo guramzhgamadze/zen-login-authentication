@@ -5,10 +5,10 @@
  * All frontend auth forms exposed as classic WP_Widget instances.
  *
  * Available widgets:
- *  - WPFA_Login_Widget          — login form
- *  - WPFA_Register_Widget       — registration form
- *  - WPFA_Lost_Password_Widget  — lost-password form
- *  - WPFA_Reset_Password_Widget — password reset form (reads rp_key/rp_login from URL)
+ *  - FAUTH_Login_Widget          — login form
+ *  - FAUTH_Register_Widget       — registration form
+ *  - FAUTH_Lost_Password_Widget  — lost-password form
+ *  - FAUTH_Reset_Password_Widget — password reset form (reads rp_key/rp_login from URL)
  *
  * Audit fixes applied:
  *  [F1]  render_title_field() hardcoded 'Login' fallback for every subclass.
@@ -35,11 +35,11 @@ defined( 'ABSPATH' ) || exit;
  * [F7] Pass instances, not string class names (WP 4.9+ preferred pattern).
  * -------------------------------------------------------------------- */
 
-function wpfa_register_widgets(): void {
-    register_widget( new WPFA_Login_Widget() );
-    register_widget( new WPFA_Register_Widget() );
-    register_widget( new WPFA_Lost_Password_Widget() );
-    register_widget( new WPFA_Reset_Password_Widget() );
+function fauth_register_widgets(): void {
+    register_widget( new FAUTH_Login_Widget() );
+    register_widget( new FAUTH_Register_Widget() );
+    register_widget( new FAUTH_Lost_Password_Widget() );
+    register_widget( new FAUTH_Reset_Password_Widget() );
 }
 
 /* -----------------------------------------------------------------------
@@ -49,12 +49,12 @@ function wpfa_register_widgets(): void {
 /**
  * Render a named auth form, returning its HTML string.
  */
-function wpfa_render_form( string $form_name, array $render_args = [] ): string {
-    $form = wpfa()->get_form( $form_name );
+function fauth_render_form( string $form_name, array $render_args = [] ): string {
+    $form = fauth()->get_form( $form_name );
     if ( ! $form ) {
         return '';
     }
-    return (string) apply_filters( 'wpfa_widget_form_output', $form->render( $render_args ), $form_name, $render_args );
+    return (string) apply_filters( 'fauth_widget_form_output', $form->render( $render_args ), $form_name, $render_args );
 }
 
 
@@ -63,9 +63,9 @@ function wpfa_render_form( string $form_name, array $render_args = [] ): string 
  * Abstract base widget
  * -------------------------------------------------------------------- */
 
-abstract class WPFA_Abstract_Widget extends WP_Widget {
+abstract class FAUTH_Abstract_Widget extends WP_Widget {
 
-    /** @var string The WPFA form name this widget renders (e.g. 'login') */
+    /** @var string The FAUTH form name this widget renders (e.g. 'login') */
     protected string $form_name = '';
 
     /**
@@ -220,7 +220,7 @@ abstract class WPFA_Abstract_Widget extends WP_Widget {
     }
 
     /**
-     * Build render args array for wpfa_render_form().
+     * Build render args array for fauth_render_form().
      *
      * [F4] redirect_to was already sanitized on save via sanitize_url().
      *      At output time the correct function is esc_url() (HTML attribute escaping),
@@ -238,17 +238,17 @@ abstract class WPFA_Abstract_Widget extends WP_Widget {
  * 1. Login Widget
  * -------------------------------------------------------------------- */
 
-class WPFA_Login_Widget extends WPFA_Abstract_Widget {
+class FAUTH_Login_Widget extends FAUTH_Abstract_Widget {
 
     protected string $form_name = 'login';
 
     public function __construct() {
         $this->init_widget(
-            'wpfa_login_widget',
+            'fauth_login_widget',
             __( 'Frontend Auth: Login', 'frontend-auth' ),
             [
                 'description' => __( 'Displays the login form. Shows a welcome panel when the user is logged in.', 'frontend-auth' ),
-                'classname'   => 'widget_wpfa widget_wpfa_login',
+                'classname'   => 'widget_fauth widget_fauth_login',
             ]
         );
     }
@@ -263,7 +263,7 @@ class WPFA_Login_Widget extends WPFA_Abstract_Widget {
         if ( is_user_logged_in() ) {
             return; // Logged-in state handled by external dashboard plugins.
         }
-        echo wpfa_render_form( 'login', $this->build_render_args( $instance ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+        echo fauth_render_form( 'login', $this->build_render_args( $instance ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
     }
 
     public function form( $instance ): void {
@@ -285,17 +285,17 @@ class WPFA_Login_Widget extends WPFA_Abstract_Widget {
  * 2. Register Widget
  * -------------------------------------------------------------------- */
 
-class WPFA_Register_Widget extends WPFA_Abstract_Widget {
+class FAUTH_Register_Widget extends FAUTH_Abstract_Widget {
 
     protected string $form_name = 'register';
 
     public function __construct() {
         $this->init_widget(
-            'wpfa_register_widget',
+            'fauth_register_widget',
             __( 'Frontend Auth: Register', 'frontend-auth' ),
             [
                 'description' => __( 'Displays the user registration form.', 'frontend-auth' ),
-                'classname'   => 'widget_wpfa widget_wpfa_register',
+                'classname'   => 'widget_fauth widget_fauth_register',
             ]
         );
     }
@@ -321,7 +321,7 @@ class WPFA_Register_Widget extends WPFA_Abstract_Widget {
             }
             // Admins: show the notice inside the theme wrapper. [F9]
             echo $args['before_widget']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-            echo '<p class="wpfa-notice">'
+            echo '<p class="fauth-notice">'
                 . esc_html__( 'User registration is currently disabled. Enable it under Settings → General.', 'frontend-auth' )
                 . '</p>';
             echo $args['after_widget']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
@@ -336,7 +336,7 @@ class WPFA_Register_Widget extends WPFA_Abstract_Widget {
         if ( is_user_logged_in() ) {
             return;
         }
-        echo wpfa_render_form( 'register', $this->build_render_args( $instance ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+        echo fauth_render_form( 'register', $this->build_render_args( $instance ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
     }
 
     public function form( $instance ): void {
@@ -351,17 +351,17 @@ class WPFA_Register_Widget extends WPFA_Abstract_Widget {
  * 3. Lost Password Widget
  * -------------------------------------------------------------------- */
 
-class WPFA_Lost_Password_Widget extends WPFA_Abstract_Widget {
+class FAUTH_Lost_Password_Widget extends FAUTH_Abstract_Widget {
 
     protected string $form_name = 'lostpassword';
 
     public function __construct() {
         $this->init_widget(
-            'wpfa_lost_password_widget',
+            'fauth_lost_password_widget',
             __( 'Frontend Auth: Lost Password', 'frontend-auth' ),
             [
                 'description' => __( 'Displays the lost password / password reset form.', 'frontend-auth' ),
-                'classname'   => 'widget_wpfa widget_wpfa_lostpassword',
+                'classname'   => 'widget_fauth widget_fauth_lostpassword',
             ]
         );
     }
@@ -376,7 +376,7 @@ class WPFA_Lost_Password_Widget extends WPFA_Abstract_Widget {
         if ( is_user_logged_in() ) {
             return;
         }
-        echo wpfa_render_form( 'lostpassword', $this->build_render_args( $instance ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+        echo fauth_render_form( 'lostpassword', $this->build_render_args( $instance ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
     }
 
     public function form( $instance ): void {
@@ -391,14 +391,14 @@ class WPFA_Lost_Password_Widget extends WPFA_Abstract_Widget {
  *
  * Why this needs to be a widget and not just the automatic rewrite rule:
  * When an Elementor template is applied to a page, Elementor owns the
- * page canvas entirely. The virtual "post" injected by wpfa_the_posts()
+ * page canvas entirely. The virtual "post" injected by fauth_the_posts()
  * has no real WP page behind it, so Elementor's Theme Builder conditions
  * never match it and the template is not applied. The result is a bare
  * unstyled form with no header/footer.
  *
  * The correct solution for Elementor sites is:
  *  1. Create a real WordPress page (e.g. /reset-password/).
- *  2. Set that page's slug to match the wpfa_slug_resetpass option.
+ *  2. Set that page's slug to match the fauth_slug_resetpass option.
  *  3. Drop this widget into any Elementor widget area on that page,
  *     OR use Elementor's Shortcode widget with [frontend-auth action="resetpass"].
  *  4. Apply any Elementor Theme Builder template to it normally.
@@ -410,17 +410,17 @@ class WPFA_Lost_Password_Widget extends WPFA_Abstract_Widget {
  * a broken form.
  * -------------------------------------------------------------------- */
 
-class WPFA_Reset_Password_Widget extends WPFA_Abstract_Widget {
+class FAUTH_Reset_Password_Widget extends FAUTH_Abstract_Widget {
 
     protected string $form_name = 'resetpass';
 
     public function __construct() {
         $this->init_widget(
-            'wpfa_reset_password_widget',
+            'fauth_reset_password_widget',
             __( 'Frontend Auth: Reset Password', 'frontend-auth' ),
             [
                 'description' => __( 'Displays the password reset form. Place on the page your reset-password email links point to.', 'frontend-auth' ),
-                'classname'   => 'widget_wpfa widget_wpfa_resetpass',
+                'classname'   => 'widget_fauth widget_fauth_resetpass',
             ]
         );
     }
@@ -438,8 +438,8 @@ class WPFA_Reset_Password_Widget extends WPFA_Abstract_Widget {
      * current request's GET params BEFORE render() is called.
      *
      * The resetpass form registered in forms.php already adds rp_key and
-     * rp_login as hidden fields sourced from wpfa_get_request_value('key','get')
-     * and wpfa_get_request_value('login','get'). That works correctly when the
+     * rp_login as hidden fields sourced from fauth_get_request_value('key','get')
+     * and fauth_get_request_value('login','get'). That works correctly when the
      * form is rendered on the virtual rewrite-rule page. On a real WP page with
      * an Elementor template the same request params are present, so the form
      * fields are populated automatically — nothing extra needed at render time.
@@ -468,11 +468,11 @@ class WPFA_Reset_Password_Widget extends WPFA_Abstract_Widget {
                 ? $instance['invalid_key_text']
                 : __( 'This password reset link is invalid or has expired. Please request a new one.', 'frontend-auth' );
 
-            echo '<div class="wpfa wpfa-form wpfa-form-resetpass">'
-                . '<ul class="wpfa-errors" role="alert">'
-                . '<li class="wpfa-error">' . esc_html( $invalid_text ) . '</li>'
+            echo '<div class="fauth fauth-form fauth-form-resetpass">'
+                . '<ul class="fauth-errors" role="alert">'
+                . '<li class="fauth-error">' . esc_html( $invalid_text ) . '</li>'
                 . '</ul>'
-                . '<p class="wpfa-links"><a href="' . esc_url( wpfa_get_action_url( 'lostpassword' ) ) . '">'
+                . '<p class="fauth-links"><a href="' . esc_url( fauth_get_action_url( 'lostpassword' ) ) . '">'
                 . esc_html__( 'Request a new password reset link', 'frontend-auth' )
                 . '</a></p>'
                 . '</div>';
@@ -487,7 +487,7 @@ class WPFA_Reset_Password_Widget extends WPFA_Abstract_Widget {
     }
 
     protected function render_content( array $instance ): void {
-        echo wpfa_render_form( 'resetpass', $this->build_render_args( $instance ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+        echo fauth_render_form( 'resetpass', $this->build_render_args( $instance ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
     }
 
     public function form( $instance ): void {

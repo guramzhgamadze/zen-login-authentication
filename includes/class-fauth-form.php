@@ -10,7 +10,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-class WPFA_Form {
+class FAUTH_Form {
 
     /** @var string  Unique name, e.g. 'login' */
     private string $name;
@@ -153,24 +153,24 @@ class WPFA_Form {
 
         ob_start();
 
-        do_action( "wpfa_before_form_{$this->name}", $this );
+        do_action( "fauth_before_form_{$this->name}", $this );
 
-        echo '<div class="wpfa wpfa-form wpfa-form-' . esc_attr( $this->name ) . '">';
+        echo '<div class="fauth fauth-form fauth-form-' . esc_attr( $this->name ) . '">';
 
         // ----- Messages
         if ( $this->messages->has_errors() ) {
-            echo '<ul class="wpfa-messages" role="status">';
+            echo '<ul class="fauth-messages" role="status">';
             foreach ( $this->messages->get_error_messages() as $msg ) {
-                echo '<li class="wpfa-message">' . wp_kses_post( $msg ) . '</li>';
+                echo '<li class="fauth-message">' . wp_kses_post( $msg ) . '</li>';
             }
             echo '</ul>';
         }
 
         // ----- Errors
         if ( $this->has_errors() ) {
-            echo '<ul class="wpfa-errors" role="alert">';
+            echo '<ul class="fauth-errors" role="alert">';
             foreach ( $this->errors->get_error_messages() as $msg ) {
-                echo '<li class="wpfa-error">' . wp_kses_post( $msg ) . '</li>';
+                echo '<li class="fauth-error">' . wp_kses_post( $msg ) . '</li>';
             }
             echo '</ul>';
         }
@@ -182,11 +182,11 @@ class WPFA_Form {
         $form_attrs = array_merge( [
             'method' => 'post',
             'action' => $this->action_url,
-            'class'  => 'wpfa-inner-form',
-            'id'     => 'wpfa-form-' . $this->name,
-        ], (array) apply_filters( "wpfa_form_attributes_{$this->name}", [] ) );
+            'class'  => 'fauth-inner-form',
+            'id'     => 'fauth-form-' . $this->name,
+        ], (array) apply_filters( "fauth_form_attributes_{$this->name}", [] ) );
 
-        if ( wpfa_use_ajax() ) {
+        if ( fauth_use_ajax() ) {
             $form_attrs['data-ajax'] = '1';
         }
 
@@ -202,10 +202,10 @@ class WPFA_Form {
         echo ' novalidate>';
 
         // Hidden nonce
-        wp_nonce_field( "wpfa_{$this->name}", "wpfa_{$this->name}_nonce", false );
+        wp_nonce_field( "fauth_{$this->name}", "fauth_{$this->name}_nonce", false );
 
         // Hidden action field
-        echo '<input type="hidden" name="wpfa_action" value="' . esc_attr( $this->name ) . '">';
+        echo '<input type="hidden" name="fauth_action" value="' . esc_attr( $this->name ) . '">';
 
         // Redirect_to
         if ( ! empty( $args['redirect_to'] ) ) {
@@ -213,7 +213,7 @@ class WPFA_Form {
         }
 
         // Honeypot
-        echo wpfa_honeypot_field_html(); // phpcs:ignore
+        echo fauth_honeypot_field_html(); // phpcs:ignore
 
         // ----- Fields
         foreach ( $this->sorted_fields() as $field_name => $field ) {
@@ -229,7 +229,7 @@ class WPFA_Form {
 
         echo '</div>';
 
-        do_action( "wpfa_after_form_{$this->name}", $this );
+        do_action( "fauth_after_form_{$this->name}", $this );
 
         return ob_get_clean();
     }
@@ -246,20 +246,20 @@ class WPFA_Form {
         }
 
         if ( 'submit' === $type ) {
-            echo '<p class="wpfa-submit">'
-                . '<button type="submit" class="wpfa-button wpfa-submit-button">'
+            echo '<p class="fauth-submit">'
+                . '<button type="submit" class="fauth-button fauth-submit-button">'
                 . esc_html( $value )
                 . '</button></p>';
             return;
         }
 
         if ( 'action' === $type ) {
-            // Fire the WPFA-namespaced hook for plugin extensions.
-            do_action( "wpfa_{$this->name}_form" );
+            // Fire the FAUTH-namespaced hook for plugin extensions.
+            do_action( "fauth_{$this->name}_form" );
             // BUG-9 fix: also fire the standard WordPress hooks that 3rd-party
             // plugins (2FA, CAPTCHA, social login) hook into. Without these,
             // any plugin that hooks 'login_form', 'register_form', etc. silently
-            // fails to render its fields inside WPFA forms.
+            // fails to render its fields inside FAUTH forms.
             $wp_hooks = [
                 'login'        => 'login_form',
                 'register'     => 'register_form',
@@ -272,14 +272,14 @@ class WPFA_Form {
             return;
         }
 
-        echo '<p class="wpfa-field-wrap wpfa-field-' . esc_attr( $name ) . '">';
+        echo '<p class="fauth-field-wrap fauth-field-' . esc_attr( $name ) . '">';
 
         $is_checkbox = ( 'checkbox' === $type );
 
         if ( $label && ! $is_checkbox ) {
-            echo '<label class="wpfa-label" for="' . $id . '">' . esc_html( $label );
+            echo '<label class="fauth-label" for="' . $id . '">' . esc_html( $label );
             if ( $field['required'] ) {
-                echo ' <span class="wpfa-required" aria-hidden="true">*</span>';
+                echo ' <span class="fauth-required" aria-hidden="true">*</span>';
             }
             echo '</label>';
         }
@@ -289,7 +289,7 @@ class WPFA_Form {
             'name'  => $name,
             'id'    => $id,
             'value' => $value,
-            'class' => $is_checkbox ? 'wpfa-checkbox' : 'wpfa-field',
+            'class' => $is_checkbox ? 'fauth-checkbox' : 'fauth-field',
         ], (array) $field['attrs'] );
 
         // BUG-8 fix: never pre-populate password fields with a value.
@@ -303,7 +303,7 @@ class WPFA_Form {
         }
 
         // Password toggle i18n — injected as data attrs so JS can read per-field
-        // values instead of relying on the global wpFrontendAuth config object.
+        // values instead of relying on the global fauthConfig config object.
         // This allows each widget instance to have its own show/hide label text.
         if ( 'password' === $type ) {
             if ( ! empty( $field['toggle_show'] ) ) {
@@ -333,12 +333,12 @@ class WPFA_Form {
         echo '>';
 
         if ( $label && $is_checkbox ) {
-            echo '<label class="wpfa-label wpfa-checkbox-label" for="' . $id . '">'
+            echo '<label class="fauth-label fauth-checkbox-label" for="' . $id . '">'
                 . esc_html( $label ) . '</label>';
         }
 
         if ( ! empty( $field['description'] ) ) {
-            echo '<span class="wpfa-description">' . esc_html( $field['description'] ) . '</span>';
+            echo '<span class="fauth-description">' . esc_html( $field['description'] ) . '</span>';
         }
 
         echo '</p>';
@@ -348,11 +348,11 @@ class WPFA_Form {
      * Render the "action links" below the form (e.g. Register | Lost password).
      */
     private function render_links(): void {
-        $links = apply_filters( "wpfa_form_links_{$this->name}", [] );
+        $links = apply_filters( "fauth_form_links_{$this->name}", [] );
         if ( empty( $links ) ) {
             return;
         }
-        echo '<p class="wpfa-links">';
+        echo '<p class="fauth-links">';
         $parts = [];
         foreach ( $links as $link ) {
             $parts[] = '<a href="' . esc_url( $link['url'] ) . '">' . esc_html( $link['label'] ) . '</a>';

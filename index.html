@@ -329,22 +329,22 @@ footer a:hover{color:var(--accent)}
         </thead>
         <tbody>
           <tr>
-            <td><code>wpfa-login</code></td>
+            <td><code>fauth-login</code></td>
             <td>Login Form</td>
             <td>Custom labels, placeholders, toggle text, link URLs, redirect URL, remember me. Honors ?redirect_to= from URL.</td>
           </tr>
           <tr>
-            <td><code>wpfa-register</code></td>
+            <td><code>fauth-register</code></td>
             <td>Registration Form</td>
             <td>Custom labels, placeholders, toggle text, link URL, redirect URL, strength meter</td>
           </tr>
           <tr>
-            <td><code>wpfa-lost-password</code></td>
+            <td><code>fauth-lost-password</code></td>
             <td>Lost Password Form</td>
             <td>Custom label, placeholder, link URL, redirect URL</td>
           </tr>
           <tr>
-            <td><code>wpfa-reset-password</code></td>
+            <td><code>fauth-reset-password</code></td>
             <td>Reset Password Form</td>
             <td>Custom labels, placeholders, toggle text, invalid-link message, request-link URL</td>
           </tr>
@@ -368,11 +368,11 @@ footer a:hover{color:var(--accent)}
       <span class="comment"># Auth pages are created automatically on activation</span><br>
       <span class="comment"># (existing pages with matching slugs are adopted, not duplicated)</span><br><br>
       <span class="comment"># Optional: enable AJAX forms and user-chosen passwords</span><br>
-      <span class="cmd">wp option update wpfa_use_ajax 1</span><br>
-      <span class="cmd">wp option update wpfa_user_passwords 1</span><br><br>
+      <span class="cmd">wp option update fauth_use_ajax 1</span><br>
+      <span class="cmd">wp option update fauth_user_passwords 1</span><br><br>
       <span class="comment"># Optional: set the subscriber post-login destination</span><br>
       <span class="comment"># (Settings &rarr; Frontend Auth — slug or URL — or via filter:)</span><br>
-      <span class="cmd">add_filter( 'wpfa_subscriber_redirect', fn() => home_url( '/dashboard/' ) );</span><br><br>
+      <span class="cmd">add_filter( 'fauth_subscriber_redirect', fn() => home_url( '/dashboard/' ) );</span><br><br>
       <span class="comment"># That's it. Visit /login/ on your site.</span>
     </div>
   </div>

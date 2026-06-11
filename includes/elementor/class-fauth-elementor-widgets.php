@@ -33,12 +33,12 @@
  *  G  Messages & Errors: added Group_Control_Typography for error + message text
  *  H  Remember Me: added dedicated style section (color, typography, gap)
  *  I  label_spacing, field_spacing, toggle_gap: added em/rem units
- *  J  Password toggle: flex layout via .wpfa-field-wrap--password (CSS + JS)
+ *  J  Password toggle: flex layout via .fauth-field-wrap--password (CSS + JS)
  *  K  Action Links: added text-decoration SELECT control
  *  L  CSS: description + strength meter colors tokenised as custom properties
  *  M  Password strength meter: full style section (typography + 4-state colours)
  *  N  toggle_margin_top removed; replaced with toggle_gap targeting flex gap
- *  O  h_placeholders, h_toggle renamed to wpfa_h_* to avoid cross-widget ID collision
+ *  O  h_placeholders, h_toggle renamed to fauth_h_* to avoid cross-widget ID collision
  *
  * @package Frontend_Auth
  */
@@ -49,28 +49,28 @@ defined( 'ABSPATH' ) || exit;
  * Registration functions
  * ===================================================================== */
 
-function wpfa_register_elementor_category( $elements_manager ): void {
+function fauth_register_elementor_category( $elements_manager ): void {
     $elements_manager->add_category( 'frontend-auth', [
         'title' => esc_html__( 'Frontend Auth', 'frontend-auth' ),
         'icon'  => 'eicon-lock-user',
     ] );
 }
 
-function wpfa_register_elementor_widgets( $manager ): void {
-    $manager->register( new WPFA_Elementor_Login_Widget() );
-    $manager->register( new WPFA_Elementor_Register_Widget() );
-    $manager->register( new WPFA_Elementor_Lost_Password_Widget() );
-    $manager->register( new WPFA_Elementor_Reset_Password_Widget() );
+function fauth_register_elementor_widgets( $manager ): void {
+    $manager->register( new FAUTH_Elementor_Login_Widget() );
+    $manager->register( new FAUTH_Elementor_Register_Widget() );
+    $manager->register( new FAUTH_Elementor_Lost_Password_Widget() );
+    $manager->register( new FAUTH_Elementor_Reset_Password_Widget() );
 }
 
 /* =======================================================================
  * Abstract base
  * ===================================================================== */
 
-abstract class WPFA_Elementor_Base_Widget extends \Elementor\Widget_Base {
+abstract class FAUTH_Elementor_Base_Widget extends \Elementor\Widget_Base {
 
     public function get_categories(): array  { return [ 'frontend-auth' ]; }
-    public function get_keywords(): array    { return [ 'login', 'auth', 'register', 'password', 'wpfa' ]; }
+    public function get_keywords(): array    { return [ 'login', 'auth', 'register', 'password', 'fauth' ]; }
     public function get_style_depends(): array  { return [ 'frontend-auth' ]; }
     public function get_script_depends(): array { return [ 'frontend-auth' ]; }
     public function has_widget_inner_wrapper(): bool { return false; }
@@ -141,7 +141,7 @@ abstract class WPFA_Elementor_Base_Widget extends \Elementor\Widget_Base {
                 'vw' => [ 'min' => 10,  'max' => 100 ],
             ],
             'selectors'  => [
-                '{{WRAPPER}} .wpfa-form-wrap' => 'width: {{SIZE}}{{UNIT}};',
+                '{{WRAPPER}} .fauth-form-wrap' => 'width: {{SIZE}}{{UNIT}};',
             ],
         ] );
 
@@ -155,7 +155,7 @@ abstract class WPFA_Elementor_Base_Widget extends \Elementor\Widget_Base {
                 'vw' => [ 'min' => 10,  'max' => 100 ],
             ],
             'selectors'  => [
-                '{{WRAPPER}} .wpfa-form-wrap' => 'max-width: {{SIZE}}{{UNIT}};',
+                '{{WRAPPER}} .fauth-form-wrap' => 'max-width: {{SIZE}}{{UNIT}};',
             ],
         ] );
 
@@ -193,42 +193,42 @@ abstract class WPFA_Elementor_Base_Widget extends \Elementor\Widget_Base {
                 'right'  => 'margin-left: auto; margin-right: 0;',
             ],
             'selectors' => [
-                '{{WRAPPER}} .wpfa-form-wrap' => '{{VALUE}}',
+                '{{WRAPPER}} .fauth-form-wrap' => '{{VALUE}}',
             ],
             'separator' => 'after',
         ] );
 
         $this->add_control( 'form_bg_color', [
             'label' => esc_html__( 'Background', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR,
-            'selectors' => [ '{{WRAPPER}} .wpfa-form-wrap' => 'background-color: {{VALUE}};' ],
+            'selectors' => [ '{{WRAPPER}} .fauth-form-wrap' => 'background-color: {{VALUE}};' ],
         ] );
         $this->add_responsive_control( 'form_padding', [
             'label' => esc_html__( 'Padding', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::DIMENSIONS,
             'size_units' => [ 'px', 'em', '%' ],
-            'selectors' => [ '{{WRAPPER}} .wpfa-form-wrap' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ],
+            'selectors' => [ '{{WRAPPER}} .fauth-form-wrap' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ],
         ] );
         $this->add_responsive_control( 'form_spacing_top', [
             'label' => esc_html__( 'Spacing Top', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::SLIDER,
             'size_units' => [ 'px', 'em' ],
             'range' => [ 'px' => [ 'min' => 0, 'max' => 100 ], 'em' => [ 'min' => 0, 'max' => 6 ] ],
-            'selectors' => [ '{{WRAPPER}} .wpfa-form-wrap' => 'margin-top: {{SIZE}}{{UNIT}};' ],
+            'selectors' => [ '{{WRAPPER}} .fauth-form-wrap' => 'margin-top: {{SIZE}}{{UNIT}};' ],
         ] );
         $this->add_responsive_control( 'form_spacing_bottom', [
             'label' => esc_html__( 'Spacing Bottom', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::SLIDER,
             'size_units' => [ 'px', 'em' ],
             'range' => [ 'px' => [ 'min' => 0, 'max' => 100 ], 'em' => [ 'min' => 0, 'max' => 6 ] ],
-            'selectors' => [ '{{WRAPPER}} .wpfa-form-wrap' => 'margin-bottom: {{SIZE}}{{UNIT}};' ],
+            'selectors' => [ '{{WRAPPER}} .fauth-form-wrap' => 'margin-bottom: {{SIZE}}{{UNIT}};' ],
             'separator' => 'after',
         ] );
-        $this->add_group_control( \Elementor\Group_Control_Border::get_type(), [ 'name' => 'form_border', 'selector' => '{{WRAPPER}} .wpfa-form-wrap' ] );
+        $this->add_group_control( \Elementor\Group_Control_Border::get_type(), [ 'name' => 'form_border', 'selector' => '{{WRAPPER}} .fauth-form-wrap' ] );
         $this->add_responsive_control( 'form_border_radius', [
             'label' => esc_html__( 'Border Radius', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::DIMENSIONS,
             'size_units' => [ 'px', '%' ],
-            'selectors' => [ '{{WRAPPER}} .wpfa-form-wrap' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ],
+            'selectors' => [ '{{WRAPPER}} .fauth-form-wrap' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ],
         ] );
         // Fix #2 — class_exists() guard for safety across Elementor versions.
         if ( class_exists( '\\Elementor\\Group_Control_Box_Shadow' ) ) {
-            $this->add_group_control( \Elementor\Group_Control_Box_Shadow::get_type(), [ 'name' => 'form_shadow', 'selector' => '{{WRAPPER}} .wpfa-form-wrap' ] );
+            $this->add_group_control( \Elementor\Group_Control_Box_Shadow::get_type(), [ 'name' => 'form_shadow', 'selector' => '{{WRAPPER}} .fauth-form-wrap' ] );
         }
         $this->end_controls_section();
 
@@ -237,38 +237,38 @@ abstract class WPFA_Elementor_Base_Widget extends \Elementor\Widget_Base {
             'label' => esc_html__( 'Form Title', 'frontend-auth' ), 'tab' => \Elementor\Controls_Manager::TAB_STYLE,
             'condition' => [ 'form_title_text!' => '' ],
         ] );
-        $this->add_control( 'title_color', [ 'label' => esc_html__( 'Color', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .wpfa-form-title' => 'color: {{VALUE}};' ] ] );
-        $this->add_group_control( \Elementor\Group_Control_Typography::get_type(), [ 'name' => 'title_typography', 'selector' => '{{WRAPPER}} .wpfa-form-title' ] );
+        $this->add_control( 'title_color', [ 'label' => esc_html__( 'Color', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-form-title' => 'color: {{VALUE}};' ] ] );
+        $this->add_group_control( \Elementor\Group_Control_Typography::get_type(), [ 'name' => 'title_typography', 'selector' => '{{WRAPPER}} .fauth-form-title' ] );
         $this->add_responsive_control( 'title_align', [
             'label' => esc_html__( 'Alignment', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::CHOOSE,
             'options' => [ 'left' => [ 'title' => 'Left', 'icon' => 'eicon-text-align-left' ], 'center' => [ 'title' => 'Center', 'icon' => 'eicon-text-align-center' ], 'right' => [ 'title' => 'Right', 'icon' => 'eicon-text-align-right' ] ],
-            'selectors' => [ '{{WRAPPER}} .wpfa-form-title' => 'text-align: {{VALUE}};' ],
+            'selectors' => [ '{{WRAPPER}} .fauth-form-title' => 'text-align: {{VALUE}};' ],
         ] );
-        $this->add_responsive_control( 'title_spacing', [ 'label' => esc_html__( 'Bottom Spacing', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::SLIDER, 'size_units' => [ 'px', 'em' ], 'range' => [ 'px' => [ 'min' => 0, 'max' => 60 ] ], 'selectors' => [ '{{WRAPPER}} .wpfa-form-title' => 'margin-bottom: {{SIZE}}{{UNIT}};' ] ] );
+        $this->add_responsive_control( 'title_spacing', [ 'label' => esc_html__( 'Bottom Spacing', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::SLIDER, 'size_units' => [ 'px', 'em' ], 'range' => [ 'px' => [ 'min' => 0, 'max' => 60 ] ], 'selectors' => [ '{{WRAPPER}} .fauth-form-title' => 'margin-bottom: {{SIZE}}{{UNIT}};' ] ] );
         $this->end_controls_section();
 
         // Labels
         $this->start_controls_section( 'section_style_labels', [
             'label' => esc_html__( 'Labels', 'frontend-auth' ), 'tab' => \Elementor\Controls_Manager::TAB_STYLE,
         ] );
-        $this->add_control( 'label_color', [ 'label' => esc_html__( 'Color', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .wpfa-label' => 'color: {{VALUE}};' ] ] );
-        $this->add_group_control( \Elementor\Group_Control_Typography::get_type(), [ 'name' => 'label_typography', 'selector' => '{{WRAPPER}} .wpfa-label' ] );
-        $this->add_responsive_control( 'label_spacing', [ 'label' => esc_html__( 'Bottom Spacing', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::SLIDER, 'size_units' => [ 'px', 'em', 'rem' ], 'range' => [ 'px' => [ 'min' => 0, 'max' => 30 ], 'em' => [ 'min' => 0, 'max' => 4 ], 'rem' => [ 'min' => 0, 'max' => 4 ] ], 'selectors' => [ '{{WRAPPER}} .wpfa-label' => 'margin-bottom: {{SIZE}}{{UNIT}};' ] ] ); // Fix I
+        $this->add_control( 'label_color', [ 'label' => esc_html__( 'Color', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-label' => 'color: {{VALUE}};' ] ] );
+        $this->add_group_control( \Elementor\Group_Control_Typography::get_type(), [ 'name' => 'label_typography', 'selector' => '{{WRAPPER}} .fauth-label' ] );
+        $this->add_responsive_control( 'label_spacing', [ 'label' => esc_html__( 'Bottom Spacing', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::SLIDER, 'size_units' => [ 'px', 'em', 'rem' ], 'range' => [ 'px' => [ 'min' => 0, 'max' => 30 ], 'em' => [ 'min' => 0, 'max' => 4 ], 'rem' => [ 'min' => 0, 'max' => 4 ] ], 'selectors' => [ '{{WRAPPER}} .fauth-label' => 'margin-bottom: {{SIZE}}{{UNIT}};' ] ] ); // Fix I
         $this->end_controls_section();
 
         // Fields
         $this->start_controls_section( 'section_style_fields', [
             'label' => esc_html__( 'Input Fields', 'frontend-auth' ), 'tab' => \Elementor\Controls_Manager::TAB_STYLE,
         ] );
-        $this->add_control( 'field_text_color', [ 'label' => esc_html__( 'Text Color', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .wpfa-field' => 'color: {{VALUE}};' ] ] );
-        $this->add_control( 'field_placeholder_color', [ 'label' => esc_html__( 'Placeholder Color', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .wpfa-field::placeholder' => 'color: {{VALUE}};' ] ] );
-        $this->add_control( 'field_bg', [ 'label' => esc_html__( 'Background', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .wpfa-field' => 'background-color: {{VALUE}};' ] ] );
-        $this->add_group_control( \Elementor\Group_Control_Typography::get_type(), [ 'name' => 'field_typography', 'selector' => '{{WRAPPER}} .wpfa-field' ] );
-        $this->add_group_control( \Elementor\Group_Control_Border::get_type(), [ 'name' => 'field_border', 'selector' => '{{WRAPPER}} .wpfa-field' ] );
-        $this->add_responsive_control( 'field_border_radius', [ 'label' => esc_html__( 'Border Radius', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::DIMENSIONS, 'size_units' => [ 'px', '%' ], 'selectors' => [ '{{WRAPPER}} .wpfa-field' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ] ] );
-        $this->add_responsive_control( 'field_padding', [ 'label' => esc_html__( 'Padding', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::DIMENSIONS, 'size_units' => [ 'px', 'em' ], 'selectors' => [ '{{WRAPPER}} .wpfa-field' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ] ] );
+        $this->add_control( 'field_text_color', [ 'label' => esc_html__( 'Text Color', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-field' => 'color: {{VALUE}};' ] ] );
+        $this->add_control( 'field_placeholder_color', [ 'label' => esc_html__( 'Placeholder Color', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-field::placeholder' => 'color: {{VALUE}};' ] ] );
+        $this->add_control( 'field_bg', [ 'label' => esc_html__( 'Background', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-field' => 'background-color: {{VALUE}};' ] ] );
+        $this->add_group_control( \Elementor\Group_Control_Typography::get_type(), [ 'name' => 'field_typography', 'selector' => '{{WRAPPER}} .fauth-field' ] );
+        $this->add_group_control( \Elementor\Group_Control_Border::get_type(), [ 'name' => 'field_border', 'selector' => '{{WRAPPER}} .fauth-field' ] );
+        $this->add_responsive_control( 'field_border_radius', [ 'label' => esc_html__( 'Border Radius', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::DIMENSIONS, 'size_units' => [ 'px', '%' ], 'selectors' => [ '{{WRAPPER}} .fauth-field' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ] ] );
+        $this->add_responsive_control( 'field_padding', [ 'label' => esc_html__( 'Padding', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::DIMENSIONS, 'size_units' => [ 'px', 'em' ], 'selectors' => [ '{{WRAPPER}} .fauth-field' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ] ] );
         $this->add_control( 'heading_focus', [ 'label' => esc_html__( 'Focus State', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
-        $this->add_control( 'field_focus_color', [ 'label' => esc_html__( 'Border Color', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .wpfa-field:focus' => 'border-color: {{VALUE}};' ] ] );
+        $this->add_control( 'field_focus_color', [ 'label' => esc_html__( 'Border Color', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-field:focus' => 'border-color: {{VALUE}};' ] ] );
         // Fix F — separated spread and color so both are independently adjustable
         $this->add_control( 'field_focus_shadow_spread', [
             'label'      => esc_html__( 'Glow Spread (px)', 'frontend-auth' ),
@@ -286,17 +286,17 @@ abstract class WPFA_Elementor_Base_Widget extends \Elementor\Widget_Base {
                 // Uses spread from field_focus_shadow_spread. Elementor doesn't
                 // cross-reference controls in selectors, so the spread is read
                 // at render time via a CSS custom property injected below.
-                '{{WRAPPER}} .wpfa-field:focus' => 'box-shadow: 0 0 0 {{field_focus_shadow_spread.SIZE}}px {{VALUE}};',
+                '{{WRAPPER}} .fauth-field:focus' => 'box-shadow: 0 0 0 {{field_focus_shadow_spread.SIZE}}px {{VALUE}};',
             ],
         ] );
-        $this->add_responsive_control( 'field_spacing', [ 'label' => esc_html__( 'Field Spacing', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::SLIDER, 'size_units' => [ 'px', 'em', 'rem' ], 'range' => [ 'px' => [ 'min' => 0, 'max' => 40 ], 'em' => [ 'min' => 0, 'max' => 5 ], 'rem' => [ 'min' => 0, 'max' => 5 ] ], 'selectors' => [ '{{WRAPPER}} .wpfa-field-wrap' => 'margin-bottom: {{SIZE}}{{UNIT}};' ], 'separator' => 'before' ] ); // Fix I
+        $this->add_responsive_control( 'field_spacing', [ 'label' => esc_html__( 'Field Spacing', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::SLIDER, 'size_units' => [ 'px', 'em', 'rem' ], 'range' => [ 'px' => [ 'min' => 0, 'max' => 40 ], 'em' => [ 'min' => 0, 'max' => 5 ], 'rem' => [ 'min' => 0, 'max' => 5 ] ], 'selectors' => [ '{{WRAPPER}} .fauth-field-wrap' => 'margin-bottom: {{SIZE}}{{UNIT}};' ], 'separator' => 'before' ] ); // Fix I
         $this->end_controls_section();
 
         // Button
         $this->start_controls_section( 'section_style_button', [
             'label' => esc_html__( 'Button', 'frontend-auth' ), 'tab' => \Elementor\Controls_Manager::TAB_STYLE,
         ] );
-        $this->add_group_control( \Elementor\Group_Control_Typography::get_type(), [ 'name' => 'btn_typography', 'selector' => '{{WRAPPER}} .wpfa-submit-button' ] );
+        $this->add_group_control( \Elementor\Group_Control_Typography::get_type(), [ 'name' => 'btn_typography', 'selector' => '{{WRAPPER}} .fauth-submit-button' ] );
         // Fix #8 — CHOOSE + selectors_dictionary is the correct pattern for non-numeric CSS toggles.
         $this->add_responsive_control( 'btn_width', [
             'label'               => esc_html__( 'Width', 'frontend-auth' ),
@@ -311,30 +311,30 @@ abstract class WPFA_Elementor_Base_Widget extends \Elementor\Widget_Base {
                 'full' => 'width: 100%;',
             ],
             'selectors'           => [
-                '{{WRAPPER}} .wpfa-submit-button' => '{{VALUE}}',
+                '{{WRAPPER}} .fauth-submit-button' => '{{VALUE}}',
             ],
         ] );
-        $this->add_responsive_control( 'btn_padding', [ 'label' => esc_html__( 'Padding', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::DIMENSIONS, 'size_units' => [ 'px', 'em' ], 'selectors' => [ '{{WRAPPER}} .wpfa-submit-button' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ] ] );
-        $this->add_responsive_control( 'btn_radius', [ 'label' => esc_html__( 'Border Radius', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::DIMENSIONS, 'size_units' => [ 'px', '%' ], 'selectors' => [ '{{WRAPPER}} .wpfa-submit-button' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ] ] );
+        $this->add_responsive_control( 'btn_padding', [ 'label' => esc_html__( 'Padding', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::DIMENSIONS, 'size_units' => [ 'px', 'em' ], 'selectors' => [ '{{WRAPPER}} .fauth-submit-button' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ] ] );
+        $this->add_responsive_control( 'btn_radius', [ 'label' => esc_html__( 'Border Radius', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::DIMENSIONS, 'size_units' => [ 'px', '%' ], 'selectors' => [ '{{WRAPPER}} .fauth-submit-button' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ] ] );
         $this->start_controls_tabs( 'btn_tabs' );
         $this->start_controls_tab( 'btn_normal', [ 'label' => esc_html__( 'Normal', 'frontend-auth' ) ] );
-        $this->add_control( 'btn_color', [ 'label' => esc_html__( 'Text', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .wpfa-submit-button' => 'color: {{VALUE}};' ] ] );
-        $this->add_control( 'btn_bg', [ 'label' => esc_html__( 'Background', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .wpfa-submit-button' => 'background-color: {{VALUE}};' ] ] );
-        $this->add_group_control( \Elementor\Group_Control_Border::get_type(), [ 'name' => 'btn_border', 'selector' => '{{WRAPPER}} .wpfa-submit-button' ] );
+        $this->add_control( 'btn_color', [ 'label' => esc_html__( 'Text', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-submit-button' => 'color: {{VALUE}};' ] ] );
+        $this->add_control( 'btn_bg', [ 'label' => esc_html__( 'Background', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-submit-button' => 'background-color: {{VALUE}};' ] ] );
+        $this->add_group_control( \Elementor\Group_Control_Border::get_type(), [ 'name' => 'btn_border', 'selector' => '{{WRAPPER}} .fauth-submit-button' ] );
         // Fix #2
         if ( class_exists( '\\Elementor\\Group_Control_Box_Shadow' ) ) {
-            $this->add_group_control( \Elementor\Group_Control_Box_Shadow::get_type(), [ 'name' => 'btn_shadow', 'selector' => '{{WRAPPER}} .wpfa-submit-button' ] );
+            $this->add_group_control( \Elementor\Group_Control_Box_Shadow::get_type(), [ 'name' => 'btn_shadow', 'selector' => '{{WRAPPER}} .fauth-submit-button' ] );
         }
         $this->end_controls_tab();
         $this->start_controls_tab( 'btn_hover', [ 'label' => esc_html__( 'Hover', 'frontend-auth' ) ] );
-        $this->add_control( 'btn_color_h', [ 'label' => esc_html__( 'Text', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .wpfa-submit-button:hover,{{WRAPPER}} .wpfa-submit-button:focus' => 'color: {{VALUE}};' ] ] );
-        $this->add_control( 'btn_bg_h', [ 'label' => esc_html__( 'Background', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .wpfa-submit-button:hover,{{WRAPPER}} .wpfa-submit-button:focus' => 'background-color: {{VALUE}};' ] ] );
-        $this->add_control( 'btn_border_h', [ 'label' => esc_html__( 'Border Color', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .wpfa-submit-button:hover,{{WRAPPER}} .wpfa-submit-button:focus' => 'border-color: {{VALUE}};' ] ] );
+        $this->add_control( 'btn_color_h', [ 'label' => esc_html__( 'Text', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-submit-button:hover,{{WRAPPER}} .fauth-submit-button:focus' => 'color: {{VALUE}};' ] ] );
+        $this->add_control( 'btn_bg_h', [ 'label' => esc_html__( 'Background', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-submit-button:hover,{{WRAPPER}} .fauth-submit-button:focus' => 'background-color: {{VALUE}};' ] ] );
+        $this->add_control( 'btn_border_h', [ 'label' => esc_html__( 'Border Color', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-submit-button:hover,{{WRAPPER}} .fauth-submit-button:focus' => 'border-color: {{VALUE}};' ] ] );
         // Fix #2
         if ( class_exists( '\\Elementor\\Group_Control_Box_Shadow' ) ) {
-            $this->add_group_control( \Elementor\Group_Control_Box_Shadow::get_type(), [ 'name' => 'btn_shadow_h', 'selector' => '{{WRAPPER}} .wpfa-submit-button:hover,{{WRAPPER}} .wpfa-submit-button:focus' ] );
+            $this->add_group_control( \Elementor\Group_Control_Box_Shadow::get_type(), [ 'name' => 'btn_shadow_h', 'selector' => '{{WRAPPER}} .fauth-submit-button:hover,{{WRAPPER}} .fauth-submit-button:focus' ] );
         }
-        $this->add_control( 'btn_transition', [ 'label' => esc_html__( 'Transition (ms)', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::SLIDER, 'range' => [ 'px' => [ 'min' => 0, 'max' => 1000, 'step' => 50 ] ], 'default' => [ 'size' => 200 ], 'selectors' => [ '{{WRAPPER}} .wpfa-submit-button' => 'transition-duration: {{SIZE}}ms;' ] ] );
+        $this->add_control( 'btn_transition', [ 'label' => esc_html__( 'Transition (ms)', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::SLIDER, 'range' => [ 'px' => [ 'min' => 0, 'max' => 1000, 'step' => 50 ] ], 'default' => [ 'size' => 200 ], 'selectors' => [ '{{WRAPPER}} .fauth-submit-button' => 'transition-duration: {{SIZE}}ms;' ] ] );
         $this->end_controls_tab();
         $this->end_controls_tabs();
         $this->end_controls_section();
@@ -343,10 +343,10 @@ abstract class WPFA_Elementor_Base_Widget extends \Elementor\Widget_Base {
         $this->start_controls_section( 'section_style_links', [
             'label' => esc_html__( 'Action Links', 'frontend-auth' ), 'tab' => \Elementor\Controls_Manager::TAB_STYLE,
         ] );
-        $this->add_control( 'links_color', [ 'label' => esc_html__( 'Color', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .wpfa-links a' => 'color: {{VALUE}};' ] ] );
-        $this->add_control( 'links_color_h', [ 'label' => esc_html__( 'Hover', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .wpfa-links a:hover' => 'color: {{VALUE}};' ] ] );
-        $this->add_group_control( \Elementor\Group_Control_Typography::get_type(), [ 'name' => 'links_typography', 'selector' => '{{WRAPPER}} .wpfa-links' ] );
-        $this->add_responsive_control( 'links_align', [ 'label' => esc_html__( 'Alignment', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::CHOOSE, 'options' => [ 'left' => [ 'title' => 'Left', 'icon' => 'eicon-text-align-left' ], 'center' => [ 'title' => 'Center', 'icon' => 'eicon-text-align-center' ], 'right' => [ 'title' => 'Right', 'icon' => 'eicon-text-align-right' ] ], 'selectors' => [ '{{WRAPPER}} .wpfa-links' => 'text-align: {{VALUE}};' ] ] );
+        $this->add_control( 'links_color', [ 'label' => esc_html__( 'Color', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-links a' => 'color: {{VALUE}};' ] ] );
+        $this->add_control( 'links_color_h', [ 'label' => esc_html__( 'Hover', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-links a:hover' => 'color: {{VALUE}};' ] ] );
+        $this->add_group_control( \Elementor\Group_Control_Typography::get_type(), [ 'name' => 'links_typography', 'selector' => '{{WRAPPER}} .fauth-links' ] );
+        $this->add_responsive_control( 'links_align', [ 'label' => esc_html__( 'Alignment', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::CHOOSE, 'options' => [ 'left' => [ 'title' => 'Left', 'icon' => 'eicon-text-align-left' ], 'center' => [ 'title' => 'Center', 'icon' => 'eicon-text-align-center' ], 'right' => [ 'title' => 'Right', 'icon' => 'eicon-text-align-right' ] ], 'selectors' => [ '{{WRAPPER}} .fauth-links' => 'text-align: {{VALUE}};' ] ] );
         // Fix K — text-decoration control for links
         $this->add_control( 'links_text_decoration', [
             'label'               => esc_html__( 'Underline', 'frontend-auth' ),
@@ -363,8 +363,8 @@ abstract class WPFA_Elementor_Base_Widget extends \Elementor\Widget_Base {
                 'default' => '',
             ],
             'selectors' => [
-                '{{WRAPPER}} .wpfa-links a'        => '{{VALUE}}',
-                '{{WRAPPER}} .wpfa-links a:hover'  => '{{VALUE}}',
+                '{{WRAPPER}} .fauth-links a'        => '{{VALUE}}',
+                '{{WRAPPER}} .fauth-links a:hover'  => '{{VALUE}}',
             ],
         ] );
         $this->end_controls_section();
@@ -375,15 +375,15 @@ abstract class WPFA_Elementor_Base_Widget extends \Elementor\Widget_Base {
         ] );
         // Fix G — added Typography controls for error and message text
         $this->add_control( 'h_err', [ 'label' => esc_html__( 'Errors', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::HEADING ] );
-        $this->add_control( 'err_color', [ 'label' => esc_html__( 'Text', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .wpfa-error' => 'color: {{VALUE}};' ] ] );
-        $this->add_control( 'err_bg', [ 'label' => esc_html__( 'Background', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .wpfa-error' => 'background-color: {{VALUE}};' ] ] );
-        $this->add_control( 'err_border', [ 'label' => esc_html__( 'Border', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .wpfa-error' => 'border-left-color: {{VALUE}};' ] ] );
-        $this->add_group_control( \Elementor\Group_Control_Typography::get_type(), [ 'name' => 'err_typography', 'selector' => '{{WRAPPER}} .wpfa-error' ] );
+        $this->add_control( 'err_color', [ 'label' => esc_html__( 'Text', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-error' => 'color: {{VALUE}};' ] ] );
+        $this->add_control( 'err_bg', [ 'label' => esc_html__( 'Background', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-error' => 'background-color: {{VALUE}};' ] ] );
+        $this->add_control( 'err_border', [ 'label' => esc_html__( 'Border', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-error' => 'border-left-color: {{VALUE}};' ] ] );
+        $this->add_group_control( \Elementor\Group_Control_Typography::get_type(), [ 'name' => 'err_typography', 'selector' => '{{WRAPPER}} .fauth-error' ] );
         $this->add_control( 'h_msg', [ 'label' => esc_html__( 'Success', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
-        $this->add_control( 'msg_color', [ 'label' => esc_html__( 'Text', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .wpfa-message' => 'color: {{VALUE}};' ] ] );
-        $this->add_control( 'msg_bg', [ 'label' => esc_html__( 'Background', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .wpfa-message' => 'background-color: {{VALUE}};' ] ] );
-        $this->add_control( 'msg_border', [ 'label' => esc_html__( 'Border', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .wpfa-message' => 'border-left-color: {{VALUE}};' ] ] );
-        $this->add_group_control( \Elementor\Group_Control_Typography::get_type(), [ 'name' => 'msg_typography', 'selector' => '{{WRAPPER}} .wpfa-message' ] );
+        $this->add_control( 'msg_color', [ 'label' => esc_html__( 'Text', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-message' => 'color: {{VALUE}};' ] ] );
+        $this->add_control( 'msg_bg', [ 'label' => esc_html__( 'Background', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-message' => 'background-color: {{VALUE}};' ] ] );
+        $this->add_control( 'msg_border', [ 'label' => esc_html__( 'Border', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-message' => 'border-left-color: {{VALUE}};' ] ] );
+        $this->add_group_control( \Elementor\Group_Control_Typography::get_type(), [ 'name' => 'msg_typography', 'selector' => '{{WRAPPER}} .fauth-message' ] );
         $this->end_controls_section();
     }
 
@@ -395,7 +395,7 @@ abstract class WPFA_Elementor_Base_Widget extends \Elementor\Widget_Base {
      * Call from any widget that renders a password field.
      */
     protected function register_password_toggle_content_controls(): void {
-        $this->add_control( 'wpfa_h_toggle', [
+        $this->add_control( 'fauth_h_toggle', [
             'label'     => esc_html__( 'Password Toggle Button', 'frontend-auth' ),
             'type'      => \Elementor\Controls_Manager::HEADING,
             'separator' => 'before',
@@ -423,7 +423,7 @@ abstract class WPFA_Elementor_Base_Widget extends \Elementor\Widget_Base {
     /* --- Shared "Sign in with Google" controls (Login / Register) --- */
 
     protected function register_google_button_controls(): void {
-        $this->add_control( 'wpfa_h_google', [
+        $this->add_control( 'fauth_h_google', [
             'label'     => esc_html__( 'Google Sign-In', 'frontend-auth' ),
             'type'      => \Elementor\Controls_Manager::HEADING,
             'separator' => 'before',
@@ -459,30 +459,30 @@ abstract class WPFA_Elementor_Base_Widget extends \Elementor\Widget_Base {
         ] );
         $this->add_group_control( \Elementor\Group_Control_Typography::get_type(), [
             'name'     => 'google_btn_typography',
-            'selector' => '{{WRAPPER}} .wpfa-google-btn',
+            'selector' => '{{WRAPPER}} .fauth-google-btn',
         ] );
         $this->add_responsive_control( 'google_btn_padding', [
             'label'      => esc_html__( 'Padding', 'frontend-auth' ),
             'type'       => \Elementor\Controls_Manager::DIMENSIONS,
             'size_units' => [ 'px', 'em' ],
-            'selectors'  => [ '{{WRAPPER}} .wpfa-google-btn' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ],
+            'selectors'  => [ '{{WRAPPER}} .fauth-google-btn' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ],
         ] );
         $this->add_responsive_control( 'google_btn_radius', [
             'label'      => esc_html__( 'Border Radius', 'frontend-auth' ),
             'type'       => \Elementor\Controls_Manager::DIMENSIONS,
             'size_units' => [ 'px', '%' ],
-            'selectors'  => [ '{{WRAPPER}} .wpfa-google-btn' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ],
+            'selectors'  => [ '{{WRAPPER}} .fauth-google-btn' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ],
         ] );
         $this->start_controls_tabs( 'google_btn_tabs' );
         $this->start_controls_tab( 'google_btn_normal', [ 'label' => esc_html__( 'Normal', 'frontend-auth' ) ] );
-        $this->add_control( 'google_btn_color', [ 'label' => esc_html__( 'Text', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .wpfa-google-btn' => 'color: {{VALUE}};' ] ] );
-        $this->add_control( 'google_btn_bg', [ 'label' => esc_html__( 'Background', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .wpfa-google-btn' => 'background-color: {{VALUE}};' ] ] );
-        $this->add_control( 'google_btn_border', [ 'label' => esc_html__( 'Border Color', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .wpfa-google-btn' => 'border-color: {{VALUE}};' ] ] );
+        $this->add_control( 'google_btn_color', [ 'label' => esc_html__( 'Text', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-google-btn' => 'color: {{VALUE}};' ] ] );
+        $this->add_control( 'google_btn_bg', [ 'label' => esc_html__( 'Background', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-google-btn' => 'background-color: {{VALUE}};' ] ] );
+        $this->add_control( 'google_btn_border', [ 'label' => esc_html__( 'Border Color', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-google-btn' => 'border-color: {{VALUE}};' ] ] );
         $this->end_controls_tab();
         $this->start_controls_tab( 'google_btn_hover', [ 'label' => esc_html__( 'Hover', 'frontend-auth' ) ] );
-        $this->add_control( 'google_btn_color_h', [ 'label' => esc_html__( 'Text', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .wpfa-google-btn:hover,{{WRAPPER}} .wpfa-google-btn:focus' => 'color: {{VALUE}};' ] ] );
-        $this->add_control( 'google_btn_bg_h', [ 'label' => esc_html__( 'Background', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .wpfa-google-btn:hover,{{WRAPPER}} .wpfa-google-btn:focus' => 'background-color: {{VALUE}};' ] ] );
-        $this->add_control( 'google_btn_border_h', [ 'label' => esc_html__( 'Border Color', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .wpfa-google-btn:hover,{{WRAPPER}} .wpfa-google-btn:focus' => 'border-color: {{VALUE}};' ] ] );
+        $this->add_control( 'google_btn_color_h', [ 'label' => esc_html__( 'Text', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-google-btn:hover,{{WRAPPER}} .fauth-google-btn:focus' => 'color: {{VALUE}};' ] ] );
+        $this->add_control( 'google_btn_bg_h', [ 'label' => esc_html__( 'Background', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-google-btn:hover,{{WRAPPER}} .fauth-google-btn:focus' => 'background-color: {{VALUE}};' ] ] );
+        $this->add_control( 'google_btn_border_h', [ 'label' => esc_html__( 'Border Color', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-google-btn:hover,{{WRAPPER}} .fauth-google-btn:focus' => 'border-color: {{VALUE}};' ] ] );
         $this->end_controls_tab();
         $this->end_controls_tabs();
         $this->add_control( 'google_divider_color', [
@@ -490,8 +490,8 @@ abstract class WPFA_Elementor_Base_Widget extends \Elementor\Widget_Base {
             'type'      => \Elementor\Controls_Manager::COLOR,
             'separator' => 'before',
             'selectors' => [
-                '{{WRAPPER}} .wpfa-sso-divider'          => 'color: {{VALUE}};',
-                '{{WRAPPER}} .wpfa-sso-divider::before,{{WRAPPER}} .wpfa-sso-divider::after' => 'background-color: {{VALUE}};',
+                '{{WRAPPER}} .fauth-sso-divider'          => 'color: {{VALUE}};',
+                '{{WRAPPER}} .fauth-sso-divider::before,{{WRAPPER}} .fauth-sso-divider::after' => 'background-color: {{VALUE}};',
             ],
         ] );
         $this->end_controls_section();
@@ -505,7 +505,7 @@ abstract class WPFA_Elementor_Base_Widget extends \Elementor\Widget_Base {
     protected function setup_google_button_overrides( array $s ): callable {
         $hide = ( 'yes' !== ( $s['show_google_button'] ?? 'yes' ) );
         if ( $hide ) {
-            add_filter( 'wpfa_show_google_button', '__return_false', 99 );
+            add_filter( 'fauth_show_google_button', '__return_false', 99 );
         }
         $text    = trim( (string) ( $s['google_button_text'] ?? '' ) );
         $text_cb = null;
@@ -513,27 +513,27 @@ abstract class WPFA_Elementor_Base_Widget extends \Elementor\Widget_Base {
             $text_cb = static function () use ( $text ) {
                 return $text;
             };
-            add_filter( 'wpfa_google_button_text', $text_cb, 99 );
+            add_filter( 'fauth_google_button_text', $text_cb, 99 );
         }
         return static function () use ( $hide, $text_cb ): void {
             if ( $hide ) {
-                remove_filter( 'wpfa_show_google_button', '__return_false', 99 );
+                remove_filter( 'fauth_show_google_button', '__return_false', 99 );
             }
             if ( null !== $text_cb ) {
-                remove_filter( 'wpfa_google_button_text', $text_cb, 99 );
+                remove_filter( 'fauth_google_button_text', $text_cb, 99 );
             }
         };
     }
 
     /**
      * Editor-preview markup for the Google button (Backbone template fragment).
-     * Mirrors wpfa_google_button_html(); shown whenever the widget toggle is on.
+     * Mirrors fauth_google_button_html(); shown whenever the widget toggle is on.
      */
     protected function google_button_content_template(): string {
-        $svg = function_exists( 'wpfa_google_button_svg' ) ? wpfa_google_button_svg() : '';
+        $svg = function_exists( 'fauth_google_button_svg' ) ? fauth_google_button_svg() : '';
         return '<# if ( "yes" === settings.show_google_button ) { #>'
-            . '<div class="wpfa-sso"><div class="wpfa-sso-divider"><span>' . esc_html__( 'or', 'frontend-auth' ) . '</span></div>'
-            . '<a class="wpfa-google-btn" href="#" onclick="return false;">' . $svg
+            . '<div class="fauth-sso"><div class="fauth-sso-divider"><span>' . esc_html__( 'or', 'frontend-auth' ) . '</span></div>'
+            . '<a class="fauth-google-btn" href="#" onclick="return false;">' . $svg
             . '<span><# if(settings.google_button_text){#>{{{settings.google_button_text}}}<#}else{#>' . esc_html__( 'Continue with Google', 'frontend-auth' ) . '<#}#></span></a></div>'
             . '<# } #>';
     }
@@ -591,18 +591,18 @@ abstract class WPFA_Elementor_Base_Widget extends \Elementor\Widget_Base {
         $this->add_control( 'checkbox_color', [
             'label'     => esc_html__( 'Label Color', 'frontend-auth' ),
             'type'      => \Elementor\Controls_Manager::COLOR,
-            'selectors' => [ '{{WRAPPER}} .wpfa-checkbox-label' => 'color: {{VALUE}};' ],
+            'selectors' => [ '{{WRAPPER}} .fauth-checkbox-label' => 'color: {{VALUE}};' ],
         ] );
         $this->add_group_control( \Elementor\Group_Control_Typography::get_type(), [
             'name'     => 'checkbox_typography',
-            'selector' => '{{WRAPPER}} .wpfa-checkbox-label',
+            'selector' => '{{WRAPPER}} .fauth-checkbox-label',
         ] );
         $this->add_responsive_control( 'checkbox_gap', [
             'label'      => esc_html__( 'Gap (checkbox ↔ label)', 'frontend-auth' ),
             'type'       => \Elementor\Controls_Manager::SLIDER,
             'size_units' => [ 'px', 'em' ],
             'range'      => [ 'px' => [ 'min' => 0, 'max' => 20 ] ],
-            'selectors'  => [ '{{WRAPPER}} .wpfa-checkbox-label' => 'margin-left: {{SIZE}}{{UNIT}};' ],
+            'selectors'  => [ '{{WRAPPER}} .fauth-checkbox-label' => 'margin-left: {{SIZE}}{{UNIT}};' ],
         ] );
         $this->end_controls_section();
     }
@@ -621,13 +621,13 @@ abstract class WPFA_Elementor_Base_Widget extends \Elementor\Widget_Base {
 
         $this->add_group_control( \Elementor\Group_Control_Typography::get_type(), [
             'name'     => 'toggle_typography',
-            'selector' => '{{WRAPPER}} .wpfa-password-toggle',
+            'selector' => '{{WRAPPER}} .fauth-password-toggle',
         ] );
         $this->add_responsive_control( 'toggle_padding', [
             'label'      => esc_html__( 'Padding', 'frontend-auth' ),
             'type'       => \Elementor\Controls_Manager::DIMENSIONS,
             'size_units' => [ 'px', 'em' ],
-            'selectors'  => [ '{{WRAPPER}} .wpfa-password-toggle' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ],
+            'selectors'  => [ '{{WRAPPER}} .fauth-password-toggle' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ],
         ] );
         // Fix N — negative range removed; Fix J means flex gap replaces margin-top
         // Renamed to toggle_gap and targets the flex gap between input and button
@@ -637,17 +637,17 @@ abstract class WPFA_Elementor_Base_Widget extends \Elementor\Widget_Base {
             'size_units' => [ 'px', 'em', 'rem' ],
             'range'      => [ 'px' => [ 'min' => 0, 'max' => 20 ], 'em' => [ 'min' => 0, 'max' => 2 ], 'rem' => [ 'min' => 0, 'max' => 2 ] ],
             'default'    => [ 'size' => 6, 'unit' => 'px' ],
-            'selectors'  => [ '{{WRAPPER}} .wpfa-field-wrap--password' => 'gap: {{SIZE}}{{UNIT}};' ],
+            'selectors'  => [ '{{WRAPPER}} .fauth-field-wrap--password' => 'gap: {{SIZE}}{{UNIT}};' ],
         ] );
         $this->add_group_control( \Elementor\Group_Control_Border::get_type(), [
             'name'     => 'toggle_border',
-            'selector' => '{{WRAPPER}} .wpfa-password-toggle',
+            'selector' => '{{WRAPPER}} .fauth-password-toggle',
         ] );
         $this->add_responsive_control( 'toggle_border_radius', [
             'label'      => esc_html__( 'Border Radius', 'frontend-auth' ),
             'type'       => \Elementor\Controls_Manager::DIMENSIONS,
             'size_units' => [ 'px', '%' ],
-            'selectors'  => [ '{{WRAPPER}} .wpfa-password-toggle' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ],
+            'selectors'  => [ '{{WRAPPER}} .fauth-password-toggle' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ],
         ] );
 
         // Normal / Hover tabs
@@ -657,17 +657,17 @@ abstract class WPFA_Elementor_Base_Widget extends \Elementor\Widget_Base {
         $this->add_control( 'toggle_color', [
             'label'     => esc_html__( 'Text Color', 'frontend-auth' ),
             'type'      => \Elementor\Controls_Manager::COLOR,
-            'selectors' => [ '{{WRAPPER}} .wpfa-password-toggle' => 'color: {{VALUE}};' ],
+            'selectors' => [ '{{WRAPPER}} .fauth-password-toggle' => 'color: {{VALUE}};' ],
         ] );
         $this->add_control( 'toggle_bg', [
             'label'     => esc_html__( 'Background', 'frontend-auth' ),
             'type'      => \Elementor\Controls_Manager::COLOR,
-            'selectors' => [ '{{WRAPPER}} .wpfa-password-toggle' => 'background-color: {{VALUE}};' ],
+            'selectors' => [ '{{WRAPPER}} .fauth-password-toggle' => 'background-color: {{VALUE}};' ],
         ] );
         if ( class_exists( '\\Elementor\\Group_Control_Box_Shadow' ) ) {
             $this->add_group_control( \Elementor\Group_Control_Box_Shadow::get_type(), [
                 'name'     => 'toggle_shadow',
-                'selector' => '{{WRAPPER}} .wpfa-password-toggle',
+                'selector' => '{{WRAPPER}} .fauth-password-toggle',
             ] );
         }
         $this->end_controls_tab();
@@ -676,22 +676,22 @@ abstract class WPFA_Elementor_Base_Widget extends \Elementor\Widget_Base {
         $this->add_control( 'toggle_color_h', [
             'label'     => esc_html__( 'Text Color', 'frontend-auth' ),
             'type'      => \Elementor\Controls_Manager::COLOR,
-            'selectors' => [ '{{WRAPPER}} .wpfa-password-toggle:hover, {{WRAPPER}} .wpfa-password-toggle:focus' => 'color: {{VALUE}};' ],
+            'selectors' => [ '{{WRAPPER}} .fauth-password-toggle:hover, {{WRAPPER}} .fauth-password-toggle:focus' => 'color: {{VALUE}};' ],
         ] );
         $this->add_control( 'toggle_bg_h', [
             'label'     => esc_html__( 'Background', 'frontend-auth' ),
             'type'      => \Elementor\Controls_Manager::COLOR,
-            'selectors' => [ '{{WRAPPER}} .wpfa-password-toggle:hover, {{WRAPPER}} .wpfa-password-toggle:focus' => 'background-color: {{VALUE}};' ],
+            'selectors' => [ '{{WRAPPER}} .fauth-password-toggle:hover, {{WRAPPER}} .fauth-password-toggle:focus' => 'background-color: {{VALUE}};' ],
         ] );
         $this->add_control( 'toggle_border_color_h', [
             'label'     => esc_html__( 'Border Color', 'frontend-auth' ),
             'type'      => \Elementor\Controls_Manager::COLOR,
-            'selectors' => [ '{{WRAPPER}} .wpfa-password-toggle:hover, {{WRAPPER}} .wpfa-password-toggle:focus' => 'border-color: {{VALUE}};' ],
+            'selectors' => [ '{{WRAPPER}} .fauth-password-toggle:hover, {{WRAPPER}} .fauth-password-toggle:focus' => 'border-color: {{VALUE}};' ],
         ] );
         if ( class_exists( '\\Elementor\\Group_Control_Box_Shadow' ) ) {
             $this->add_group_control( \Elementor\Group_Control_Box_Shadow::get_type(), [
                 'name'     => 'toggle_shadow_h',
-                'selector' => '{{WRAPPER}} .wpfa-password-toggle:hover, {{WRAPPER}} .wpfa-password-toggle:focus',
+                'selector' => '{{WRAPPER}} .fauth-password-toggle:hover, {{WRAPPER}} .fauth-password-toggle:focus',
             ] );
         }
         $this->end_controls_tab();
@@ -704,7 +704,7 @@ abstract class WPFA_Elementor_Base_Widget extends \Elementor\Widget_Base {
             'separator' => 'before',
             'range'     => [ 'px' => [ 'min' => 0, 'max' => 1000, 'step' => 50 ] ],
             'default'   => [ 'size' => 200 ],
-            'selectors' => [ '{{WRAPPER}} .wpfa-password-toggle' => 'transition-duration: {{SIZE}}ms;' ],
+            'selectors' => [ '{{WRAPPER}} .fauth-password-toggle' => 'transition-duration: {{SIZE}}ms;' ],
         ] );
 
         $this->end_controls_section();
@@ -724,7 +724,7 @@ abstract class WPFA_Elementor_Base_Widget extends \Elementor\Widget_Base {
         // the URL parameter represents their actual intended destination and must
         // take priority over whatever the editor default is.
         $url_redirect = isset( $_GET['redirect_to'] ) && is_string( $_GET['redirect_to'] ) // phpcs:ignore WordPress.Security.NonceVerification
-            ? wpfa_validate_redirect( wp_unslash( $_GET['redirect_to'] ) ) // phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput
+            ? fauth_validate_redirect( wp_unslash( $_GET['redirect_to'] ) ) // phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput
             : '';
 
         if ( '' !== $url_redirect ) {
@@ -738,7 +738,7 @@ abstract class WPFA_Elementor_Base_Widget extends \Elementor\Widget_Base {
     }
 
     protected function maybe_print_script_data(): void {
-        wpfa_maybe_add_inline_script();
+        fauth_maybe_add_inline_script();
     }
 
     protected function render_form_title( array $s ): void {
@@ -761,28 +761,28 @@ abstract class WPFA_Elementor_Base_Widget extends \Elementor\Widget_Base {
         // the class and the inline-editing data attributes into one element.
         //
         // Source: developers.elementor.com/docs/widgets/rendering-inline-editing/
-        $this->add_render_attribute( 'form_title_text', 'class', 'wpfa-form-title' );
+        $this->add_render_attribute( 'form_title_text', 'class', 'fauth-form-title' );
         $this->add_inline_editing_attributes( 'form_title_text', 'none' );
         echo '<' . esc_attr( $tag ) . ' ' . $this->get_render_attribute_string( 'form_title_text' ) . '>' . esc_html( $title ) . '</' . esc_attr( $tag ) . '>';
     }
 
     /**
-     * Open the .wpfa-form-wrap container. All width/max-width/alignment
+     * Open the .fauth-form-wrap container. All width/max-width/alignment
      * Elementor controls target this element. Must be called BEFORE
      * render_form_title() and the form output.
      */
     protected function open_form_wrap(): void {
-        echo '<div class="wpfa-form-wrap">';
+        echo '<div class="fauth-form-wrap">';
     }
 
     protected function close_form_wrap(): void {
-        echo '</div><!-- /.wpfa-form-wrap -->';
+        echo '</div><!-- /.fauth-form-wrap -->';
     }
 
     /**
-     * Apply custom text overrides from Elementor settings to a WPFA_Form.
+     * Apply custom text overrides from Elementor settings to a FAUTH_Form.
      *
-     * @param WPFA_Form $form  The form object.
+     * @param FAUTH_Form $form  The form object.
      * @param array     $map   Setting key => [ field_name, field_property ].
      * @param array     $s     Elementor settings.
      */
@@ -800,7 +800,7 @@ abstract class WPFA_Elementor_Base_Widget extends \Elementor\Widget_Base {
                      && \Elementor\Plugin::$instance->editor->is_edit_mode();
         if ( $is_editor ) {
             // Fix B — replaced hardcoded inline styles with CSS class (editor.css)
-            echo '<div class="wpfa-editor-preview-wrap wpfa-editor-notice">'
+            echo '<div class="fauth-editor-preview-wrap fauth-editor-notice">'
                 . esc_html( $msg ) . '</div>';
         }
     }
@@ -808,17 +808,17 @@ abstract class WPFA_Elementor_Base_Widget extends \Elementor\Widget_Base {
     /**
      * Make the form self-post to the current page URL.
      *
-     * Without this, the form's action URL is the canonical WPFA page URL
+     * Without this, the form's action URL is the canonical FAUTH page URL
      * (e.g. /lost-password/). If that page doesn't exist or the rewrite
      * rules haven't been flushed, the AJAX POST goes to a 404 URL. The
      * handler still processes it (template_redirect fires on 404s too),
      * but jQuery fails to parse the non-JSON 404 response.
      *
      * Self-posting to the current page is safe because the handler checks
-     * $_POST['wpfa_action'], not the URL.
+     * $_POST['fauth_action'], not the URL.
      */
     protected function make_form_self_post( string $form_name ): void {
-        $form = wpfa()->get_form( $form_name );
+        $form = fauth()->get_form( $form_name );
         if ( ! $form ) {
             return;
         }
@@ -837,9 +837,9 @@ abstract class WPFA_Elementor_Base_Widget extends \Elementor\Widget_Base {
  * 1. LOGIN
  * ===================================================================== */
 
-class WPFA_Elementor_Login_Widget extends WPFA_Elementor_Base_Widget {
+class FAUTH_Elementor_Login_Widget extends FAUTH_Elementor_Base_Widget {
 
-    public function get_name(): string  { return 'wpfa-login'; }
+    public function get_name(): string  { return 'fauth-login'; }
     public function get_title(): string { return esc_html__( 'Login Form', 'frontend-auth' ); }
     public function get_icon(): string  { return 'eicon-lock-user'; }
 
@@ -859,7 +859,7 @@ class WPFA_Elementor_Login_Widget extends WPFA_Elementor_Base_Widget {
         $this->add_control( 'button_text', [ 'label' => esc_html__( 'Button text', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Log In', 'frontend-auth' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
 
         // --- Field Placeholders ---
-        $this->add_control( 'wpfa_h_placeholders', [ 'label' => esc_html__( 'Field Placeholders', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
+        $this->add_control( 'fauth_h_placeholders', [ 'label' => esc_html__( 'Field Placeholders', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
         $this->add_control( 'placeholder_username', [ 'label' => esc_html__( 'Username placeholder', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'e.g. your@email.com', 'frontend-auth' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
         $this->add_control( 'placeholder_password', [ 'label' => esc_html__( 'Password placeholder', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'e.g. ••••••••', 'frontend-auth' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
 
@@ -914,7 +914,7 @@ class WPFA_Elementor_Login_Widget extends WPFA_Elementor_Base_Widget {
      * Render the login form with all text/URL overrides applied.
      */
     private function render_login_form( array $s ): void {
-        $form = wpfa()->get_form( 'login' );
+        $form = fauth()->get_form( 'login' );
         if ( ! $form ) { return; }
 
         $this->make_form_self_post( 'login' );
@@ -943,8 +943,8 @@ class WPFA_Elementor_Login_Widget extends WPFA_Elementor_Base_Widget {
         if ( '' !== $link_reg_text || '' !== $link_reg_url || '' !== $link_lp_text || '' !== $link_lp_url ) {
             // Fix #7 — detect each link explicitly; never rely on negation of the other.
             $link_callback = function ( $links ) use ( $link_reg_text, $link_reg_url, $link_lp_text, $link_lp_url ) {
-                $register_url  = wpfa_get_action_url( 'register' );
-                $lostpw_url    = wpfa_get_action_url( 'lostpassword' );
+                $register_url  = fauth_get_action_url( 'register' );
+                $lostpw_url    = fauth_get_action_url( 'lostpassword' );
                 $new_links = [];
                 foreach ( $links as $link ) {
                     $is_register = ( $link['url'] === $register_url );
@@ -962,7 +962,7 @@ class WPFA_Elementor_Login_Widget extends WPFA_Elementor_Base_Widget {
                 }
                 return $new_links;
             };
-            add_filter( 'wpfa_form_links_login', $link_callback, 99 );
+            add_filter( 'fauth_form_links_login', $link_callback, 99 );
         } else {
             $link_callback = null;
         }
@@ -971,7 +971,7 @@ class WPFA_Elementor_Login_Widget extends WPFA_Elementor_Base_Widget {
 
         $this->open_form_wrap();
         $this->render_form_title( $s );
-        echo wpfa_render_form( 'login', $this->build_render_args( $s ) ); // phpcs:ignore
+        echo fauth_render_form( 'login', $this->build_render_args( $s ) ); // phpcs:ignore
         $this->close_form_wrap();
 
         $google_cleanup();
@@ -990,30 +990,30 @@ class WPFA_Elementor_Login_Widget extends WPFA_Elementor_Base_Widget {
          * the Elementor preview iframe.
          *
          * Fix: store the callback reference, then remove_filter() immediately
-         * after wpfa_render_form() returns. The filter is now request-scoped
+         * after fauth_render_form() returns. The filter is now request-scoped
          * (added → used → removed within one render() call) and never leaks
          * across multiple editor refreshes.
          */
         if ( null !== $link_callback ) {
-            remove_filter( 'wpfa_form_links_login', $link_callback, 99 );
+            remove_filter( 'fauth_form_links_login', $link_callback, 99 );
         }
     }
 
     protected function content_template(): void {
-        echo '<div class="wpfa-form-wrap">';
+        echo '<div class="fauth-form-wrap">';
         echo '<# var tag = settings.form_title_tag || "h3"; if ( settings.form_title_text ) { #>';
-        echo '<{{{ tag }}} class="wpfa-form-title">{{{ settings.form_title_text }}}</{{{ tag }}}>';
+        echo '<{{{ tag }}} class="fauth-form-title">{{{ settings.form_title_text }}}</{{{ tag }}}>';
         echo '<# } #>';
-        echo '<div class="wpfa wpfa-form wpfa-form-login"><div class="wpfa-inner-form">';
-        echo '<p class="wpfa-field-wrap"><label class="wpfa-label"><# if(settings.label_username){#>{{{settings.label_username}}}<#}else{#>' . esc_html__( 'Username or Email', 'frontend-auth' ) . '<#}#></label><input type="text" class="wpfa-field" placeholder="<# if(settings.placeholder_username){#>{{settings.placeholder_username}}<#}#>" disabled></p>';
-        echo '<p class="wpfa-field-wrap wpfa-field-wrap--password"><label class="wpfa-label"><# if(settings.label_password){#>{{{settings.label_password}}}<#}else{#>' . esc_html__( 'Password', 'frontend-auth' ) . '<#}#></label><input type="password" class="wpfa-field" placeholder="<# if(settings.placeholder_password){#>{{settings.placeholder_password}}<#}#>" disabled><button type="button" class="wpfa-password-toggle"><# if(settings.toggle_show_text){#>{{{settings.toggle_show_text}}}<#}else{#>' . esc_html__( 'Show', 'frontend-auth' ) . '<#}#></button></p>';
-        echo '<p class="wpfa-submit"><button type="button" class="wpfa-button wpfa-submit-button"><# if(settings.button_text){#>{{{settings.button_text}}}<#}else{#>' . esc_html__( 'Log In', 'frontend-auth' ) . '<#}#></button></p>';
+        echo '<div class="fauth fauth-form fauth-form-login"><div class="fauth-inner-form">';
+        echo '<p class="fauth-field-wrap"><label class="fauth-label"><# if(settings.label_username){#>{{{settings.label_username}}}<#}else{#>' . esc_html__( 'Username or Email', 'frontend-auth' ) . '<#}#></label><input type="text" class="fauth-field" placeholder="<# if(settings.placeholder_username){#>{{settings.placeholder_username}}<#}#>" disabled></p>';
+        echo '<p class="fauth-field-wrap fauth-field-wrap--password"><label class="fauth-label"><# if(settings.label_password){#>{{{settings.label_password}}}<#}else{#>' . esc_html__( 'Password', 'frontend-auth' ) . '<#}#></label><input type="password" class="fauth-field" placeholder="<# if(settings.placeholder_password){#>{{settings.placeholder_password}}<#}#>" disabled><button type="button" class="fauth-password-toggle"><# if(settings.toggle_show_text){#>{{{settings.toggle_show_text}}}<#}else{#>' . esc_html__( 'Show', 'frontend-auth' ) . '<#}#></button></p>';
+        echo '<p class="fauth-submit"><button type="button" class="fauth-button fauth-submit-button"><# if(settings.button_text){#>{{{settings.button_text}}}<#}else{#>' . esc_html__( 'Log In', 'frontend-auth' ) . '<#}#></button></p>';
         echo '</div>';
         echo '<# if ( "yes" === settings.show_links ) { #>';
-        echo '<p class="wpfa-links"><a href="#"><# if(settings.link_register_text){#>{{{settings.link_register_text}}}<#}else{#>' . esc_html__( 'Register', 'frontend-auth' ) . '<#}#></a> &bull; <a href="#"><# if(settings.link_lostpw_text){#>{{{settings.link_lostpw_text}}}<#}else{#>' . esc_html__( 'Lost your password?', 'frontend-auth' ) . '<#}#></a></p>';
+        echo '<p class="fauth-links"><a href="#"><# if(settings.link_register_text){#>{{{settings.link_register_text}}}<#}else{#>' . esc_html__( 'Register', 'frontend-auth' ) . '<#}#></a> &bull; <a href="#"><# if(settings.link_lostpw_text){#>{{{settings.link_lostpw_text}}}<#}else{#>' . esc_html__( 'Lost your password?', 'frontend-auth' ) . '<#}#></a></p>';
         echo '<# } #></div>';
         echo $this->google_button_content_template(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped during construction
-        echo '</div><!-- /.wpfa-form-wrap -->';
+        echo '</div><!-- /.fauth-form-wrap -->';
     }
 }
 
@@ -1022,9 +1022,9 @@ class WPFA_Elementor_Login_Widget extends WPFA_Elementor_Base_Widget {
  * 2. REGISTER
  * ===================================================================== */
 
-class WPFA_Elementor_Register_Widget extends WPFA_Elementor_Base_Widget {
+class FAUTH_Elementor_Register_Widget extends FAUTH_Elementor_Base_Widget {
 
-    public function get_name(): string  { return 'wpfa-register'; }
+    public function get_name(): string  { return 'fauth-register'; }
     public function get_title(): string { return esc_html__( 'Registration Form', 'frontend-auth' ); }
     public function get_icon(): string  { return 'eicon-person'; }
 
@@ -1042,7 +1042,7 @@ class WPFA_Elementor_Register_Widget extends WPFA_Elementor_Base_Widget {
         $this->add_control( 'button_text', [ 'label' => esc_html__( 'Button text', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Register', 'frontend-auth' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
 
         // --- Field Placeholders ---
-        $this->add_control( 'wpfa_h_placeholders', [ 'label' => esc_html__( 'Field Placeholders', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
+        $this->add_control( 'fauth_h_placeholders', [ 'label' => esc_html__( 'Field Placeholders', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
         $this->add_control( 'placeholder_username', [ 'label' => esc_html__( 'Username placeholder', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'e.g. johndoe', 'frontend-auth' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
         $this->add_control( 'placeholder_email', [ 'label' => esc_html__( 'Email placeholder', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'e.g. your@email.com', 'frontend-auth' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
         $this->add_control( 'placeholder_password', [ 'label' => esc_html__( 'Password placeholder', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'e.g. ••••••••', 'frontend-auth' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
@@ -1070,7 +1070,7 @@ class WPFA_Elementor_Register_Widget extends WPFA_Elementor_Base_Widget {
         if ( is_user_logged_in() ) { return; }
 
         $link_callback = null; // Fix #4 — initialise before conditional to avoid undefined variable
-        $form = wpfa()->get_form( 'register' );
+        $form = fauth()->get_form( 'register' );
         if ( $form ) {
             $this->make_form_self_post( 'register' );
             $this->apply_text_overrides( $form, [
@@ -1104,7 +1104,7 @@ class WPFA_Elementor_Register_Widget extends WPFA_Elementor_Base_Widget {
                     }
                     return $links;
                 };
-                add_filter( 'wpfa_form_links_register', $link_callback, 99 );
+                add_filter( 'fauth_form_links_register', $link_callback, 99 );
             } else {
                 $link_callback = null;
             }
@@ -1112,28 +1112,28 @@ class WPFA_Elementor_Register_Widget extends WPFA_Elementor_Base_Widget {
         $google_cleanup = $this->setup_google_button_overrides( $s );
         $this->open_form_wrap();
         $this->render_form_title( $s );
-        echo wpfa_render_form( 'register', $this->build_render_args( $s ) ); // phpcs:ignore
+        echo fauth_render_form( 'register', $this->build_render_args( $s ) ); // phpcs:ignore
         $this->close_form_wrap();
         $google_cleanup();
         // Remove filter immediately after render — see Login widget for full explanation.
         if ( ! empty( $link_callback ) ) {
-            remove_filter( 'wpfa_form_links_register', $link_callback, 99 );
+            remove_filter( 'fauth_form_links_register', $link_callback, 99 );
         }
     }
 
     protected function content_template(): void {
-        echo '<div class="wpfa-form-wrap">';
-        echo '<# var tag = settings.form_title_tag || "h3"; if ( settings.form_title_text ) { #><{{{ tag }}} class="wpfa-form-title">{{{ settings.form_title_text }}}</{{{ tag }}}><# } #>';
-        echo '<div class="wpfa wpfa-form wpfa-form-register"><div class="wpfa-inner-form">';
-        echo '<p class="wpfa-field-wrap"><label class="wpfa-label"><# if(settings.label_username){#>{{{settings.label_username}}}<#}else{#>' . esc_html__('Username','frontend-auth') . '<#}#></label><input type="text" class="wpfa-field" placeholder="<# if(settings.placeholder_username){#>{{settings.placeholder_username}}<#}#>" disabled></p>';
-        echo '<p class="wpfa-field-wrap"><label class="wpfa-label"><# if(settings.label_email){#>{{{settings.label_email}}}<#}else{#>' . esc_html__('Email Address','frontend-auth') . '<#}#></label><input type="email" class="wpfa-field" placeholder="<# if(settings.placeholder_email){#>{{settings.placeholder_email}}<#}#>" disabled></p>';
+        echo '<div class="fauth-form-wrap">';
+        echo '<# var tag = settings.form_title_tag || "h3"; if ( settings.form_title_text ) { #><{{{ tag }}} class="fauth-form-title">{{{ settings.form_title_text }}}</{{{ tag }}}><# } #>';
+        echo '<div class="fauth fauth-form fauth-form-register"><div class="fauth-inner-form">';
+        echo '<p class="fauth-field-wrap"><label class="fauth-label"><# if(settings.label_username){#>{{{settings.label_username}}}<#}else{#>' . esc_html__('Username','frontend-auth') . '<#}#></label><input type="text" class="fauth-field" placeholder="<# if(settings.placeholder_username){#>{{settings.placeholder_username}}<#}#>" disabled></p>';
+        echo '<p class="fauth-field-wrap"><label class="fauth-label"><# if(settings.label_email){#>{{{settings.label_email}}}<#}else{#>' . esc_html__('Email Address','frontend-auth') . '<#}#></label><input type="email" class="fauth-field" placeholder="<# if(settings.placeholder_email){#>{{settings.placeholder_email}}<#}#>" disabled></p>';
         // Fix #1 — password fields + toggle button previews
-        echo '<p class="wpfa-field-wrap wpfa-field-wrap--password"><label class="wpfa-label"><# if(settings.label_password){#>{{{settings.label_password}}}<#}else{#>' . esc_html__('Password','frontend-auth') . '<#}#> <span class="wpfa-required">*</span></label><input type="password" class="wpfa-field" placeholder="<# if(settings.placeholder_password){#>{{settings.placeholder_password}}<#}#>" disabled><button type="button" class="wpfa-password-toggle"><# if(settings.toggle_show_text){#>{{{settings.toggle_show_text}}}<#}else{#>' . esc_html__('Show','frontend-auth') . '<#}#></button></p>';
-        echo '<p class="wpfa-field-wrap wpfa-field-wrap--password"><label class="wpfa-label"><# if(settings.label_confirm_pw){#>{{{settings.label_confirm_pw}}}<#}else{#>' . esc_html__('Confirm Password','frontend-auth') . '<#}#> <span class="wpfa-required">*</span></label><input type="password" class="wpfa-field" placeholder="<# if(settings.placeholder_confirm_pw){#>{{settings.placeholder_confirm_pw}}<#}#>" disabled><button type="button" class="wpfa-password-toggle"><# if(settings.toggle_show_text){#>{{{settings.toggle_show_text}}}<#}else{#>' . esc_html__('Show','frontend-auth') . '<#}#></button></p>';
-        echo '<p class="wpfa-submit"><button type="button" class="wpfa-button wpfa-submit-button"><# if(settings.button_text){#>{{{settings.button_text}}}<#}else{#>' . esc_html__('Register','frontend-auth') . '<#}#></button></p>';
-        echo '</div><# if("yes"===settings.show_links){#><p class="wpfa-links"><a href="#"><# if(settings.link_login_text){#>{{{settings.link_login_text}}}<#}else{#>' . esc_html__('Log In','frontend-auth') . '<#}#></a></p><#}#></div>';
+        echo '<p class="fauth-field-wrap fauth-field-wrap--password"><label class="fauth-label"><# if(settings.label_password){#>{{{settings.label_password}}}<#}else{#>' . esc_html__('Password','frontend-auth') . '<#}#> <span class="fauth-required">*</span></label><input type="password" class="fauth-field" placeholder="<# if(settings.placeholder_password){#>{{settings.placeholder_password}}<#}#>" disabled><button type="button" class="fauth-password-toggle"><# if(settings.toggle_show_text){#>{{{settings.toggle_show_text}}}<#}else{#>' . esc_html__('Show','frontend-auth') . '<#}#></button></p>';
+        echo '<p class="fauth-field-wrap fauth-field-wrap--password"><label class="fauth-label"><# if(settings.label_confirm_pw){#>{{{settings.label_confirm_pw}}}<#}else{#>' . esc_html__('Confirm Password','frontend-auth') . '<#}#> <span class="fauth-required">*</span></label><input type="password" class="fauth-field" placeholder="<# if(settings.placeholder_confirm_pw){#>{{settings.placeholder_confirm_pw}}<#}#>" disabled><button type="button" class="fauth-password-toggle"><# if(settings.toggle_show_text){#>{{{settings.toggle_show_text}}}<#}else{#>' . esc_html__('Show','frontend-auth') . '<#}#></button></p>';
+        echo '<p class="fauth-submit"><button type="button" class="fauth-button fauth-submit-button"><# if(settings.button_text){#>{{{settings.button_text}}}<#}else{#>' . esc_html__('Register','frontend-auth') . '<#}#></button></p>';
+        echo '</div><# if("yes"===settings.show_links){#><p class="fauth-links"><a href="#"><# if(settings.link_login_text){#>{{{settings.link_login_text}}}<#}else{#>' . esc_html__('Log In','frontend-auth') . '<#}#></a></p><#}#></div>';
         echo $this->google_button_content_template(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped during construction
-        echo '</div><!-- /.wpfa-form-wrap -->';
+        echo '</div><!-- /.fauth-form-wrap -->';
     }
 }
 
@@ -1142,9 +1142,9 @@ class WPFA_Elementor_Register_Widget extends WPFA_Elementor_Base_Widget {
  * 3. LOST PASSWORD
  * ===================================================================== */
 
-class WPFA_Elementor_Lost_Password_Widget extends WPFA_Elementor_Base_Widget {
+class FAUTH_Elementor_Lost_Password_Widget extends FAUTH_Elementor_Base_Widget {
 
-    public function get_name(): string  { return 'wpfa-lost-password'; }
+    public function get_name(): string  { return 'fauth-lost-password'; }
     public function get_title(): string { return esc_html__( 'Lost Password Form', 'frontend-auth' ); }
     public function get_icon(): string  { return 'eicon-email'; }
 
@@ -1159,7 +1159,7 @@ class WPFA_Elementor_Lost_Password_Widget extends WPFA_Elementor_Base_Widget {
         $this->add_control( 'button_text', [ 'label' => esc_html__( 'Button text', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Get New Password', 'frontend-auth' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
 
         // --- Field Placeholders ---
-        $this->add_control( 'wpfa_h_placeholders', [ 'label' => esc_html__( 'Field Placeholders', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
+        $this->add_control( 'fauth_h_placeholders', [ 'label' => esc_html__( 'Field Placeholders', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
         $this->add_control( 'placeholder_user_login', [ 'label' => esc_html__( 'Username / Email placeholder', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'e.g. your@email.com', 'frontend-auth' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
 
         $this->add_control( 'h_links', [ 'label' => esc_html__( 'Action Links', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
@@ -1175,7 +1175,7 @@ class WPFA_Elementor_Lost_Password_Widget extends WPFA_Elementor_Base_Widget {
         if ( is_user_logged_in() ) { return; }
         $s = $this->get_settings_for_display();
         $link_callback = null; // Fix #4 — initialise before conditional
-        $form = wpfa()->get_form( 'lostpassword' );
+        $form = fauth()->get_form( 'lostpassword' );
         if ( $form ) {
             $this->make_form_self_post( 'lostpassword' );
             $this->apply_text_overrides( $form, [
@@ -1195,29 +1195,29 @@ class WPFA_Elementor_Lost_Password_Widget extends WPFA_Elementor_Base_Widget {
                     }
                     return $links;
                 };
-                add_filter( 'wpfa_form_links_lostpassword', $link_callback, 99 );
+                add_filter( 'fauth_form_links_lostpassword', $link_callback, 99 );
             } else {
                 $link_callback = null;
             }
         }
         $this->open_form_wrap();
         $this->render_form_title( $s );
-        echo wpfa_render_form( 'lostpassword', $this->build_render_args( $s ) ); // phpcs:ignore
+        echo fauth_render_form( 'lostpassword', $this->build_render_args( $s ) ); // phpcs:ignore
         $this->close_form_wrap();
         // Remove filter immediately after render — see Login widget for full explanation.
         if ( ! empty( $link_callback ) ) {
-            remove_filter( 'wpfa_form_links_lostpassword', $link_callback, 99 );
+            remove_filter( 'fauth_form_links_lostpassword', $link_callback, 99 );
         }
     }
 
     protected function content_template(): void {
-        echo '<div class="wpfa-form-wrap">';
-        echo '<# var tag=settings.form_title_tag||"h3";if(settings.form_title_text){#><{{{tag}}} class="wpfa-form-title">{{{settings.form_title_text}}}</{{{tag}}}><#}#>';
-        echo '<div class="wpfa wpfa-form wpfa-form-lostpassword"><div class="wpfa-inner-form">';
-        echo '<p class="wpfa-field-wrap"><label class="wpfa-label"><# if(settings.label_user_login){#>{{{settings.label_user_login}}}<#}else{#>' . esc_html__('Username or Email','frontend-auth') . '<#}#></label><input type="text" class="wpfa-field" placeholder="<# if(settings.placeholder_user_login){#>{{settings.placeholder_user_login}}<#}#>" disabled></p>';
-        echo '<p class="wpfa-submit"><button type="button" class="wpfa-button wpfa-submit-button"><# if(settings.button_text){#>{{{settings.button_text}}}<#}else{#>' . esc_html__('Get New Password','frontend-auth') . '<#}#></button></p>';
-        echo '</div><# if("yes"===settings.show_links){#><p class="wpfa-links"><a href="#"><# if(settings.link_login_text){#>{{{settings.link_login_text}}}<#}else{#>' . esc_html__('Log In','frontend-auth') . '<#}#></a></p><#}#></div>';
-        echo '</div><!-- /.wpfa-form-wrap -->';
+        echo '<div class="fauth-form-wrap">';
+        echo '<# var tag=settings.form_title_tag||"h3";if(settings.form_title_text){#><{{{tag}}} class="fauth-form-title">{{{settings.form_title_text}}}</{{{tag}}}><#}#>';
+        echo '<div class="fauth fauth-form fauth-form-lostpassword"><div class="fauth-inner-form">';
+        echo '<p class="fauth-field-wrap"><label class="fauth-label"><# if(settings.label_user_login){#>{{{settings.label_user_login}}}<#}else{#>' . esc_html__('Username or Email','frontend-auth') . '<#}#></label><input type="text" class="fauth-field" placeholder="<# if(settings.placeholder_user_login){#>{{settings.placeholder_user_login}}<#}#>" disabled></p>';
+        echo '<p class="fauth-submit"><button type="button" class="fauth-button fauth-submit-button"><# if(settings.button_text){#>{{{settings.button_text}}}<#}else{#>' . esc_html__('Get New Password','frontend-auth') . '<#}#></button></p>';
+        echo '</div><# if("yes"===settings.show_links){#><p class="fauth-links"><a href="#"><# if(settings.link_login_text){#>{{{settings.link_login_text}}}<#}else{#>' . esc_html__('Log In','frontend-auth') . '<#}#></a></p><#}#></div>';
+        echo '</div><!-- /.fauth-form-wrap -->';
     }
 }
 
@@ -1226,12 +1226,12 @@ class WPFA_Elementor_Lost_Password_Widget extends WPFA_Elementor_Base_Widget {
  * 4. RESET PASSWORD
  * ===================================================================== */
 
-class WPFA_Elementor_Reset_Password_Widget extends WPFA_Elementor_Base_Widget {
+class FAUTH_Elementor_Reset_Password_Widget extends FAUTH_Elementor_Base_Widget {
 
     // Fix #10 — This widget reads $_GET['key'] and $_GET['login'] so it must never be cached.
     protected function is_dynamic_content(): bool { return true; }
 
-    public function get_name(): string  { return 'wpfa-reset-password'; }
+    public function get_name(): string  { return 'fauth-reset-password'; }
     public function get_title(): string { return esc_html__( 'Reset Password Form', 'frontend-auth' ); }
     public function get_icon(): string  { return 'eicon-lock'; }
 
@@ -1247,7 +1247,7 @@ class WPFA_Elementor_Reset_Password_Widget extends WPFA_Elementor_Base_Widget {
         $this->add_control( 'button_text', [ 'label' => esc_html__( 'Button text', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Reset Password', 'frontend-auth' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
 
         // --- Field Placeholders ---
-        $this->add_control( 'wpfa_h_placeholders', [ 'label' => esc_html__( 'Field Placeholders', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
+        $this->add_control( 'fauth_h_placeholders', [ 'label' => esc_html__( 'Field Placeholders', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
         $this->add_control( 'placeholder_new_pw', [ 'label' => esc_html__( 'New Password placeholder', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'e.g. ••••••••', 'frontend-auth' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
         $this->add_control( 'placeholder_confirm_pw', [ 'label' => esc_html__( 'Confirm Password placeholder', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'e.g. ••••••••', 'frontend-auth' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
 
@@ -1291,7 +1291,7 @@ class WPFA_Elementor_Reset_Password_Widget extends WPFA_Elementor_Base_Widget {
         $request_url_raw = $s['link_request_url'] ?? '';
         $request_url     = trim( is_array( $request_url_raw ) ? ( $request_url_raw['url'] ?? '' ) : $request_url_raw );
         if ( '' === $request_url ) {
-            $request_url = wpfa_get_action_url( 'lostpassword' );
+            $request_url = fauth_get_action_url( 'lostpassword' );
         }
 
         if ( empty( $rp_key ) || empty( $rp_login ) ) {
@@ -1302,36 +1302,36 @@ class WPFA_Elementor_Reset_Password_Widget extends WPFA_Elementor_Base_Widget {
 
             $this->open_form_wrap();
             $this->render_form_title( $s );
-            echo '<div class="wpfa wpfa-form wpfa-form-resetpass">'
-                . '<ul class="wpfa-errors" role="alert"><li class="wpfa-error">' . esc_html( $msg ) . '</li></ul>'
-                . '<p class="wpfa-links"><a href="' . esc_url( $request_url ) . '">'
+            echo '<div class="fauth fauth-form fauth-form-resetpass">'
+                . '<ul class="fauth-errors" role="alert"><li class="fauth-error">' . esc_html( $msg ) . '</li></ul>'
+                . '<p class="fauth-links"><a href="' . esc_url( $request_url ) . '">'
                 . esc_html( $link_text ) . '</a></p></div>';
 
             // In editor only: also show the form fields below so the user can style them
             if ( $is_editor ) {
-                echo '<div class="wpfa-editor-preview-wrap">';
-                echo '<p class="wpfa-editor-preview-label">' . esc_html__( 'Form preview (visible only in editor):', 'frontend-auth' ) . '</p>'; // Fix #11
-                echo '<div class="wpfa wpfa-form wpfa-form-resetpass wpfa-form--preview"><div class="wpfa-inner-form">';
+                echo '<div class="fauth-editor-preview-wrap">';
+                echo '<p class="fauth-editor-preview-label">' . esc_html__( 'Form preview (visible only in editor):', 'frontend-auth' ) . '</p>'; // Fix #11
+                echo '<div class="fauth fauth-form fauth-form-resetpass fauth-form--preview"><div class="fauth-inner-form">';
                 $lbl_new     = ( $s['label_new_pw']     ?? '' ) ?: esc_html__( 'New Password', 'frontend-auth' );
                 $lbl_confirm = ( $s['label_confirm_pw'] ?? '' ) ?: esc_html__( 'Confirm New Password', 'frontend-auth' );
                 $btn_text    = ( $s['button_text']       ?? '' ) ?: esc_html__( 'Reset Password', 'frontend-auth' );
                 $ph_new     = ( $s['placeholder_new_pw']    ?? '' );
                 $ph_confirm = ( $s['placeholder_confirm_pw'] ?? '' );
                 $show_lbl   = ( $s['toggle_show_text'] ?? '' ) ?: esc_html__( 'Show', 'frontend-auth' );
-                echo '<p class="wpfa-field-wrap wpfa-field-wrap--password"><label class="wpfa-label">' . esc_html( $lbl_new ) . ' <span class="wpfa-required">*</span></label>'
-                    . '<input type="password" class="wpfa-field"' . ( $ph_new ? ' placeholder="' . esc_attr( $ph_new ) . '"' : '' ) . ' disabled>'
-                    . '<button type="button" class="wpfa-password-toggle">' . esc_html( $show_lbl ) . '</button></p>';
-                echo '<p class="wpfa-field-wrap wpfa-field-wrap--password"><label class="wpfa-label">' . esc_html( $lbl_confirm ) . ' <span class="wpfa-required">*</span></label>'
-                    . '<input type="password" class="wpfa-field"' . ( $ph_confirm ? ' placeholder="' . esc_attr( $ph_confirm ) . '"' : '' ) . ' disabled>'
-                    . '<button type="button" class="wpfa-password-toggle">' . esc_html( $show_lbl ) . '</button></p>';
-                echo '<p class="wpfa-submit"><button type="button" class="wpfa-button wpfa-submit-button">' . esc_html( $btn_text ) . '</button></p>';
+                echo '<p class="fauth-field-wrap fauth-field-wrap--password"><label class="fauth-label">' . esc_html( $lbl_new ) . ' <span class="fauth-required">*</span></label>'
+                    . '<input type="password" class="fauth-field"' . ( $ph_new ? ' placeholder="' . esc_attr( $ph_new ) . '"' : '' ) . ' disabled>'
+                    . '<button type="button" class="fauth-password-toggle">' . esc_html( $show_lbl ) . '</button></p>';
+                echo '<p class="fauth-field-wrap fauth-field-wrap--password"><label class="fauth-label">' . esc_html( $lbl_confirm ) . ' <span class="fauth-required">*</span></label>'
+                    . '<input type="password" class="fauth-field"' . ( $ph_confirm ? ' placeholder="' . esc_attr( $ph_confirm ) . '"' : '' ) . ' disabled>'
+                    . '<button type="button" class="fauth-password-toggle">' . esc_html( $show_lbl ) . '</button></p>';
+                echo '<p class="fauth-submit"><button type="button" class="fauth-button fauth-submit-button">' . esc_html( $btn_text ) . '</button></p>';
                 echo '</div></div></div>';
             }
             $this->close_form_wrap();
             return;
         }
 
-        $form = wpfa()->get_form( 'resetpass' );
+        $form = fauth()->get_form( 'resetpass' );
         if ( $form ) {
             $this->make_form_self_post( 'resetpass' );
             $this->apply_text_overrides( $form, [
@@ -1350,34 +1350,34 @@ class WPFA_Elementor_Reset_Password_Widget extends WPFA_Elementor_Base_Widget {
         }
         $this->open_form_wrap();
         $this->render_form_title( $s );
-        echo wpfa_render_form( 'resetpass', [ 'show_links' => false, 'redirect_to' => '' ] ); // phpcs:ignore
+        echo fauth_render_form( 'resetpass', [ 'show_links' => false, 'redirect_to' => '' ] ); // phpcs:ignore
         $this->close_form_wrap();
     }
 
     protected function content_template(): void {
         // Backbone JS live preview — shows the invalid-key state (always in editor)
         // plus a form preview below it. All texts respond to control changes in real time.
-        echo '<div class="wpfa-form-wrap">';
-        echo '<# var tag=settings.form_title_tag||"h3";if(settings.form_title_text){#><{{{tag}}} class="wpfa-form-title">{{{settings.form_title_text}}}</{{{tag}}}><#}#>';
+        echo '<div class="fauth-form-wrap">';
+        echo '<# var tag=settings.form_title_tag||"h3";if(settings.form_title_text){#><{{{tag}}} class="fauth-form-title">{{{settings.form_title_text}}}</{{{tag}}}><#}#>';
 
         // Error message + link
-        echo '<div class="wpfa wpfa-form wpfa-form-resetpass">';
-        echo '<ul class="wpfa-errors" role="alert"><li class="wpfa-error">';
+        echo '<div class="fauth fauth-form fauth-form-resetpass">';
+        echo '<ul class="fauth-errors" role="alert"><li class="fauth-error">';
         echo '<# if(settings.invalid_key_message){#>{{{settings.invalid_key_message}}}<#}else{#>' . esc_html__( 'This password reset link is invalid or has expired. Please request a new one.', 'frontend-auth' ) . '<#}#>';
         echo '</li></ul>';
-        echo '<p class="wpfa-links"><a href="#">';
+        echo '<p class="fauth-links"><a href="#">';
         echo '<# if(settings.link_request_text){#>{{{settings.link_request_text}}}<#}else{#>' . esc_html__( 'Request a new password reset link', 'frontend-auth' ) . '<#}#>';
         echo '</a></p></div>';
 
         // Form preview
-        echo '<div class="wpfa-editor-preview-wrap">'; // Fix #11
-        echo '<p class="wpfa-editor-preview-label">' . esc_html__( 'Form preview (visible only in editor):', 'frontend-auth' ) . '</p>';
-        echo '<div class="wpfa wpfa-form wpfa-form-resetpass wpfa-form--preview"><div class="wpfa-inner-form">';
-        echo '<p class="wpfa-field-wrap wpfa-field-wrap--password"><label class="wpfa-label"><# if(settings.label_new_pw){#>{{{settings.label_new_pw}}}<#}else{#>' . esc_html__('New Password','frontend-auth') . '<#}#> <span class="wpfa-required">*</span></label><input type="password" class="wpfa-field" placeholder="<# if(settings.placeholder_new_pw){#>{{settings.placeholder_new_pw}}<#}#>" disabled><button type="button" class="wpfa-password-toggle"><# if(settings.toggle_show_text){#>{{{settings.toggle_show_text}}}<#}else{#>' . esc_html__('Show','frontend-auth') . '<#}#></button></p>';
-        echo '<p class="wpfa-field-wrap wpfa-field-wrap--password"><label class="wpfa-label"><# if(settings.label_confirm_pw){#>{{{settings.label_confirm_pw}}}<#}else{#>' . esc_html__('Confirm New Password','frontend-auth') . '<#}#> <span class="wpfa-required">*</span></label><input type="password" class="wpfa-field" placeholder="<# if(settings.placeholder_confirm_pw){#>{{settings.placeholder_confirm_pw}}<#}#>" disabled><button type="button" class="wpfa-password-toggle"><# if(settings.toggle_show_text){#>{{{settings.toggle_show_text}}}<#}else{#>' . esc_html__('Show','frontend-auth') . '<#}#></button></p>';
-        echo '<p class="wpfa-submit"><button type="button" class="wpfa-button wpfa-submit-button"><# if(settings.button_text){#>{{{settings.button_text}}}<#}else{#>' . esc_html__('Reset Password','frontend-auth') . '<#}#></button></p>';
+        echo '<div class="fauth-editor-preview-wrap">'; // Fix #11
+        echo '<p class="fauth-editor-preview-label">' . esc_html__( 'Form preview (visible only in editor):', 'frontend-auth' ) . '</p>';
+        echo '<div class="fauth fauth-form fauth-form-resetpass fauth-form--preview"><div class="fauth-inner-form">';
+        echo '<p class="fauth-field-wrap fauth-field-wrap--password"><label class="fauth-label"><# if(settings.label_new_pw){#>{{{settings.label_new_pw}}}<#}else{#>' . esc_html__('New Password','frontend-auth') . '<#}#> <span class="fauth-required">*</span></label><input type="password" class="fauth-field" placeholder="<# if(settings.placeholder_new_pw){#>{{settings.placeholder_new_pw}}<#}#>" disabled><button type="button" class="fauth-password-toggle"><# if(settings.toggle_show_text){#>{{{settings.toggle_show_text}}}<#}else{#>' . esc_html__('Show','frontend-auth') . '<#}#></button></p>';
+        echo '<p class="fauth-field-wrap fauth-field-wrap--password"><label class="fauth-label"><# if(settings.label_confirm_pw){#>{{{settings.label_confirm_pw}}}<#}else{#>' . esc_html__('Confirm New Password','frontend-auth') . '<#}#> <span class="fauth-required">*</span></label><input type="password" class="fauth-field" placeholder="<# if(settings.placeholder_confirm_pw){#>{{settings.placeholder_confirm_pw}}<#}#>" disabled><button type="button" class="fauth-password-toggle"><# if(settings.toggle_show_text){#>{{{settings.toggle_show_text}}}<#}else{#>' . esc_html__('Show','frontend-auth') . '<#}#></button></p>';
+        echo '<p class="fauth-submit"><button type="button" class="fauth-button fauth-submit-button"><# if(settings.button_text){#>{{{settings.button_text}}}<#}else{#>' . esc_html__('Reset Password','frontend-auth') . '<#}#></button></p>';
         echo '</div></div></div>';
-        echo '</div><!-- /.wpfa-form-wrap -->';
+        echo '</div><!-- /.fauth-form-wrap -->';
     }
 }
 

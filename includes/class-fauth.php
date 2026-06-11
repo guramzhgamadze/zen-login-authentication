@@ -7,9 +7,9 @@
 
 defined( 'ABSPATH' ) || exit;
 
-final class WPFA {
+final class FAUTH {
 
-    /** @var WPFA */
+    /** @var FAUTH */
     private static $instance;
 
     /** Registered action slugs => metadata */
@@ -26,7 +26,7 @@ final class WPFA {
     }
 
     private function __construct() {
-        do_action( 'wpfa_init', $this );
+        do_action( 'fauth_init', $this );
     }
 
     /* -----------------------------------------------------------------------
@@ -54,7 +54,7 @@ final class WPFA {
             'show_nav_menu_item' => true,
         ];
         $this->actions[ $name ] = wp_parse_args( $args, $defaults );
-        do_action( 'wpfa_registered_action', $name, $this->actions[ $name ] );
+        do_action( 'fauth_registered_action', $name, $this->actions[ $name ] );
     }
 
     public function unregister_action( string $name ): void {
@@ -73,9 +73,9 @@ final class WPFA {
      * Forms registry
      * -------------------------------------------------------------------- */
 
-    public function register_form( WPFA_Form $form ): WPFA_Form {
+    public function register_form( FAUTH_Form $form ): FAUTH_Form {
         $this->forms[ $form->get_name() ] = $form;
-        do_action( 'wpfa_registered_form', $form->get_name(), $form );
+        do_action( 'fauth_registered_form', $form->get_name(), $form );
         return $form;
     }
 
@@ -83,7 +83,7 @@ final class WPFA {
         unset( $this->forms[ $name ] );
     }
 
-    public function get_form( string $name ): WPFA_Form|false {
+    public function get_form( string $name ): FAUTH_Form|false {
         return $this->forms[ $name ] ?? false;
     }
 
@@ -93,6 +93,6 @@ final class WPFA {
 }
 
 /** Global accessor */
-function wpfa(): WPFA {
-    return WPFA::instance();
+function fauth(): FAUTH {
+    return FAUTH::instance();
 }
