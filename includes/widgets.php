@@ -36,10 +36,18 @@ defined( 'ABSPATH' ) || exit;
  * -------------------------------------------------------------------- */
 
 function fauth_register_widgets(): void {
-    register_widget( new FAUTH_Login_Widget() );
-    register_widget( new FAUTH_Register_Widget() );
-    register_widget( new FAUTH_Lost_Password_Widget() );
-    register_widget( new FAUTH_Reset_Password_Widget() );
+    $widgets = [
+        'login'        => FAUTH_Login_Widget::class,
+        'register'     => FAUTH_Register_Widget::class,
+        'lostpassword' => FAUTH_Lost_Password_Widget::class,
+        'resetpass'    => FAUTH_Reset_Password_Widget::class,
+        'account'      => FAUTH_Account_Widget::class,
+    ];
+    foreach ( $widgets as $key => $class ) {
+        if ( fauth_widget_enabled( $key ) ) {
+            register_widget( new $class() );
+        }
+    }
 }
 
 /* -----------------------------------------------------------------------
@@ -516,5 +524,54 @@ class FAUTH_Reset_Password_Widget extends FAUTH_Abstract_Widget {
         // sanitize_textarea_field preserves newlines, strips tags — correct for freeform message text.
         $sanitized['invalid_key_text'] = sanitize_textarea_field( wp_unslash( $new_instance['invalid_key_text'] ?? '' ) );
         return $sanitized;
+    }
+}
+
+/* -----------------------------------------------------------------------
+ * 5. Account Widget
+ *
+ * Frontend profile editing for the logged-in user: display name, email,
+ * and an optional password change. Renders nothing for guests — the
+ * account page itself redirects guests to login (see hooks.php), and in
+ * any other placement an account form for a guest is meaningless.
+ * -------------------------------------------------------------------- */
+
+class FAUTH_Account_Widget extends FAUTH_Abstract_Widget {
+
+    protected string $form_name = 'account';
+
+    public function __construct() {
+        $this->init_widget(
+            'fauth_account_widget',
+            __( 'Frontend Auth: Account', 'frontend-auth' ),
+            [
+                'description' => __( 'Lets logged-in users edit their display name, email, and password from the frontend.', 'frontend-auth' ),
+                'classname'   => 'widget_fauth widget_fauth_account',
+            ]
+        );
+    }
+
+    protected function get_instance_defaults(): array {
+        return array_merge( parent::get_instance_defaults(), [
+            'title' => __( 'My Account', 'frontend-auth' ),
+        ] );
+    }
+
+    protected function render_content( array $instance ): void {
+        if ( ! is_user_logged_in() ) {
+            return;
+        }
+        echo fauth_render_form( 'account', $this->build_render_args( $instance ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+    }
+
+    public function form( $instance ): void {
+        $instance = $this->parse_instance( $instance );
+        $this->render_title_field( $instance, __( 'My Account', 'frontend-auth' ) );
+        $this->render_show_links_field( $instance );
+        ?>
+        <p class="description">
+            <?php esc_html_e( 'Only visible to logged-in users. Guests visiting the Account page are redirected to the login form.', 'frontend-auth' ); ?>
+        </p>
+        <?php
     }
 }

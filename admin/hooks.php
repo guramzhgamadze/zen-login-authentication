@@ -37,6 +37,7 @@ add_action( 'update_option_fauth_slug_logout',       'fauth_admin_on_slug_change
 add_action( 'update_option_fauth_slug_register',     'fauth_admin_on_slug_change', 10, 3 );
 add_action( 'update_option_fauth_slug_lostpassword', 'fauth_admin_on_slug_change', 10, 3 );
 add_action( 'update_option_fauth_slug_resetpass',    'fauth_admin_on_slug_change', 10, 3 );
+add_action( 'update_option_fauth_slug_account',      'fauth_admin_on_slug_change', 10, 3 );
 add_action( 'update_option_fauth_use_permalinks',    'fauth_admin_on_slug_change', 10, 3 );
 
 function fauth_admin_on_slug_change( $old_value, $new_value, $option ): void {
@@ -134,8 +135,9 @@ function fauth_admin_page_notices(): void {
     }
     $notice = sanitize_key( wp_unslash( $_GET['fauth_notice'] ) ); // phpcs:ignore WordPress.Security.NonceVerification
     $messages = [
-        'pages_created' => __( 'Auth pages have been created successfully.', 'frontend-auth' ),
-        'pages_deleted' => __( 'Auto-created auth pages have been deleted.', 'frontend-auth' ),
+        'pages_created'    => __( 'Auth pages have been created successfully.', 'frontend-auth' ),
+        'pages_deleted'    => __( 'Auto-created auth pages have been deleted.', 'frontend-auth' ),
+        'activity_cleared' => __( 'Login activity log cleared.', 'frontend-auth' ),
     ];
     if ( isset( $messages[ $notice ] ) ) {
         echo '<div class="notice notice-success is-dismissible"><p>' . esc_html( $messages[ $notice ] ) . '</p></div>';

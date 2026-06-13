@@ -20,6 +20,7 @@ function fauth_register_default_forms(): void {
     fauth_register_registration_form();
     fauth_register_lost_password_form();
     fauth_register_password_reset_form();
+    fauth_register_account_form();
 }
 
 /* -----------------------------------------------------------------------
@@ -218,6 +219,169 @@ function fauth_register_password_reset_form(): void {
 }
 
 /* -----------------------------------------------------------------------
+ * Account (edit profile) — logged-in users only
+ * -------------------------------------------------------------------- */
+
+function fauth_register_account_form(): void {
+    $form = new FAUTH_Form( 'account', fauth_get_action_url( 'account' ) );
+    $user = wp_get_current_user();
+
+    // Sticky values: after a failed POST re-show what the user typed; on a
+    // fresh GET pre-fill from the current user's profile. Only trust POST
+    // values when this request is actually an account submission — other
+    // forms on the site may share field names like user_email.
+    $is_account_post = fauth_is_post_request()
+        && 'account' === sanitize_key( fauth_get_request_value( 'fauth_action', 'post' ) );
+
+    $first_name = $is_account_post ? sanitize_text_field( fauth_get_request_value( 'first_name', 'post' ) ) : '';
+    if ( '' === $first_name && $user->exists() ) {
+        $first_name = $user->first_name;
+    }
+
+    $last_name = $is_account_post ? sanitize_text_field( fauth_get_request_value( 'last_name', 'post' ) ) : '';
+    if ( '' === $last_name && $user->exists() ) {
+        $last_name = $user->last_name;
+    }
+
+    $display_name = $is_account_post ? sanitize_text_field( fauth_get_request_value( 'display_name', 'post' ) ) : '';
+    if ( '' === $display_name && $user->exists() ) {
+        $display_name = $user->display_name;
+    }
+
+    $user_email = $is_account_post ? sanitize_email( fauth_get_request_value( 'user_email', 'post' ) ) : '';
+    if ( '' === $user_email && $user->exists() ) {
+        $user_email = $user->user_email;
+    }
+
+    // Read-only username, same as wp-admin's profile screen. Disabled inputs
+    // are never submitted, so the handler cannot receive (or be tricked into
+    // processing) a username change.
+    $form->add_field( 'user_login', [
+        'type'        => 'text',
+        'label'       => __( 'Username', 'frontend-auth' ),
+        'value'       => $user->exists() ? $user->user_login : '',
+        'id'          => 'user_login',
+        'attrs'       => [ 'disabled' => 'disabled', 'autocomplete' => 'username' ],
+        'priority'    => 5,
+        'description' => __( 'Usernames cannot be changed.', 'frontend-auth' ),
+    ] );
+
+    $form->add_field( 'first_name', [
+        'type'     => 'text',
+        'label'    => __( 'First Name', 'frontend-auth' ),
+        'value'    => $first_name,
+        'id'       => 'first_name',
+        'attrs'    => [ 'autocomplete' => 'given-name' ],
+        'priority' => 10,
+    ] );
+
+    $form->add_field( 'last_name', [
+        'type'     => 'text',
+        'label'    => __( 'Last Name', 'frontend-auth' ),
+        'value'    => $last_name,
+        'id'       => 'last_name',
+        'attrs'    => [ 'autocomplete' => 'family-name' ],
+        'priority' => 12,
+    ] );
+
+    $form->add_field( 'display_name', [
+        'type'     => 'select',
+        'label'    => __( 'Display name publicly as', 'frontend-auth' ),
+        'value'    => $display_name,
+        'id'       => 'display_name',
+        'options'  => fauth_account_display_name_options( $user, $first_name, $last_name, $display_name ),
+        // frontend-auth.js rebuilds the option list live as the user types
+        // their first/last name (mirroring wp-admin's user-profile.js); the
+        // username and nickname combos are exposed for it as data attributes.
+        'attrs'    => [
+            'data-username' => $user->exists() ? $user->user_login : '',
+            'data-nickname' => $user->exists() ? $user->nickname : '',
+        ],
+        'required' => true,
+        'priority' => 14,
+    ] );
+
+    $form->add_field( 'user_email', [
+        'type'     => 'email',
+        'label'    => __( 'Email Address', 'frontend-auth' ),
+        'value'    => $user_email,
+        'id'       => 'user_email',
+        'attrs'    => [ 'autocomplete' => 'email' ],
+        'required' => true,
+        'priority' => 20,
+    ] );
+
+    // ids pass1/pass2 intentionally match the reset form: the password
+    // strength meter and visibility toggle in frontend-auth.js bind to them.
+    // The two forms never render on the same page, so the ids cannot collide.
+    $form->add_field( 'pass1', [
+        'type'        => 'password',
+        'label'       => __( 'New Password', 'frontend-auth' ),
+        'id'          => 'pass1',
+        'attrs'       => [ 'autocomplete' => 'new-password' ],
+        'priority'    => 30,
+        'description' => __( 'Leave blank to keep your current password.', 'frontend-auth' ),
+    ] );
+
+    $form->add_field( 'pass2', [
+        'type'     => 'password',
+        'label'    => __( 'Confirm New Password', 'frontend-auth' ),
+        'id'       => 'pass2',
+        'attrs'    => [ 'autocomplete' => 'new-password' ],
+        'priority' => 35,
+    ] );
+
+    $form->add_field( 'account_form_hook', [
+        'type'     => 'action',
+        'priority' => 38,
+    ] );
+
+    $form->add_field( 'submit', [
+        'type'     => 'submit',
+        'value'    => __( 'Save Changes', 'frontend-auth' ),
+        'priority' => 40,
+    ] );
+
+    fauth()->register_form( $form );
+}
+
+/**
+ * Build the "Display name publicly as" choices — the same set wp-admin's
+ * profile.php offers: current display name, nickname, username, first, last,
+ * "First Last", and "Last First". Keys equal values (the option's value IS
+ * the display string), deduplicated, empties dropped.
+ *
+ * @param WP_User $user        The user being edited.
+ * @param string  $first_name  First name (sticky POST value or saved meta).
+ * @param string  $last_name   Last name (sticky POST value or saved meta).
+ * @param string  $current     The currently selected display name.
+ * @return array<string,string>
+ */
+function fauth_account_display_name_options( WP_User $user, string $first_name, string $last_name, string $current ): array {
+    $options = [];
+    $add     = static function ( string $candidate ) use ( &$options ): void {
+        $candidate = trim( $candidate );
+        if ( '' !== $candidate && ! isset( $options[ $candidate ] ) ) {
+            $options[ $candidate ] = $candidate;
+        }
+    };
+
+    $add( $current );
+    if ( $user->exists() ) {
+        $add( $user->nickname );
+        $add( $user->user_login );
+    }
+    $add( $first_name );
+    $add( $last_name );
+    if ( '' !== trim( $first_name ) && '' !== trim( $last_name ) ) {
+        $add( trim( $first_name ) . ' ' . trim( $last_name ) );
+        $add( trim( $last_name ) . ' ' . trim( $first_name ) );
+    }
+
+    return (array) apply_filters( 'fauth_account_display_name_options', $options, $user );
+}
+
+/* -----------------------------------------------------------------------
  * Links filters
  * -------------------------------------------------------------------- */
 
@@ -236,5 +400,12 @@ add_filter( 'fauth_form_links_register', function ( $links ) {
 
 add_filter( 'fauth_form_links_lostpassword', function ( $links ) {
     $links[] = [ 'label' => __( 'Log In', 'frontend-auth' ), 'url' => fauth_get_action_url( 'login' ) ];
+    return $links;
+} );
+
+add_filter( 'fauth_form_links_account', function ( $links ) {
+    // wp_logout_url() is rewritten to the plugin's /logout/ URL (with nonce)
+    // by fauth_filter_logout_url(), so this stays correct on custom slugs.
+    $links[] = [ 'label' => __( 'Log Out', 'frontend-auth' ), 'url' => wp_logout_url() ];
     return $links;
 } );

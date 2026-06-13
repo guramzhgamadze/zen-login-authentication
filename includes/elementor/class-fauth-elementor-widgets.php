@@ -57,10 +57,18 @@ function fauth_register_elementor_category( $elements_manager ): void {
 }
 
 function fauth_register_elementor_widgets( $manager ): void {
-    $manager->register( new FAUTH_Elementor_Login_Widget() );
-    $manager->register( new FAUTH_Elementor_Register_Widget() );
-    $manager->register( new FAUTH_Elementor_Lost_Password_Widget() );
-    $manager->register( new FAUTH_Elementor_Reset_Password_Widget() );
+    $widgets = [
+        'login'        => FAUTH_Elementor_Login_Widget::class,
+        'register'     => FAUTH_Elementor_Register_Widget::class,
+        'lostpassword' => FAUTH_Elementor_Lost_Password_Widget::class,
+        'resetpass'    => FAUTH_Elementor_Reset_Password_Widget::class,
+        'account'      => FAUTH_Elementor_Account_Widget::class,
+    ];
+    foreach ( $widgets as $key => $class ) {
+        if ( fauth_widget_enabled( $key ) ) {
+            $manager->register( new $class() );
+        }
+    }
 }
 
 /* =======================================================================
@@ -1377,6 +1385,140 @@ class FAUTH_Elementor_Reset_Password_Widget extends FAUTH_Elementor_Base_Widget 
         echo '<p class="fauth-field-wrap fauth-field-wrap--password"><label class="fauth-label"><# if(settings.label_confirm_pw){#>{{{settings.label_confirm_pw}}}<#}else{#>' . esc_html__('Confirm New Password','frontend-auth') . '<#}#> <span class="fauth-required">*</span></label><input type="password" class="fauth-field" placeholder="<# if(settings.placeholder_confirm_pw){#>{{settings.placeholder_confirm_pw}}<#}#>" disabled><button type="button" class="fauth-password-toggle"><# if(settings.toggle_show_text){#>{{{settings.toggle_show_text}}}<#}else{#>' . esc_html__('Show','frontend-auth') . '<#}#></button></p>';
         echo '<p class="fauth-submit"><button type="button" class="fauth-button fauth-submit-button"><# if(settings.button_text){#>{{{settings.button_text}}}<#}else{#>' . esc_html__('Reset Password','frontend-auth') . '<#}#></button></p>';
         echo '</div></div></div>';
+        echo '</div><!-- /.fauth-form-wrap -->';
+    }
+}
+
+
+/* =======================================================================
+ * 5. ACCOUNT (edit profile)
+ * ===================================================================== */
+
+class FAUTH_Elementor_Account_Widget extends FAUTH_Elementor_Base_Widget {
+
+    public function get_name(): string  { return 'fauth-account'; }
+    public function get_title(): string { return esc_html__( 'Account Form', 'frontend-auth' ); }
+    public function get_icon(): string  { return 'eicon-user-circle-o'; }
+    public function get_keywords(): array { return [ 'account', 'profile', 'edit', 'auth', 'password', 'fauth' ]; }
+
+    protected function register_controls(): void {
+        $this->start_controls_section( 'section_content', [
+            'label' => esc_html__( 'Account Form', 'frontend-auth' ), 'tab' => \Elementor\Controls_Manager::TAB_CONTENT,
+        ] );
+        $this->register_title_controls();
+
+        $this->add_control( 'h_labels', [ 'label' => esc_html__( 'Field Labels', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
+        $this->add_control( 'label_username', [ 'label' => esc_html__( 'Username label', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Username', 'frontend-auth' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
+        $this->add_control( 'show_username', [
+            'label'        => esc_html__( 'Show username field', 'frontend-auth' ),
+            'type'         => \Elementor\Controls_Manager::SWITCHER,
+            'label_on'     => esc_html__( 'Yes', 'frontend-auth' ),
+            'label_off'    => esc_html__( 'No', 'frontend-auth' ),
+            'return_value' => 'yes',
+            'default'      => 'yes',
+            'description'  => esc_html__( 'Read-only, like the wp-admin profile screen — usernames cannot be changed.', 'frontend-auth' ),
+        ] );
+        $this->add_control( 'label_first_name', [ 'label' => esc_html__( 'First Name label', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'First Name', 'frontend-auth' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
+        $this->add_control( 'label_last_name', [ 'label' => esc_html__( 'Last Name label', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Last Name', 'frontend-auth' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
+        $this->add_control( 'label_display_name', [ 'label' => esc_html__( 'Display Name label', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Display name publicly as', 'frontend-auth' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
+        $this->add_control( 'label_email', [ 'label' => esc_html__( 'Email label', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Email Address', 'frontend-auth' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
+        $this->add_control( 'label_password', [ 'label' => esc_html__( 'New Password label', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'New Password', 'frontend-auth' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
+        $this->add_control( 'label_confirm_pw', [ 'label' => esc_html__( 'Confirm Password label', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Confirm New Password', 'frontend-auth' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
+        $this->add_control( 'password_hint', [ 'label' => esc_html__( 'Password hint text', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Leave blank to keep your current password.', 'frontend-auth' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
+        $this->add_control( 'button_text', [ 'label' => esc_html__( 'Button text', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Save Changes', 'frontend-auth' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
+
+        // --- Field Placeholders ---
+        $this->add_control( 'fauth_h_placeholders', [ 'label' => esc_html__( 'Field Placeholders', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
+        $this->add_control( 'placeholder_first_name', [ 'label' => esc_html__( 'First Name placeholder', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'e.g. John', 'frontend-auth' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
+        $this->add_control( 'placeholder_last_name', [ 'label' => esc_html__( 'Last Name placeholder', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'e.g. Doe', 'frontend-auth' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
+        $this->add_control( 'placeholder_email', [ 'label' => esc_html__( 'Email placeholder', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'e.g. your@email.com', 'frontend-auth' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
+
+        // --- Password Toggle ---
+        $this->register_password_toggle_content_controls();
+
+        $this->add_control( 'show_links', [
+            'label'        => esc_html__( 'Show Log Out link', 'frontend-auth' ),
+            'type'         => \Elementor\Controls_Manager::SWITCHER,
+            'label_on'     => esc_html__( 'Yes', 'frontend-auth' ),
+            'label_off'    => esc_html__( 'No', 'frontend-auth' ),
+            'return_value' => 'yes',
+            'default'      => 'yes',
+            'separator'    => 'before',
+        ] );
+        $this->end_controls_section();
+
+        $this->register_form_style_controls();
+        $this->register_password_toggle_style_controls();
+        $this->register_strength_meter_style_controls();
+    }
+
+    protected function render(): void {
+        $this->maybe_print_script_data();
+        $s = $this->get_settings_for_display();
+
+        // Guests never see the account form. The account page itself bounces
+        // guests to the login form (template_redirect), so this only matters
+        // when the widget is embedded on some other, public page. In the
+        // Elementor editor the current user is always logged in, so the form
+        // previews normally.
+        if ( ! is_user_logged_in() ) {
+            return;
+        }
+
+        $form = fauth()->get_form( 'account' );
+        if ( ! $form ) {
+            return;
+        }
+
+        $this->make_form_self_post( 'account' );
+
+        // Optional username row removal must happen before render. Safe to
+        // remove outright: the field is display-only (disabled, never submitted).
+        if ( 'yes' !== ( $s['show_username'] ?? 'yes' ) ) {
+            $form->remove_field( 'user_login' );
+        }
+
+        $this->apply_text_overrides( $form, [
+            'label_username'           => [ 'user_login',   'label' ],
+            'label_first_name'         => [ 'first_name',   'label' ],
+            'label_last_name'          => [ 'last_name',    'label' ],
+            'label_display_name'       => [ 'display_name', 'label' ],
+            'label_email'              => [ 'user_email',   'label' ],
+            'label_password'           => [ 'pass1',        'label' ],
+            'label_confirm_pw'         => [ 'pass2',        'label' ],
+            'password_hint'            => [ 'pass1',        'description' ],
+            'button_text'              => [ 'submit',       'value' ],
+            'placeholder_first_name'   => [ 'first_name',   'placeholder' ],
+            'placeholder_last_name'    => [ 'last_name',    'placeholder' ],
+            'placeholder_email'        => [ 'user_email',   'placeholder' ],
+            'toggle_show_text'         => [ 'pass1',        'toggle_show' ],
+            'toggle_hide_text'         => [ 'pass1',        'toggle_hide' ],
+        ], $s );
+        // Apply toggle text to the confirm-password field too (same pattern as Register).
+        $toggle_show = $s['toggle_show_text'] ?? '';
+        $toggle_hide = $s['toggle_hide_text'] ?? '';
+        if ( '' !== $toggle_show ) { $form->set_field_option( 'pass2', 'toggle_show', $toggle_show ); }
+        if ( '' !== $toggle_hide ) { $form->set_field_option( 'pass2', 'toggle_hide', $toggle_hide ); }
+
+        $this->open_form_wrap();
+        $this->render_form_title( $s );
+        echo fauth_render_form( 'account', [ 'show_links' => 'yes' === ( $s['show_links'] ?? 'yes' ), 'redirect_to' => '' ] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- form HTML is escaped field-by-field inside FAUTH_Form::render().
+        $this->close_form_wrap();
+    }
+
+    protected function content_template(): void {
+        echo '<div class="fauth-form-wrap">';
+        echo '<# var tag=settings.form_title_tag||"h3";if(settings.form_title_text){#><{{{tag}}} class="fauth-form-title">{{{settings.form_title_text}}}</{{{tag}}}><#}#>';
+        echo '<div class="fauth fauth-form fauth-form-account"><div class="fauth-inner-form">';
+        echo '<# if ( "yes" === settings.show_username ) { #><p class="fauth-field-wrap"><label class="fauth-label"><# if(settings.label_username){#>{{{settings.label_username}}}<#}else{#>' . esc_html__('Username','frontend-auth') . '<#}#></label><input type="text" class="fauth-field" value="username" disabled><span class="fauth-description">' . esc_html__('Usernames cannot be changed.','frontend-auth') . '</span></p><# } #>';
+        echo '<p class="fauth-field-wrap"><label class="fauth-label"><# if(settings.label_first_name){#>{{{settings.label_first_name}}}<#}else{#>' . esc_html__('First Name','frontend-auth') . '<#}#></label><input type="text" class="fauth-field" placeholder="<# if(settings.placeholder_first_name){#>{{settings.placeholder_first_name}}<#}#>" disabled></p>';
+        echo '<p class="fauth-field-wrap"><label class="fauth-label"><# if(settings.label_last_name){#>{{{settings.label_last_name}}}<#}else{#>' . esc_html__('Last Name','frontend-auth') . '<#}#></label><input type="text" class="fauth-field" placeholder="<# if(settings.placeholder_last_name){#>{{settings.placeholder_last_name}}<#}#>" disabled></p>';
+        echo '<p class="fauth-field-wrap"><label class="fauth-label"><# if(settings.label_display_name){#>{{{settings.label_display_name}}}<#}else{#>' . esc_html__('Display name publicly as','frontend-auth') . '<#}#> <span class="fauth-required">*</span></label><select class="fauth-field fauth-select" disabled><option>' . esc_html__('Your Name','frontend-auth') . '</option></select></p>';
+        echo '<p class="fauth-field-wrap"><label class="fauth-label"><# if(settings.label_email){#>{{{settings.label_email}}}<#}else{#>' . esc_html__('Email Address','frontend-auth') . '<#}#> <span class="fauth-required">*</span></label><input type="email" class="fauth-field" placeholder="<# if(settings.placeholder_email){#>{{settings.placeholder_email}}<#}#>" disabled></p>';
+        echo '<p class="fauth-field-wrap fauth-field-wrap--password"><label class="fauth-label"><# if(settings.label_password){#>{{{settings.label_password}}}<#}else{#>' . esc_html__('New Password','frontend-auth') . '<#}#></label><input type="password" class="fauth-field" disabled><button type="button" class="fauth-password-toggle"><# if(settings.toggle_show_text){#>{{{settings.toggle_show_text}}}<#}else{#>' . esc_html__('Show','frontend-auth') . '<#}#></button><span class="fauth-description"><# if(settings.password_hint){#>{{{settings.password_hint}}}<#}else{#>' . esc_html__('Leave blank to keep your current password.','frontend-auth') . '<#}#></span></p>';
+        echo '<p class="fauth-field-wrap fauth-field-wrap--password"><label class="fauth-label"><# if(settings.label_confirm_pw){#>{{{settings.label_confirm_pw}}}<#}else{#>' . esc_html__('Confirm New Password','frontend-auth') . '<#}#></label><input type="password" class="fauth-field" disabled><button type="button" class="fauth-password-toggle"><# if(settings.toggle_show_text){#>{{{settings.toggle_show_text}}}<#}else{#>' . esc_html__('Show','frontend-auth') . '<#}#></button></p>';
+        echo '<p class="fauth-submit"><button type="button" class="fauth-button fauth-submit-button"><# if(settings.button_text){#>{{{settings.button_text}}}<#}else{#>' . esc_html__('Save Changes','frontend-auth') . '<#}#></button></p>';
+        echo '</div><# if("yes"===settings.show_links){#><p class="fauth-links"><a href="#">' . esc_html__('Log Out','frontend-auth') . '</a></p><#}#></div>';
         echo '</div><!-- /.fauth-form-wrap -->';
     }
 }

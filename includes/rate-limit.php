@@ -202,6 +202,21 @@ function fauth_rate_limit_bump( $action ) {
     $attempts++;
     set_transient( $key, $attempts, $window );
 
+    // Fire once, the moment this IP crosses the threshold for this action, so
+    // the activity log records a single "blocked for spamming" lockout event
+    // (not one per subsequent blocked attempt).
+    $limit = fauth_get_rate_limit_for( $action );
+    if ( $limit > 0 && $attempts === $limit ) {
+        /**
+         * Fires when an IP first becomes locked out for an action.
+         *
+         * @param string $action   The form action (login, register, …).
+         * @param string $ip       The anonymised client IP.
+         * @param int    $attempts The attempt count at lockout (equals the limit).
+         */
+        do_action( 'fauth_rate_limit_locked', $action, fauth_rate_limit_get_ip(), $attempts );
+    }
+
     do_action( 'fauth_rate_limit_recorded', $action, $attempts );
 
     return $attempts;

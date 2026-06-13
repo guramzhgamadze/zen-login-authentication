@@ -4,7 +4,7 @@ Tags: login, registration, authentication, elementor, frontend
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 1.5.0
+Stable tag: 1.7.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -12,7 +12,7 @@ Frontend login, registration, and password recovery for WordPress and Elementor,
 
 == Description ==
 
-Frontend Auth replaces the default `wp-login.php` experience with clean, accessible, theme-integrated forms that live on your actual site. It works out of the box on any WordPress theme and ships with first-class Elementor support: four drag-and-drop widgets that fit any page-builder layout, with full Theme Builder compatibility.
+Frontend Auth replaces the default `wp-login.php` experience with clean, accessible, theme-integrated forms that live on your actual site. It works out of the box on any WordPress theme and ships with first-class Elementor support: five drag-and-drop widgets that fit any page-builder layout, with full Theme Builder compatibility.
 
 The plugin works with no configuration and adds no tracking or "phone home" behaviour. The only external service it ever contacts is Google — and only during a sign-in, when the optional "Sign in with Google" feature is enabled.
 
@@ -21,10 +21,12 @@ The plugin works with no configuration and adds no tracking or "phone home" beha
 * **Login** with username, email, or either (configurable).
 * **Registration** with optional user-chosen passwords and auto-login.
 * **Lost Password / Reset Password** with the full WordPress email flow.
+* **Account page** — logged-in users edit their first/last name, public display name, email, and password from the frontend, without ever seeing wp-admin. Guests visiting the account page are sent to the login form and return after signing in.
 * **Sign in with Google** (optional) — a server-side OpenID Connect flow with no Google JavaScript on your pages. New accounts can be auto-created (toggleable) and existing accounts are linked by verified email.
 * **URL rewriting** so every site-wide `wp-login.php` link is transparently redirected to your frontend pages.
 * **Multisite support** — network-activated, per-site settings, signup/activation flow handled.
 * **Smart redirects** — `?redirect_to=` is honoured everywhere. Subscribers are kept out of wp-admin and sent to a destination you set in **Settings &rarr; Frontend Auth &rarr; Subscriber redirect** (a page slug or URL; empty = site home). Privileged users always land where they intended.
+* **Login activity dashboard** — a "Login Activity" widget on your WordPress dashboard summarising successful logins, failed attempts, and rate-limit lockouts over the past week, with the top failed usernames, the most-blocked IPs, and a recent-events feed. IP addresses are stored anonymised, history is auto-pruned, and the data is removed on uninstall.
 * **Cache exclusion** — auth pages are automatically excluded from LiteSpeed Cache, Super Page Cache, WP Rocket, W3 Total Cache, and WP Super Cache.
 
 = Security =
@@ -45,18 +47,19 @@ If the feature is disabled (the default), the plugin makes no external calls wha
 
 = Elementor integration =
 
-Four native widgets registered under a "Frontend Auth" category:
+Five native widgets registered under a "Frontend Auth" category:
 
 * **Login Form** — custom labels, placeholders, toggle text, and link overrides; hidden when logged in (unless `reauth=1`); picks up `?redirect_to=` from the URL.
 * **Registration Form** — password + confirm fields when user-chosen passwords are enabled, with a live strength meter.
 * **Lost Password Form** — password-recovery request form.
 * **Reset Password Form** — reads `?key=&login=` from the URL and shows a friendly message when the link is missing or expired.
+* **Account Form** — frontend profile editing (first/last name, public display name, email, optional password change) for the logged-in user, with the same label/placeholder/style controls as the other widgets.
 
 Every widget has a full style panel (container, title, labels, fields with focus glow, button normal/hover, links, messages, password toggle, strength meter).
 
 = Classic widgets =
 
-Four `WP_Widget` subclasses are also registered for classic / block-based widget areas: Login, Register, Lost Password, and Reset Password.
+Five `WP_Widget` subclasses are also registered for classic / block-based widget areas: Login, Register, Lost Password, Reset Password, and Account.
 
 = Pages =
 
@@ -102,6 +105,10 @@ By default the plugin uses `REMOTE_ADDR` only, because forwarded headers are spo
 
 A "Continue with Google" button then appears on the login and registration forms (each Elementor widget has a toggle and style controls for it). The flow is entirely server-side — no Google JavaScript is loaded on your pages.
 
+= Can users edit their profile without going to wp-admin? =
+
+Yes. The **Account** page (created on activation, default slug `/account/`) lets a logged-in user change their display name, email address, and password from the frontend. Changing the password keeps the user's current session logged in and signs out every other session, exactly like the wp-admin profile screen. Leave both password fields blank to keep the current password. Guests who open the page are redirected to the login form and brought back after signing in.
+
 = Is it multisite compatible? =
 
 Yes. It is network-activatable, with per-site settings and signup/activation handling.
@@ -122,6 +129,21 @@ Only pages the plugin created that you never edited (no content, no Elementor da
 8. The Sign in with Google settings panel &mdash; enable the feature, add your Client ID and Secret (stored encrypted), and choose whether new accounts are created automatically.
 
 == Changelog ==
+
+= 1.7.0 =
+* New: **Login activity dashboard widget.** A "Login Activity" panel on the WordPress dashboard shows, for the past week, the number of successful logins, failed attempts, and lockouts, plus the top failed usernames, the most-blocked IPs, and a recent-events feed. Successful and failed logins are captured for every login path (the plugin's forms, wp-login.php, and programmatic logins); lockouts come from the plugin's rate limiter. IP addresses are stored anonymised (the same value the rate limiter buckets on). Settings → Frontend Auth → Login Activity lets you turn logging off, set a retention window (default 30 days; old entries auto-prune), and clear the log. The activity table is removed on uninstall.
+
+= 1.6.3 =
+* Improved: post-login redirects now run WordPress's standard `login_redirect` filter on every front-end login, so membership/LMS and other plugins are respected — wherever they send a user is honoured.
+* Improved: restricted subscribers are never landed in wp-admin. A non-admin destination chosen by another plugin (a member area, a course page, an explicit redirect) is kept; only an empty or wp-admin target falls back to the Subscriber redirect. Administrators and editors are unaffected — their normal dashboard flow, including the "clicked Edit → login → back to Edit" round-trip, still works.
+
+= 1.6.2 =
+* New: **per-widget switches** under Settings → Frontend Auth → Widgets — turn each form widget (Login, Registration, Lost Password, Reset Password, Account) on or off for both the Elementor panel and classic widget areas.
+* Improved: the settings screen now uses 80% of the admin content area instead of a fixed narrow column.
+
+= 1.6.1 =
+* New: **Account page & widget** — frontend profile editing for logged-in users (read-only username, first and last name, a "Display name publicly as" dropdown that rebuilds live as you type — just like the wp-admin profile screen — plus email and an optional password change), available as an Elementor widget, a classic widget, and an auto-created `/account/` page with the usual virtual-URL fallback. Email changes are validated (format + uniqueness); password changes follow the same rules as the reset form (match + 8-character minimum), keep the current session logged in, and sign out all other sessions. Guests visiting the account page are redirected to the login form and return after signing in. The page is excluded from page caches like every other auth page.
+* Fixed: `<select>` fields no longer clip their text on themes that set a fixed height on selects (e.g. Astra); the dropdown now uses the plugin's own styling with a consistent chevron.
 
 = 1.5.0 =
 * Security: the Google Client Secret is **encrypted at rest** (AES-256-GCM, keyed from your wp-config.php salts — a database dump alone cannot leak it) and is never re-displayed in the admin once saved. Both credentials can alternatively be defined as `FAUTH_GOOGLE_CLIENT_ID` / `FAUTH_GOOGLE_CLIENT_SECRET` constants in wp-config.php to keep them out of the database entirely. If you rotate your WordPress salts, re-enter the secret.
@@ -164,6 +186,15 @@ Only pages the plugin created that you never edited (no content, no Elementor da
 Older versions: see the project's CHANGELOG / README on the plugin homepage.
 
 == Upgrade Notice ==
+
+= 1.7.0 =
+Adds a "Login Activity" dashboard widget showing successful logins, failed attempts, and lockouts. A small activity table is created on update and removed on uninstall.
+
+= 1.6.3 =
+Post-login redirects now respect other plugins (membership/LMS) while keeping subscribers out of wp-admin. Administrators are unaffected.
+
+= 1.6.1 =
+Adds a frontend Account page and widget — users can now edit their name, public display name, email, and password without wp-admin. The /account/ page is created automatically on upgrade.
 
 = 1.5.0 =
 Adds optional Sign in with Google — a secure server-side flow with no Google JavaScript on your pages. Configure it under Settings → Frontend Auth.

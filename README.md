@@ -4,17 +4,20 @@ Secure, accessible frontend login, registration, and password recovery forms for
 
 ## Description
 
-Frontend Auth replaces the default `wp-login.php` experience with clean, theme-integrated forms that live on your actual site. It works out of the box on any WordPress theme and ships with first-class Elementor support — four drag-and-drop widgets that fit into any page builder layout with full Theme Builder compatibility.
+Frontend Auth replaces the default `wp-login.php` experience with clean, theme-integrated forms that live on your actual site. It works out of the box on any WordPress theme and ships with first-class Elementor support — five drag-and-drop widgets that fit into any page builder layout with full Theme Builder compatibility.
 
 ### What It Does
 
 - **Login form** with username, email, or either — configurable from Settings.
 - **Registration form** with optional user-chosen passwords and auto-login.
 - **Lost Password / Reset Password** forms with full email flow integration.
+- **Account page** — logged-in users edit their first/last name, public display name (live "Display name publicly as" dropdown, like the core profile screen), email, and password entirely on the frontend. Guests visiting the account page are sent to login and returned after signing in.
+- **Login activity dashboard** — a "Login Activity" widget on the WordPress dashboard summarising successful logins, failed attempts, and rate-limit lockouts over the past week, with the top failed usernames, most-blocked IPs, and a recent-events feed. IPs are stored anonymised, history auto-prunes, and the data is removed on uninstall.
+- **Per-widget toggles** — enable or disable each form widget (login, register, lost password, reset password, account) for both the Elementor panel and classic widget areas, under **Settings → Frontend Auth → Widgets**.
 - **Sign in with Google** (optional) — a server-side OpenID Connect flow with no Google JavaScript on your pages and no third-party libraries. New accounts can be auto-created (toggleable); existing accounts are linked by verified email. Configured under **Settings → Frontend Auth → Sign in with Google**.
 - **URL rewriting** — all `wp-login.php` links site-wide are transparently redirected to your frontend pages.
 - **Multisite support** — network-activated, per-site settings, signup/activation flow handled.
-- **Smart redirects** — `?redirect_to=` is fully honoured on both virtual and Elementor pages. Subscribers are blocked from wp-admin and sent to a configurable destination — set a page slug or URL under **Settings → Frontend Auth → Subscriber redirect** (default: the site home page; also filterable via `fauth_subscriber_redirect`). Privileged users always land where they intended.
+- **Smart redirects** — every front-end login runs WordPress's standard `login_redirect` filter, so membership/LMS and other plugins are respected. Restricted subscribers are kept out of wp-admin and sent to a configurable destination — set a page slug or URL under **Settings → Frontend Auth → Subscriber redirect** (default: the site home page; also filterable via `fauth_subscriber_redirect`). Administrators and editors keep their normal flow, including the "clicked Edit → login → back to Edit" round-trip. `?redirect_to=` is fully honoured on both virtual and Elementor pages.
 - **Cache exclusion** — auth pages are automatically excluded from LiteSpeed Cache, Super Page Cache, WP Rocket, W3 Total Cache, and WP Super Cache. Stale 404 cache entries are purged automatically on plugin update.
 
 ### Security
@@ -29,18 +32,19 @@ Frontend Auth replaces the default `wp-login.php` experience with clean, theme-i
 
 ### Elementor Integration
 
-Four native `Widget_Base` widgets registered via `elementor/widgets/register`:
+Five native `Widget_Base` widgets registered via `elementor/widgets/register` (each can be toggled off under **Settings → Frontend Auth → Widgets**):
 
 | Widget | Class | Description |
 |--------|-------|-------------|
-| Login Form | `FAUTH_Elementor_Login_Widget` | Login form with custom labels, placeholders, toggle text, and link overrides. Hidden when logged in (unless `reauth=1`). Automatically picks up `?redirect_to=` from the URL, taking priority over the editor-configured default. |
-| Registration Form | `FAUTH_Elementor_Register_Widget` | Registration form with password + confirm fields when user-chosen passwords are enabled. Editor placeholder when registration is disabled. |
+| Login Form | `FAUTH_Elementor_Login_Widget` | Login form with custom labels, placeholders, toggle text, and link overrides. Hidden when logged in (unless `reauth=1`). Automatically picks up `?redirect_to=` from the URL, taking priority over the editor-configured default. Optional "Sign in with Google" button. |
+| Registration Form | `FAUTH_Elementor_Register_Widget` | Registration form with password + confirm fields when user-chosen passwords are enabled. Editor placeholder when registration is disabled. Optional "Sign in with Google" button. |
 | Lost Password Form | `FAUTH_Elementor_Lost_Password_Widget` | Password recovery request form. |
 | Reset Password Form | `FAUTH_Elementor_Reset_Password_Widget` | Password reset form — reads `?key=&login=` from the URL. Shows invalid-link message when parameters are missing, with an editor preview of the form fields. |
+| Account Form | `FAUTH_Elementor_Account_Widget` | Frontend profile editing for the logged-in user — read-only username, first/last name, a live "Display name publicly as" dropdown, email, and an optional password change. Renders nothing for guests. |
 
 All widgets share a comprehensive Elementor style panel: form container (width, max-width, alignment, background, border, radius, shadow, padding), title typography, label styling, input fields (text colour, placeholder colour, background, border, focus state with glow), button (normal + hover tabs with typography, padding, radius, shadow, transition), action links, messages/errors, password toggle (normal + hover tabs), and checkbox styling.
 
-Only the Reset Password widget declares `is_dynamic_content(): true` (it reads `$_GET` parameters). The other three return `false` for optimal Elementor caching.
+The Reset Password and Account widgets (and all auth widgets, in fact) declare `is_dynamic_content(): true` so Elementor element caching never freezes a per-request nonce or redirect.
 
 #### Page Management
 
@@ -48,14 +52,15 @@ On activation the plugin sets up a real WordPress page for each auth action so E
 
 ### Classic Widgets
 
-Four `WP_Widget` subclasses are also registered for classic sidebar/widget-area use:
+Five `WP_Widget` subclasses are also registered for classic sidebar/widget-area use:
 
 - `FAUTH_Login_Widget`
 - `FAUTH_Register_Widget`
 - `FAUTH_Lost_Password_Widget`
 - `FAUTH_Reset_Password_Widget`
+- `FAUTH_Account_Widget`
 
-All expose `show_instance_in_rest` for the WP 5.8+ block-based Widgets screen.
+All expose `show_instance_in_rest` for the WP 5.8+ block-based Widgets screen, and each respects its per-widget enable toggle.
 
 ## Requirements
 
@@ -142,7 +147,9 @@ Each action URL slug is customisable: `login`, `logout`, `register`, `lostpasswo
 | `fauth_logout_success` | — | After successful logout |
 | `fauth_registration_success` | `int $user_id` | After successful registration |
 | `fauth_password_reset` | `WP_User $user` | After successful password reset |
+| `fauth_account_updated` | `int $user_id, bool $password_changed` | After a user updates their profile via the Account form |
 | `fauth_rate_limit_recorded` | `string $action, int $attempts` | After a rate-limit bump |
+| `fauth_rate_limit_locked` | `string $action, string $ip, int $attempts` | Fires once, the moment an IP crosses the rate-limit threshold for an action (drives the activity-log "lockout" event) |
 | `fauth_exclude_from_cache` | — | Fires on every auth page request — hook here to add custom cache exclusion logic |
 
 ### Filters
@@ -163,6 +170,12 @@ Each action URL slug is customisable: `login`, `logout`, `register`, `lostpasswo
 | `fauth_action_slug_{action}` | — | Filter a specific action's slug |
 | `fauth_username_label` | — | Filter the username field label |
 | `fauth_subscriber_redirect` | resolved from the **Subscriber redirect** setting (empty = `home_url()`) | Destination URL for subscribers after login, or when they attempt to reach wp-admin. Override to send subscribers anywhere. |
+| `fauth_subscriber_login_redirect_to` | the resolved subscriber destination | Final say over where a restricted subscriber lands after login (params: `$redirect_to, $requested_redirect_to, $user`). |
+| `fauth_widget_enabled` | per-widget option (default `true`) | Whether a given form widget is registered. Params: `$enabled, $widget` (`login`\|`register`\|`lostpassword`\|`resetpass`\|`account`). |
+| `fauth_account_update_errors` | `WP_Error $errors, WP_User $user` | Add custom validation errors to an Account-form submission. |
+| `fauth_account_display_name_options` | `array $options, WP_User $user` | Filter the choices in the Account form's "Display name publicly as" dropdown. |
+| `fauth_activity_log_enabled` | option (default `true`) | Whether login-activity logging is active. |
+| `fauth_activity_retention_days` | option (default `30`) | Days of activity history to keep before auto-pruning (0 = forever). |
 | `fauth_logged_in_redirect` | Role-based (see below) | Final redirect URL for already-logged-in users visiting the login/register page |
 | `fauth_logout_redirect` | `home_url()` | Redirect URL after logout |
 | `fauth_login_url_exempt` | `false` | Return `true` to bypass FAUTH's login URL rewriting (for OAuth/MCP flows) |
@@ -177,13 +190,13 @@ Each action URL slug is customisable: `login`, `logout`, `register`, `lostpasswo
 
 #### Redirect priority order
 
-After a successful login, the destination is resolved in this order:
+Every front-end login runs WordPress's standard `login_redirect` filter (exactly as wp-login.php does), so membership/LMS and other plugins always get their say. After that filter:
 
-1. `?redirect_to=` in the URL — always wins (user's actual intended destination, e.g. bounced from a protected page).
-2. Redirect URL configured in the Elementor widget editor panel — used when no URL parameter is present.
-3. Role-based fallback:
-   - **Subscriber** → the **Subscriber redirect** setting (a slug or URL; empty = `home_url()`), overridable via the `fauth_subscriber_redirect` filter. Subscribers can never reach wp-admin regardless of `redirect_to`.
-   - **All other roles** → `home_url()` when no redirect is specified. If WordPress bounced them from wp-admin (adding `?redirect_to=wp-admin/...` to the login URL), that redirect is honoured exactly.
+1. `?redirect_to=` in the URL is the pre-filter default for the user's intended destination (e.g. bounced from a protected page); the Elementor widget's configured Redirect URL is used when no URL parameter is present.
+2. **Other plugins** can override the destination via `login_redirect` — a non-admin destination they choose is respected.
+3. Role-based guardrails:
+   - **Restricted subscribers** are never landed in wp-admin: a non-admin destination is kept, but an empty or `/wp-admin/` target falls back to the **Subscriber redirect** setting (overridable via `fauth_subscriber_login_redirect_to`).
+   - **Administrators, editors, and other roles** are unaffected — their normal flow works, including the "clicked Edit → bounced to login → back to Edit" round-trip.
 
 ## 3rd-Party Plugin Compatibility
 
@@ -214,7 +227,8 @@ frontend-auth/
 ├── index.html                    GitHub Pages landing page
 ├── admin/
 │   ├── settings.php              Settings page with card-based UI
-│   └── hooks.php                 Admin hooks, slug sync, page management handlers
+│   ├── hooks.php                 Admin hooks, slug sync, page management handlers
+│   └── dashboard.php             "Login Activity" dashboard widget + clear-log handler
 ├── assets/
 │   ├── scripts/
 │   │   ├── frontend-auth.js   Frontend JS (AJAX, password toggle, strength meter)
@@ -233,6 +247,9 @@ frontend-auth/
 │   ├── forms.php                 Form definitions (field registration, link filters)
 │   ├── widgets.php               Classic WP_Widget classes (4 widgets)
 │   ├── rate-limit.php            Rate limiting via transients
+│   ├── activity-log.php          Login-activity table, logging, queries (dashboard widget data)
+│   ├── crypto.php                AES-256-GCM at-rest encryption for the Google client secret
+│   ├── google-login.php          Sign in with Google (server-side OpenID Connect)
 │   ├── ms-hooks.php              Multisite-specific hooks
 │   └── elementor/
 │       └── class-fauth-elementor-widgets.php   Elementor Widget_Base classes (4 widgets)
@@ -241,6 +258,35 @@ frontend-auth/
 ```
 
 ## Changelog
+
+### 1.7.0
+
+**New: Login activity dashboard**
+
+- A **"Frontend Auth — Login Activity"** widget on the WordPress dashboard summarises, for the past 7 days, the number of successful logins, failed attempts, and rate-limit lockouts, plus the **top failed usernames**, the **most-blocked IPs**, and a colour-coded **recent-events** feed.
+- Successful and failed logins are captured via core's `wp_login` / `wp_login_failed`, so the dashboard reflects every login path — the plugin's forms, `wp-login.php`, and programmatic `wp_signon()`. Lockouts come from the rate limiter via the new `fauth_rate_limit_locked` action.
+- Events are stored in a dedicated `{prefix}_fauth_activity` table (created on activation/update, dropped on uninstall). **IPs are stored anonymised** — the same value the rate limiter buckets on (IPv4 last octet zeroed, IPv6 to /48).
+- **Settings → Frontend Auth → Login Activity**: toggle logging, set a retention window (default 30 days; old rows auto-prune), and a separate **Clear Activity Log** button. Cached in a 5-minute transient so the dashboard never hammers the table.
+
+### 1.6.2
+
+- **New:** per-widget on/off toggles under **Settings → Frontend Auth → Widgets** for each form widget (Login, Registration, Lost Password, Reset Password, Account) — applies to both the Elementor panel and classic widget areas (filter: `fauth_widget_enabled`).
+- The settings screen now uses the full admin content width instead of a fixed narrow column.
+
+### 1.6.3
+
+- **Improved:** post-login redirects run WordPress's standard `login_redirect` filter on every front-end login, so membership/LMS and other plugins are respected.
+- **Improved:** restricted subscribers are never landed in wp-admin — a non-admin destination chosen by another plugin is kept; only an empty or `/wp-admin/` target falls back to the Subscriber redirect. Administrators/editors are unaffected, including the "clicked Edit → login → back to Edit" round-trip.
+
+### 1.6.0 – 1.6.1
+
+**New: Frontend account management**
+
+- A new **Account page and widget** let logged-in users edit their **first name**, **last name**, a **"Display name publicly as"** dropdown (rebuilt live as you type, mirroring wp-admin's profile screen), **email**, and an optional **password change** — entirely on the frontend. Available as an Elementor widget, a classic widget, and an auto-created `/account/` page with the usual virtual-URL fallback.
+- The username is shown read-only (like wp-admin). Email changes are validated for format and uniqueness; password changes follow the reset rules (match + 8-character minimum), keep the current session logged in, and sign out all other sessions.
+- Guests visiting the account page are redirected to login and returned afterwards. The page is excluded from page caches like every other auth page.
+- `FAUTH_Form` gained a `select` field type; new filters `fauth_account_update_errors` and `fauth_account_display_name_options`; new action `fauth_account_updated`.
+- **Fixed:** `<select>` fields no longer clip on themes (e.g. Astra) that force a fixed height on selects.
 
 ### 1.5.0
 

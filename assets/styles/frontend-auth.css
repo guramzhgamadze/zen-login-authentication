@@ -205,6 +205,30 @@
     margin-top: 0.25em;
 }
 
+/* Selects (the Account form's "Display name publicly as").
+   Themes commonly put a fixed height on bare <select> (Astra does), which
+   clips the padded text vertically. Explicit height + appearance:none here
+   wins by specificity; the chevron is restored as an inline SVG. */
+select.fauth-field {
+    height: auto;
+    line-height: 1.5;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' d='M1.5 1.5 6 6l4.5-4.5'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.9em center;
+    padding-right: 2.6em;
+    cursor: pointer;
+}
+
+/* Read-only fields (the Account form's Username — wp-admin parity). */
+.fauth-field:disabled {
+    background-color: rgba(0, 0, 0, 0.05);
+    color: var(--fauth-description-color);
+    cursor: not-allowed;
+}
+
 /* -----------------------------------------------------------------------
    Checkbox
 ------------------------------------------------------------------------- */
@@ -346,6 +370,13 @@
     border: none;
     padding: 0.2em 0.35em;
     z-index: 2;
+}
+
+/* Field description inside a password grid (Account form's "leave blank to
+   keep" hint) — span the full width below the input, like a normal row. */
+.fauth-field-wrap--password .fauth-description {
+    grid-column: 1 / -1;
+    grid-row: 3;
 }
 
 /* -----------------------------------------------------------------------

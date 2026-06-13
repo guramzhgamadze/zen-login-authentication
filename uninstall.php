@@ -28,14 +28,18 @@ $fauth_options = [
     'fauth_google_client_id',
     'fauth_google_client_secret',
     'fauth_google_allow_registration',
+    'fauth_activity_log_enabled',
+    'fauth_activity_retention_days',
+    'fauth_activity_db_version',
     'fauth_slug_login',
     'fauth_slug_logout',
     'fauth_slug_register',
     'fauth_slug_lostpassword',
     'fauth_slug_resetpass',
+    'fauth_slug_account',
 ];
 
-$fauth_page_actions = [ 'login', 'register', 'lostpassword', 'resetpass' ];
+$fauth_page_actions = [ 'login', 'register', 'lostpassword', 'resetpass', 'account' ];
 
 if ( is_multisite() ) {
     $fauth_sites = get_sites( [ 'fields' => 'ids', 'number' => 0 ] );
@@ -100,6 +104,18 @@ function fauth_uninstall_site( array $options, array $page_actions ): void {
         delete_option( "fauth_rl_max_{$action}" );
     }
     delete_option( 'fauth_lostpassword_count_all' );
+
+    // Per-widget availability toggles (v1.6.2).
+    foreach ( [ 'login', 'register', 'lostpassword', 'resetpass', 'account' ] as $action ) {
+        delete_option( "fauth_widget_enabled_{$action}" );
+    }
+
+    // Login-activity log table + its cached summary (v1.7.0).
+    delete_transient( 'fauth_activity_summary' );
+    // phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- dropping the plugin's own table at uninstall; the name derives from $wpdb->prefix (never user input) and no core API exists.
+    $fauth_activity_table = $wpdb->prefix . 'fauth_activity';
+    $wpdb->query( "DROP TABLE IF EXISTS {$fauth_activity_table}" );
+    // phpcs:enable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
 
     // Google account links (v1.5.0). delete_all = true removes the meta for
     // every user; harmless to repeat per-site on multisite (users are global).

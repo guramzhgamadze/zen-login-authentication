@@ -102,12 +102,18 @@ class FAUTH_Form {
             'priority'    => 10,
             'description' => '',
             'required'    => false,
+            'options'     => [], // for type=select: value => label
         ];
         $this->fields[ $name ] = wp_parse_args( $args, $defaults );
     }
 
     public function get_field( string $name ): array|false {
         return $this->fields[ $name ] ?? false;
+    }
+
+    /** Remove a field entirely (e.g. a widget control toggles it off). */
+    public function remove_field( string $name ): void {
+        unset( $this->fields[ $name ] );
     }
 
     public function set_field_value( string $name, $value ): void {
@@ -282,6 +288,33 @@ class FAUTH_Form {
                 echo ' <span class="fauth-required" aria-hidden="true">*</span>';
             }
             echo '</label>';
+        }
+
+        if ( 'select' === $type ) {
+            $attrs = array_merge( [
+                'name'  => $name,
+                'id'    => $id,
+                'class' => 'fauth-field fauth-select',
+            ], (array) $field['attrs'] );
+            if ( $field['required'] ) {
+                $attrs['required']      = 'required';
+                $attrs['aria-required'] = 'true';
+            }
+            echo '<select';
+            foreach ( $attrs as $attr => $val ) {
+                echo ' ' . esc_attr( $attr ) . '="' . esc_attr( $val ) . '"';
+            }
+            echo '>';
+            foreach ( (array) $field['options'] as $opt_value => $opt_label ) {
+                echo '<option value="' . esc_attr( $opt_value ) . '"' . selected( (string) $value, (string) $opt_value, false ) . '>'
+                    . esc_html( $opt_label ) . '</option>';
+            }
+            echo '</select>';
+            if ( ! empty( $field['description'] ) ) {
+                echo '<span class="fauth-description">' . esc_html( $field['description'] ) . '</span>';
+            }
+            echo '</p>';
+            return;
         }
 
         $attrs = array_merge( [

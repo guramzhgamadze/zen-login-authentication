@@ -78,10 +78,21 @@ function fauth_admin_register_settings(): void {
     register_setting( 'frontend-auth', 'fauth_google_allow_registration', [ 'sanitize_callback' => 'absint',              'type' => 'integer', 'autoload' => false ] );
 
     // Slugs
-    $slug_actions = [ 'login', 'logout', 'register', 'lostpassword', 'resetpass' ];
+    $slug_actions = [ 'login', 'logout', 'register', 'lostpassword', 'resetpass', 'account' ];
     foreach ( $slug_actions as $action ) {
         register_setting( 'frontend-auth', "fauth_slug_{$action}", [ 'sanitize_callback' => 'sanitize_title', 'type' => 'string', 'autoload' => false ] );
     }
+
+    // Per-widget availability toggles (v1.6.2). Default on; rendered as
+    // hidden-0 + checkbox-1 pairs so unchecked boxes save correctly.
+    $widget_keys = [ 'login', 'register', 'lostpassword', 'resetpass', 'account' ];
+    foreach ( $widget_keys as $widget ) {
+        register_setting( 'frontend-auth', "fauth_widget_enabled_{$widget}", [ 'sanitize_callback' => 'absint', 'type' => 'integer', 'autoload' => false ] );
+    }
+
+    // Login-activity log (v1.7.0).
+    register_setting( 'frontend-auth', 'fauth_activity_log_enabled',  [ 'sanitize_callback' => 'absint', 'type' => 'integer', 'autoload' => false ] );
+    register_setting( 'frontend-auth', 'fauth_activity_retention_days', [ 'sanitize_callback' => 'absint', 'type' => 'integer', 'autoload' => false ] );
 }
 
 function fauth_sanitize_login_type( $value ): string {
@@ -109,7 +120,7 @@ function fauth_admin_settings_page(): void {
     }
     ?>
     <style>
-        .fauth-admin { max-width: 780px; margin: 20px auto 40px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        .fauth-admin { max-width: 80%; margin: 20px auto 40px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         .fauth-admin-header { display: flex; align-items: center; gap: 14px; margin-bottom: 28px; }
         .fauth-admin-header h1 { font-size: 1.6rem; font-weight: 700; margin: 0; color: #1d2327; }
         .fauth-admin-header .fauth-ver { font-size: 0.78rem; background: #f0f6fc; color: #2271b1; padding: 3px 10px; border-radius: 12px; font-weight: 600; }
@@ -141,7 +152,7 @@ function fauth_admin_settings_page(): void {
         .fauth-save-row { padding-top: 8px; }
         .fauth-save-row .button-primary { padding: 8px 28px; font-size: 0.92rem; border-radius: 8px; }
         @media (max-width: 782px) {
-            .fauth-admin { margin: 10px; }
+            .fauth-admin { margin: 10px; max-width: none; }
             .fauth-row { flex-direction: column; align-items: stretch; gap: 6px; }
             .fauth-row-label { flex: none; }
             .fauth-slug-grid { grid-template-columns: 1fr; }
@@ -267,6 +278,35 @@ function fauth_admin_settings_page(): void {
                 </div>
             </div>
 
+            <!-- Widgets -->
+            <div class="fauth-card">
+                <h2><?php esc_html_e( 'Widgets', 'frontend-auth' ); ?></h2>
+                <p class="desc"><?php esc_html_e( 'Choose which form widgets are available — in the Elementor panel and as classic sidebar widgets. Turning one off also stops it rendering on pages that already use it, so make sure your login page keeps a working login form.', 'frontend-auth' ); ?></p>
+
+                <?php
+                $fauth_widget_rows = [
+                    'login'        => [ __( 'Login Form', 'frontend-auth' ),          __( 'The main sign-in form.', 'frontend-auth' ) ],
+                    'register'     => [ __( 'Registration Form', 'frontend-auth' ),   __( 'New-account registration form.', 'frontend-auth' ) ],
+                    'lostpassword' => [ __( 'Lost Password Form', 'frontend-auth' ),  __( 'Request a password-reset email.', 'frontend-auth' ) ],
+                    'resetpass'    => [ __( 'Reset Password Form', 'frontend-auth' ), __( 'Set a new password from a reset-email link.', 'frontend-auth' ) ],
+                    'account'      => [ __( 'Account Form', 'frontend-auth' ),        __( 'Frontend profile editing for logged-in users.', 'frontend-auth' ) ],
+                ];
+                foreach ( $fauth_widget_rows as $fauth_widget_key => [ $fauth_widget_label, $fauth_widget_hint ] ) :
+                ?>
+                <div class="fauth-row">
+                    <div class="fauth-row-label"><?php echo esc_html( $fauth_widget_label ); ?></div>
+                    <div class="fauth-row-field">
+                        <label class="fauth-toggle">
+                            <input type="hidden" name="fauth_widget_enabled_<?php echo esc_attr( $fauth_widget_key ); ?>" value="0">
+                            <input type="checkbox" name="fauth_widget_enabled_<?php echo esc_attr( $fauth_widget_key ); ?>" value="1" <?php checked( fauth_widget_enabled( $fauth_widget_key ) ); ?>>
+                            <span class="fauth-toggle-slider"></span>
+                        </label>
+                        <div class="fauth-hint"><?php echo esc_html( $fauth_widget_hint ); ?></div>
+                    </div>
+                </div>
+                <?php endforeach; ?>
+            </div>
+
             <!-- Rate Limiting -->
             <div class="fauth-card">
                 <h2><?php esc_html_e( 'Rate Limiting', 'frontend-auth' ); ?></h2>
@@ -337,6 +377,32 @@ function fauth_admin_settings_page(): void {
                 </div>
             </div>
 
+            <!-- Login Activity -->
+            <div class="fauth-card">
+                <h2><?php esc_html_e( 'Login Activity', 'frontend-auth' ); ?></h2>
+                <p class="desc"><?php esc_html_e( 'Records successful logins, failed attempts, and rate-limit lockouts so you can review them in the "Login Activity" widget on your WordPress dashboard. IP addresses are stored anonymised.', 'frontend-auth' ); ?></p>
+
+                <div class="fauth-row">
+                    <div class="fauth-row-label"><?php esc_html_e( 'Log login activity', 'frontend-auth' ); ?></div>
+                    <div class="fauth-row-field">
+                        <label class="fauth-toggle">
+                            <input type="hidden" name="fauth_activity_log_enabled" value="0">
+                            <input type="checkbox" name="fauth_activity_log_enabled" value="1" <?php checked( (bool) get_option( 'fauth_activity_log_enabled', true ) ); ?>>
+                            <span class="fauth-toggle-slider"></span>
+                        </label>
+                        <div class="fauth-hint"><?php esc_html_e( 'Turn off to stop recording new events. Existing entries are kept until cleared or aged out.', 'frontend-auth' ); ?></div>
+                    </div>
+                </div>
+
+                <div class="fauth-row">
+                    <div class="fauth-row-label"><?php esc_html_e( 'Keep history for', 'frontend-auth' ); ?></div>
+                    <div class="fauth-row-field">
+                        <input type="number" name="fauth_activity_retention_days" value="<?php echo esc_attr( (string) get_option( 'fauth_activity_retention_days', 30 ) ); ?>" min="0" max="365"> <?php esc_html_e( 'days', 'frontend-auth' ); ?>
+                        <div class="fauth-hint"><?php esc_html_e( 'Older entries are deleted automatically. Set to 0 to keep entries indefinitely (not recommended).', 'frontend-auth' ); ?></div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Page Slugs -->
             <div class="fauth-card">
                 <h2><?php esc_html_e( 'Page Slugs', 'frontend-auth' ); ?></h2>
@@ -344,7 +410,7 @@ function fauth_admin_settings_page(): void {
 
                 <div class="fauth-slug-grid">
                     <?php
-                    $slug_actions = [ 'login', 'logout', 'register', 'lostpassword', 'resetpass' ];
+                    $slug_actions = [ 'login', 'logout', 'register', 'lostpassword', 'resetpass', 'account' ];
                     foreach ( $slug_actions as $action ) :
                         $option = "fauth_slug_{$action}";
                         $value  = get_option( $option, fauth_get_action_slug_default( $action ) );
@@ -359,6 +425,17 @@ function fauth_admin_settings_page(): void {
                 <?php submit_button( __( 'Save Changes', 'frontend-auth' ), 'primary', 'submit', false ); ?>
             </div>
         </form>
+
+        <!-- Login Activity maintenance — outside main <form> (own nonce + action) -->
+        <div class="fauth-card" style="margin-top:20px;">
+            <h2><?php esc_html_e( 'Login Activity Log', 'frontend-auth' ); ?></h2>
+            <p class="desc"><?php esc_html_e( 'The recorded events power the "Login Activity" widget on your WordPress dashboard. Use the button below to erase all recorded events immediately.', 'frontend-auth' ); ?></p>
+            <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" onsubmit="return confirm('<?php echo esc_js( __( 'Permanently delete all recorded login-activity entries?', 'frontend-auth' ) ); ?>');">
+                <?php wp_nonce_field( 'fauth_clear_activity', 'fauth_activity_nonce' ); ?>
+                <input type="hidden" name="action" value="fauth_clear_activity">
+                <?php submit_button( __( 'Clear Activity Log', 'frontend-auth' ), 'delete', 'submit', false ); ?>
+            </form>
+        </div>
 
         <!-- Page Management — outside main <form> because it uses its own nonce + action -->
         <div class="fauth-card" style="margin-top:20px;">

@@ -190,7 +190,7 @@ footer a:hover{color:var(--accent)}
     <div class="hero-actions">
       <a href="https://github.com/guramzhgamadze/Frontend-Auth/archive/refs/heads/main.zip" class="btn btn-primary">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        Download v1.4.23
+        Download v1.7.0
       </a>
       <a href="https://github.com/guramzhgamadze/Frontend-Auth" class="btn btn-secondary">
         <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
@@ -211,25 +211,25 @@ footer a:hover{color:var(--accent)}
 <section class="features" id="whats-new">
   <div class="container">
     <div class="section-label">What's New</div>
-    <div class="section-title">Version 1.4.23</div>
+    <div class="section-title">Version 1.7.0</div>
     <div class="grid">
 
       <div class="card">
-        <div class="card-icon blue">&#127912;</div>
-        <h3>Modern, polished forms</h3>
-        <p>A refreshed default look out of the box — softer rounded inputs and buttons, refined focus rings, tinted status notices, an updated strength meter, a brand-tinted checkbox, and a clean in-field password toggle. Everything stays overridable via CSS variables and the Elementor style controls.</p>
+        <div class="card-icon blue">&#128202;</div>
+        <h3>Login activity dashboard</h3>
+        <p>A "Login Activity" widget on your WordPress dashboard shows successful logins, failed attempts, and rate-limit lockouts over the past week — plus the top failed usernames, the most-blocked IPs, and a recent-events feed. IP addresses are stored anonymised and history auto-prunes.</p>
       </div>
 
       <div class="card">
-        <div class="card-icon green">&#128101;</div>
-        <h3>Smart subscriber handling</h3>
-        <p>Send subscribers to any destination after login (a page slug or URL you set), keep them out of wp-admin, and hide the front-end toolbar for new sign-ups by default — all configurable.</p>
+        <div class="card-icon green">&#128100;</div>
+        <h3>Frontend account editing</h3>
+        <p>A new Account page and widget let logged-in users update their first/last name, public display name, email, and password without ever seeing wp-admin — with the same live "Display name publicly as" dropdown as the core profile screen.</p>
       </div>
 
       <div class="card">
-        <div class="card-icon orange">&#9889;</div>
-        <h3>Always-fresh auth forms</h3>
-        <p>The Elementor widgets are flagged as dynamic, so element caching never freezes them — every form renders with a live security nonce and an up-to-date redirect, so logins won't break behind a cache.</p>
+        <div class="card-icon orange">&#9881;</div>
+        <h3>Per-widget toggles &amp; smarter redirects</h3>
+        <p>Turn each form widget on or off from Settings. Post-login redirects now respect membership/LMS plugins while keeping subscribers out of wp-admin, and the settings screen uses the full admin width.</p>
       </div>
 
     </div>
@@ -252,7 +252,7 @@ footer a:hover{color:var(--accent)}
       <div class="card">
         <div class="card-icon green">&#9889;</div>
         <h3>Elementor Widgets</h3>
-        <p>Four native Widget_Base widgets with full Elementor style controls, V4 compatibility, dynamic content flagging, and Theme Builder integration via real WordPress pages.</p>
+        <p>Five native Widget_Base widgets — login, registration, lost password, reset password, and account — with full Elementor style controls, V4 compatibility, dynamic content flagging, and Theme Builder integration via real WordPress pages.</p>
       </div>
 
       <div class="card">
@@ -306,7 +306,19 @@ footer a:hover{color:var(--accent)}
       <div class="card">
         <div class="card-icon orange">&#128204;</div>
         <h3>Smart Redirects</h3>
-        <p>Fully honours ?redirect_to= on both virtual and Elementor pages. Subscribers are blocked from wp-admin and sent to a destination you set in Settings (a page slug or URL). Privileged users always land where they intended.</p>
+        <p>Runs the standard login_redirect filter on every login, so membership/LMS plugins are respected. Subscribers are kept out of wp-admin (sent to a destination you set), while admins keep their normal flow. Fully honours ?redirect_to=.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon blue">&#128100;</div>
+        <h3>Account Management</h3>
+        <p>Logged-in users edit their first/last name, public display name, email, and password from the frontend — a real /account/ page, an Elementor widget, and a classic widget. Guests are bounced to login and returned after signing in.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon green">&#128202;</div>
+        <h3>Login Activity Dashboard</h3>
+        <p>A dashboard widget summarising successful logins, failed attempts, and lockouts over the past week, with top failed usernames and most-blocked IPs. Anonymised IPs, auto-pruned history, and a per-widget on/off panel in Settings.</p>
       </div>
 
     </div>
@@ -347,6 +359,11 @@ footer a:hover{color:var(--accent)}
             <td><code>fauth-reset-password</code></td>
             <td>Reset Password Form</td>
             <td>Custom labels, placeholders, toggle text, invalid-link message, request-link URL</td>
+          </tr>
+          <tr>
+            <td><code>fauth-account</code></td>
+            <td>Account Form</td>
+            <td>First/last name, live "Display name publicly as" dropdown, email, optional password change. Logged-in users only.</td>
           </tr>
         </tbody>
       </table>

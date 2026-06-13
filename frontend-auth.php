@@ -3,7 +3,7 @@
  * Plugin Name:       Frontend Auth
  * Plugin URI:        https://github.com/guramzhgamadze/Frontend-Auth
  * Description:       Secure, accessible frontend login, registration, and password recovery forms — with rate limiting, honeypot protection, AJAX support, and native Elementor widgets.
- * Version:           1.5.0
+ * Version:           1.7.0
  * Requires at least: 6.5
  * Requires PHP:      8.0
  * Author:            Guram Zhgamadze
@@ -68,7 +68,7 @@ if ( version_compare( get_bloginfo( 'version' ), '6.5', '<' ) ) {
     return;
 }
 
-define( 'FAUTH_VERSION', '1.5.0' );
+define( 'FAUTH_VERSION', '1.7.0' );
 define( 'FAUTH_PATH',    plugin_dir_path( __FILE__ ) );
 define( 'FAUTH_URL',     plugin_dir_url( __FILE__ ) );
 
@@ -87,6 +87,7 @@ define( 'FAUTH_URL',     plugin_dir_url( __FILE__ ) );
 require FAUTH_PATH . 'includes/options.php';
 require FAUTH_PATH . 'includes/helpers.php';
 require FAUTH_PATH . 'includes/rate-limit.php';
+require FAUTH_PATH . 'includes/activity-log.php';
 require FAUTH_PATH . 'includes/class-fauth.php';
 require FAUTH_PATH . 'includes/class-fauth-form.php';
 require FAUTH_PATH . 'includes/forms.php';
@@ -103,6 +104,7 @@ require FAUTH_PATH . 'includes/ms-hooks.php';
 if ( is_admin() ) {
     require FAUTH_PATH . 'admin/settings.php';
     require FAUTH_PATH . 'admin/hooks.php';
+    require FAUTH_PATH . 'admin/dashboard.php';
 }
 
 /* -----------------------------------------------------------------------
@@ -162,6 +164,20 @@ function fauth_maybe_upgrade(): void {
     if ( version_compare( $stored, '1.4.17', '<' ) && '' !== $stored ) {
         fauth_upgrade_cleanup_1_4_17();
     }
+
+    /* -------------------------------------------------------------------
+     * v1.6.0: the Account page (frontend profile editing) is new. Adopt or
+     * create it on upgraded sites — fauth_create_action_pages() is fully
+     * idempotent (existing pages are adopted by slug, stored IDs are kept),
+     * so the four original auth pages are untouched.
+     * ---------------------------------------------------------------- */
+    if ( version_compare( $stored, '1.6.0', '<' ) && '' !== $stored ) {
+        fauth_create_action_pages();
+    }
+
+    // v1.7.0: ensure the login-activity table exists (covers FTP updates and,
+    // since fauth_maybe_upgrade runs per-blog on init, every multisite site).
+    fauth_activity_maybe_create_table();
 
     update_option( 'fauth_version', FAUTH_VERSION );
 
@@ -282,7 +298,7 @@ function fauth_upgrade_cleanup_1_4_17(): void {
     global $wpdb;
 
     /* ----- 1. Delete orphaned fauth_slug_* options ----- */
-    $known_slugs = [ 'login', 'logout', 'register', 'lostpassword', 'resetpass' ];
+    $known_slugs = [ 'login', 'logout', 'register', 'lostpassword', 'resetpass', 'account' ];
     $like        = $wpdb->esc_like( 'fauth_slug_' ) . '%';
 
     // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
@@ -427,6 +443,9 @@ function fauth_activate(): void {
     // settings screen, and the plugin still works with no real pages at all via
     // its virtual URL-rewrite fallback.
     fauth_create_action_pages();
+
+    // Create the login-activity table (idempotent — dbDelta is version-gated).
+    fauth_activity_maybe_create_table();
 
     fauth_flush_rewrite_rules();
 }

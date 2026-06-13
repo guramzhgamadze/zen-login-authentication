@@ -283,6 +283,70 @@
     };
 
     // -----------------------------------------------------------------------
+    // "Display name publicly as" dropdown (Account form)
+    //
+    // Rebuilds the option list live as the user types their first/last name,
+    // mirroring wp-admin's user-profile.js. Without this, a user entering
+    // their name for the first time couldn't pick "First Last" until after
+    // saving once. Username/nickname combos come from data attributes
+    // rendered on the <select> by PHP.
+    // -----------------------------------------------------------------------
+
+    const rebuildDisplayNameOptions = ( nameInput ) => {
+        const form   = nameInput.closest( '.fauth-inner-form' );
+        const select = form ? form.querySelector( 'select#display_name' ) : null;
+        if ( ! select ) {
+            return;
+        }
+        const first = form.querySelector( '#first_name' );
+        const last  = form.querySelector( '#last_name' );
+
+        const current = select.value;
+        const names   = [];
+        const add = v => {
+            v = ( v || '' ).trim();
+            if ( v && ! names.includes( v ) ) {
+                names.push( v );
+            }
+        };
+        add( current );
+        add( select.dataset.nickname );
+        add( select.dataset.username );
+        const f = first ? first.value.trim() : '';
+        const l = last  ? last.value.trim()  : '';
+        add( f );
+        add( l );
+        if ( f && l ) {
+            add( f + ' ' + l );
+            add( l + ' ' + f );
+        }
+        select.innerHTML = '';
+        names.forEach( v => {
+            const o = document.createElement( 'option' );
+            o.value       = v;
+            o.textContent = v;
+            o.selected    = ( v === current );
+            select.appendChild( o );
+        } );
+    };
+
+    /**
+     * Single document-level input delegate — same robustness pattern as the
+     * password-toggle delegate above. Works no matter when or how the account
+     * form enters the DOM (theme content filters, Elementor widgets, popups,
+     * AJAX-loaded templates) and never double-binds on editor re-renders.
+     */
+    const initDisplayNameSyncDelegate = () => {
+        document.addEventListener( 'input', e => {
+            const t = e.target;
+            if ( ! t || ( 'first_name' !== t.id && 'last_name' !== t.id ) ) {
+                return;
+            }
+            rebuildDisplayNameOptions( t );
+        } );
+    };
+
+    // -----------------------------------------------------------------------
     // Handle query-string success/info messages on page load
     // -----------------------------------------------------------------------
 
@@ -341,6 +405,10 @@
     // Fix D — direct call for non-Elementor pages (classic WP pages, shortcodes, sidebar widgets)
     bindPasswordToggle( document );
 
+    // Register the document-level input delegate for the Account form's
+    // display-name dropdown — ONCE, like the password-toggle delegate.
+    initDisplayNameSyncDelegate();
+
     // Fix D — also bind via Elementor element_ready so toggles survive editor re-renders
     // and AJAX-loaded pages (Theme Builder popups, loop items, etc.)
     //
@@ -360,7 +428,7 @@
     //         (elementorFrontend.trigger('elementor/frontend/init'))
     if ( typeof jQuery !== 'undefined' ) {
         jQuery( window ).on( 'elementor/frontend/init', () => {
-            const widgetNames = [ 'fauth-login', 'fauth-register', 'fauth-reset-password' ];
+            const widgetNames = [ 'fauth-login', 'fauth-register', 'fauth-reset-password', 'fauth-account' ];
             widgetNames.forEach( name => {
                 window.elementorFrontend.hooks.addAction(
                     `frontend/element_ready/${ name }.default`,
@@ -368,6 +436,8 @@
                         if ( ! $scope || ! $scope[ 0 ] ) { return; }
                         bindPasswordToggle( $scope[ 0 ] );
                         bindPasswordStrength( $scope[ 0 ] );
+                        // display-name sync needs no re-bind: it is a
+                        // document-level delegate (initDisplayNameSyncDelegate).
                     }
                 );
             } );

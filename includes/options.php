@@ -44,6 +44,19 @@ function fauth_use_honeypot(): bool {
     return (bool) apply_filters( 'fauth_use_honeypot', get_option( 'fauth_honeypot', true ) );
 }
 
+/**
+ * Whether a form widget (Elementor + classic) is enabled.
+ * Settings → Frontend Auth → Widgets. Controls registration of BOTH the
+ * Elementor widget and the classic WP_Widget for that form; the auth pages
+ * themselves are unaffected. Default: all on.
+ *
+ * @param string $widget One of: login, register, lostpassword, resetpass, account.
+ */
+function fauth_widget_enabled( string $widget ): bool {
+    $enabled = (bool) get_option( "fauth_widget_enabled_{$widget}", true );
+    return (bool) apply_filters( 'fauth_widget_enabled', $enabled, $widget );
+}
+
 function fauth_get_rate_limit(): int {
     return (int) apply_filters( 'fauth_rate_limit', get_option( 'fauth_rate_limit', 10 ) );
 }
@@ -101,6 +114,30 @@ function fauth_user_is_restricted_subscriber( $user ): bool {
     return (bool) apply_filters( 'fauth_is_restricted_subscriber', $restricted, $user );
 }
 
+/**
+ * Whether a redirect target points into wp-admin (the dashboard).
+ *
+ * Compares the URL's path against the site's admin path, so it is scheme- and
+ * host-agnostic and works for sub-directory installs. Root-relative targets
+ * (e.g. "/wp-admin/edit.php") are matched too. The whole wp-admin tree —
+ * including the network admin (/wp-admin/network/) — counts.
+ *
+ * @param string $url A URL or path.
+ */
+function fauth_redirect_is_admin( string $url ): bool {
+    if ( '' === $url ) {
+        return false;
+    }
+    $target_path = (string) wp_parse_url( $url, PHP_URL_PATH );
+    $admin_path  = (string) wp_parse_url( admin_url(), PHP_URL_PATH );
+    if ( '' === $target_path || '' === $admin_path ) {
+        return false;
+    }
+    // trailingslashit() so "/wp-admin" and "/wp-admin/foo" both match
+    // "/wp-admin/", but "/wp-admin-x/" does not.
+    return 0 === strpos( trailingslashit( $target_path ), $admin_path );
+}
+
 /* -----------------------------------------------------------------------
  * Slug helpers
  * -------------------------------------------------------------------- */
@@ -112,6 +149,7 @@ function fauth_get_action_slug_default( string $action ): string {
         'register'     => 'register',
         'lostpassword' => 'lost-password',
         'resetpass'    => 'reset-password',
+        'account'      => 'account',
     ];
     return $defaults[ $action ] ?? $action;
 }
@@ -180,6 +218,7 @@ function fauth_get_page_actions(): array {
         'register'     => __( 'Register',       'frontend-auth' ),
         'lostpassword' => __( 'Lost Password',  'frontend-auth' ),
         'resetpass'    => __( 'Reset Password', 'frontend-auth' ),
+        'account'      => __( 'Account',        'frontend-auth' ),
     ] );
 }
 

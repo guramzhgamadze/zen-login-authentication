@@ -37,10 +37,15 @@ add_action( 'wp',                 'fauth_remove_unneeded_head_items' );
 add_action( 'template_redirect', 'fauth_maybe_redirect_logged_in_user', 1 );
 
 /* -----------------------------------------------------------------------
+ * Redirect guests away from the account page (logged-in users only)
+ * -------------------------------------------------------------------- */
+add_action( 'template_redirect', 'fauth_maybe_redirect_guest_from_account', 1 );
+
+/* -----------------------------------------------------------------------
  * Subscriber containment — applies to ALL login paths (front-end form,
  * wp-login.php, third-party flows) and blocks wp-admin for subscribers.
  * -------------------------------------------------------------------- */
-add_filter( 'login_redirect', 'fauth_subscriber_login_redirect', 100, 3 );
+add_filter( 'login_redirect', 'fauth_subscriber_login_redirect', 9999, 3 );
 add_action( 'admin_init',     'fauth_block_subscriber_admin' );
 
 /* -----------------------------------------------------------------------
@@ -273,16 +278,48 @@ function fauth_maybe_redirect_logged_in_user(): void {
 }
 
 /**
- * Force restricted subscribers to the configured Subscriber redirect after login,
- * no matter which login form was used. Runs at priority 100 so it wins over other
- * plugins/themes that hook `login_redirect` (the usual reason a configured
- * subscriber destination "doesn't work").
+ * The account page is the mirror image of the login page: it only makes sense
+ * for logged-in users. Guests are sent to the login page with redirect_to
+ * pointing back here, so after signing in they land on their account page.
+ */
+function fauth_maybe_redirect_guest_from_account(): void {
+    if ( fauth_is_elementor_context() ) {
+        return;
+    }
+    if ( is_user_logged_in() ) {
+        return;
+    }
+    if ( 'account' !== fauth_get_current_action() ) {
+        return;
+    }
+    $login_url = add_query_arg(
+        'redirect_to',
+        rawurlencode( fauth_get_action_url( 'account' ) ),
+        fauth_get_action_url( 'login' )
+    );
+    wp_safe_redirect( $login_url );
+    exit;
+}
+
+/**
+ * Keep restricted subscribers out of wp-admin after login — but otherwise
+ * respect wherever they (or another plugin) are being sent.
  *
- * An explicit, non-admin destination the user actually requested is still honoured;
- * only an empty or wp-admin target is overridden.
+ * Runs at a very high priority so it is the LAST word on `login_redirect`:
+ * whatever membership/LMS plugins, themes, or the login form resolved is the
+ * input here. The policy applies to restricted subscribers only:
  *
- * @param string $redirect_to           Destination WordPress resolved.
- * @param string $requested_redirect_to The requested redirect_to value.
+ *   • a non-admin destination (a member area, a course page, an explicit
+ *     redirect_to, etc.) is kept as-is — other plugins are respected;
+ *   • an empty target, or one pointing into wp-admin, is replaced with the
+ *     configured Subscriber redirect (the site home page by default).
+ *
+ * Non-subscribers (admins, editors, …) are returned unchanged, so their normal
+ * dashboard flow — including the "clicked Edit, bounced to login" round-trip —
+ * keeps working.
+ *
+ * @param string $redirect_to           Destination resolved so far by the filter chain.
+ * @param string $requested_redirect_to The originally requested redirect_to value.
  * @param mixed  $user                  WP_User on success, WP_Error otherwise.
  * @return string
  */
@@ -290,11 +327,15 @@ function fauth_subscriber_login_redirect( $redirect_to, $requested_redirect_to, 
     if ( ! fauth_user_is_restricted_subscriber( $user ) ) {
         return (string) $redirect_to;
     }
-    // Subscribers always go to the configured Subscriber redirect, overriding any
-    // requested redirect_to (which is commonly hardcoded to the home URL by a
-    // Login widget's "Redirect URL" control). Return $requested_redirect_to from
-    // the filter to honour explicit per-login redirects for subscribers instead.
-    return (string) apply_filters( 'fauth_subscriber_login_redirect_to', fauth_get_subscriber_redirect(), (string) $requested_redirect_to, $user );
+    $redirect_to = (string) $redirect_to;
+    // Respect any non-admin destination already chosen; only fall back to the
+    // Subscriber redirect when there is nothing valid, or it would drop the
+    // subscriber into wp-admin (which fauth_block_subscriber_admin() would then
+    // bounce anyway — this just avoids the round-trip and the admin flash).
+    if ( '' === $redirect_to || fauth_redirect_is_admin( $redirect_to ) ) {
+        $redirect_to = fauth_get_subscriber_redirect();
+    }
+    return (string) apply_filters( 'fauth_subscriber_login_redirect_to', $redirect_to, (string) $requested_redirect_to, $user );
 }
 
 /**

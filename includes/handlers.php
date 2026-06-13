@@ -102,6 +102,51 @@ function fauth_register_default_actions(): void {
         'show_in_widget'    => false,
         'show_in_nav_menus' => false,
     ] );
+
+    fauth()->register_action( 'account', [
+        'title'              => __( 'My Account', 'frontend-auth' ),
+        'slug'               => fauth_get_action_slug( 'account' ),
+        'show_on_forms'      => false,
+        'show_nav_menu_item' => is_user_logged_in(),
+    ] );
+}
+
+/* -----------------------------------------------------------------------
+ * Post-login redirect resolution
+ *
+ * One place that decides where a user lands after a front-end login or an
+ * auto-login registration. Two rules, matching the plugin's policy:
+ *
+ *   1. Respect other plugins. The standard `login_redirect` filter is always
+ *      run — exactly as wp-login.php does — so membership/LMS plugins, themes,
+ *      and the login form/widget all get their say.
+ *   2. Never drop a restricted subscriber into wp-admin. Enforced by
+ *      fauth_subscriber_login_redirect() (hooked onto login_redirect, last),
+ *      which keeps any non-admin destination but rewrites empty/admin targets
+ *      to the configured Subscriber redirect. Admins/editors are unaffected.
+ * -------------------------------------------------------------------- */
+
+function fauth_resolve_login_redirect( WP_User $user, string $requested = '' ): string {
+    $requested     = '' !== $requested ? fauth_validate_redirect( $requested ) : '';
+    $is_subscriber = fauth_user_is_restricted_subscriber( $user );
+
+    // Pre-filter default. Honour an explicit destination the user was heading
+    // to — for non-subscribers even an admin one (the "clicked Edit, bounced to
+    // login" round-trip). Subscribers never default into wp-admin; they fall
+    // back to the configured Subscriber redirect instead.
+    if ( '' !== $requested && ! ( $is_subscriber && fauth_redirect_is_admin( $requested ) ) ) {
+        $default = $requested;
+    } elseif ( $is_subscriber ) {
+        $default = fauth_get_subscriber_redirect();
+    } else {
+        $default = home_url();
+    }
+
+    /** This filter is documented in wp-login.php — keep other plugins working. */
+    $redirect_to = (string) apply_filters( 'login_redirect', $default, $requested, $user );
+    $redirect_to = fauth_validate_redirect( $redirect_to );
+
+    return '' !== $redirect_to ? $redirect_to : home_url();
 }
 
 /* -----------------------------------------------------------------------
@@ -180,26 +225,7 @@ function fauth_handle_login(): void {
 
     fauth_rate_limit_clear( 'login' );
 
-    $redirect_to = fauth_get_request_value( 'redirect_to' );
-    $redirect_to = $redirect_to ? fauth_validate_redirect( $redirect_to ) : '';
-
-    // Determine if this is a subscriber (no wp-admin access).
-    $is_subscriber = fauth_user_is_restricted_subscriber( $user );
-
-    // Subscriber default destination — where subscribers land when there is no
-    // explicit redirect_to, or when they try to go to wp-admin. Configurable via
-    // Settings → Frontend Auth → "Subscriber redirect" (empty = site home).
-    $subscriber_default = fauth_get_subscriber_redirect();
-
-    if ( $is_subscriber ) {
-        // Subscribers always land on the configured Subscriber redirect — it wins
-        // over any redirect_to baked into the form/widget (e.g. a Login widget
-        // "Redirect URL" or the home URL). To honour an explicit per-login
-        // redirect for subscribers instead, return $redirect_to from this filter.
-        $redirect_to = (string) apply_filters( 'fauth_subscriber_login_redirect_to', $subscriber_default, $redirect_to, $user );
-    } elseif ( empty( $redirect_to ) ) {
-        $redirect_to = apply_filters( 'login_redirect', home_url(), '', $user );
-    }
+    $redirect_to = fauth_resolve_login_redirect( $user, (string) fauth_get_request_value( 'redirect_to' ) );
 
     do_action( 'fauth_login_success', $user );
 
@@ -313,7 +339,9 @@ function fauth_handle_register(): void {
     if ( fauth_allow_auto_login() ) {
         wp_set_auth_cookie( $new_user_id );
         $new_user    = get_user_by( 'id', $new_user_id );
-        $redirect_to = apply_filters( 'login_redirect', home_url(), '', $new_user );
+        $redirect_to = $new_user instanceof WP_User
+            ? fauth_resolve_login_redirect( $new_user, (string) fauth_get_request_value( 'redirect_to' ) )
+            : home_url();
         if ( $is_ajax ) {
             fauth_send_ajax_success( [ 'redirect' => $redirect_to ] );
         }
@@ -480,6 +508,152 @@ function fauth_handle_resetpass(): void {
 
     wp_safe_redirect( $redirect );
     exit;
+}
+
+/* -----------------------------------------------------------------------
+ * Account (edit profile) handler
+ * -------------------------------------------------------------------- */
+add_action( 'fauth_action_account', 'fauth_handle_account' );
+
+function fauth_handle_account(): void {
+    $is_ajax = fauth_is_ajax_request();
+
+    // The POST router verifies the nonce but not the login state — the same
+    // router serves the public login/register forms. Profile updates are for
+    // the logged-in user only; their own session is the identity being edited.
+    if ( ! is_user_logged_in() ) {
+        if ( $is_ajax ) {
+            fauth_send_ajax_error( [
+                'errors' => [ __( 'Your session has expired. Please log in and try again.', 'frontend-auth' ) ],
+            ] );
+        }
+        wp_safe_redirect( fauth_get_action_url( 'login' ) );
+        exit;
+    }
+
+    $user = wp_get_current_user();
+    $form = fauth()->get_form( 'account' );
+
+    $first_name   = sanitize_text_field( fauth_get_request_value( 'first_name', 'post' ) );
+    $last_name    = sanitize_text_field( fauth_get_request_value( 'last_name', 'post' ) );
+    $display_name = sanitize_text_field( fauth_get_request_value( 'display_name', 'post' ) );
+    $user_email   = sanitize_email( fauth_get_request_value( 'user_email', 'post' ) );
+    $pass1        = fauth_get_request_value( 'pass1', 'post' );
+    $pass2        = fauth_get_request_value( 'pass2', 'post' );
+
+    $errors = new WP_Error();
+
+    if ( '' === $display_name ) {
+        $errors->add( 'empty_display_name', __( 'Please choose a display name.', 'frontend-auth' ) );
+    }
+
+    if ( '' === $user_email || ! is_email( $user_email ) ) {
+        $errors->add( 'invalid_email', __( 'Please enter a valid email address.', 'frontend-auth' ) );
+    } else {
+        $email_owner = email_exists( $user_email );
+        if ( $email_owner && (int) $email_owner !== (int) $user->ID ) {
+            $errors->add( 'email_exists', __( 'That email address is already in use by another account.', 'frontend-auth' ) );
+        }
+    }
+
+    // Password change is optional — both fields blank means "keep current".
+    // Same rules as the reset-password handler: match + minimum 8 characters.
+    $change_password = ( '' !== $pass1 || '' !== $pass2 );
+    if ( $change_password ) {
+        if ( $pass1 !== $pass2 ) {
+            $errors->add( 'password_mismatch', __( 'Passwords do not match. Please try again.', 'frontend-auth' ) );
+        } elseif ( strlen( $pass1 ) < 8 ) {
+            $errors->add( 'password_too_short', __( 'Password must be at least 8 characters.', 'frontend-auth' ) );
+        }
+    }
+
+    $errors = apply_filters( 'fauth_account_update_errors', $errors, $user );
+
+    if ( $errors->has_errors() ) {
+        $messages = [];
+        foreach ( $errors->get_error_codes() as $code ) {
+            $msg        = $errors->get_error_message( $code );
+            $messages[] = wp_strip_all_tags( $msg );
+            if ( $form ) {
+                $form->add_error( $code, wp_kses_post( $msg ) );
+            }
+        }
+        if ( $is_ajax ) {
+            fauth_send_ajax_error( [ 'errors' => $messages ] );
+        }
+        return;
+    }
+
+    $userdata = [
+        'ID'           => $user->ID,
+        // First/last may be empty — clearing them is allowed, exactly like
+        // wp-admin/profile.php. The submitted display name is free text there
+        // too (the dropdown is UI guidance, not a server-side whitelist).
+        'first_name'   => $first_name,
+        'last_name'    => $last_name,
+        'display_name' => $display_name,
+        'user_email'   => $user_email,
+    ];
+    if ( $change_password ) {
+        // wp_update_user() re-sets the auth cookie when the current user's own
+        // password changes, so they stay logged in while every other session
+        // for the account is destroyed — same behaviour as wp-admin/profile.php.
+        $userdata['user_pass'] = $pass1;
+    }
+
+    $result = wp_update_user( $userdata );
+
+    if ( is_wp_error( $result ) ) {
+        $messages = [];
+        foreach ( $result->get_error_codes() as $code ) {
+            $msg        = $result->get_error_message( $code );
+            $messages[] = wp_strip_all_tags( $msg );
+            if ( $form ) {
+                $form->add_error( $code, wp_kses_post( $msg ) );
+            }
+        }
+        if ( $is_ajax ) {
+            fauth_send_ajax_error( [ 'errors' => $messages ] );
+        }
+        return;
+    }
+
+    do_action( 'fauth_account_updated', $user->ID, $change_password );
+
+    // PRG: redirect back to the page that hosted the form (the form self-posts
+    // to it) so a refresh cannot resubmit, and so the re-rendered fields show
+    // the freshly saved values instead of the stale pre-update ones.
+    $redirect = fauth_validate_redirect( add_query_arg( 'fauth_updated', '1', remove_query_arg( 'fauth_updated' ) ) );
+    if ( '' === $redirect ) {
+        $redirect = add_query_arg( 'fauth_updated', '1', fauth_get_action_url( 'account' ) );
+    }
+
+    if ( $is_ajax ) {
+        fauth_send_ajax_success( [ 'redirect' => $redirect ] );
+    }
+
+    wp_safe_redirect( $redirect );
+    exit;
+}
+
+/**
+ * Show the "saved" notice after the post-update redirect.
+ * Runs after fauth_register_default_forms() (init priority 1).
+ */
+add_action( 'init', 'fauth_account_maybe_show_updated_notice', 20 );
+
+function fauth_account_maybe_show_updated_notice(): void {
+    if ( ! is_user_logged_in() ) {
+        return;
+    }
+    $updated = isset( $_GET['fauth_updated'] ) && is_string( $_GET['fauth_updated'] ) ? sanitize_key( wp_unslash( $_GET['fauth_updated'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only display flag set by our own post-update redirect; shows a notice, changes no state.
+    if ( '1' !== $updated ) {
+        return;
+    }
+    $form = fauth()->get_form( 'account' );
+    if ( $form ) {
+        $form->add_message( 'account_updated', __( 'Your profile has been updated.', 'frontend-auth' ) );
+    }
 }
 
 /* -----------------------------------------------------------------------
