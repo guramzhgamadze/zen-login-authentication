@@ -1,6 +1,6 @@
 <?php
 /**
- * Frontend Auth – Helpers
+ * Zen Login & Authentication – Helpers
  *
  * @package Frontend_Auth
  */
@@ -97,13 +97,13 @@ function fauth_get_action_slug( string $action ): string {
 
 function fauth_get_username_label( string $context = 'login' ): string {
     if ( 'register' === $context ) {
-        $label = __( 'Username', 'frontend-auth' );
+        $label = __( 'Username', 'zen-login-authentication' );
     } elseif ( fauth_is_username_login_type() ) {
-        $label = __( 'Username', 'frontend-auth' );
+        $label = __( 'Username', 'zen-login-authentication' );
     } elseif ( fauth_is_email_login_type() ) {
-        $label = __( 'Email Address', 'frontend-auth' );
+        $label = __( 'Email Address', 'zen-login-authentication' );
     } else {
-        $label = __( 'Username or Email Address', 'frontend-auth' );
+        $label = __( 'Username or Email Address', 'zen-login-authentication' );
     }
     return (string) apply_filters( 'fauth_username_label', $label, $context );
 }
@@ -137,7 +137,7 @@ function fauth_honeypot_field_html(): string {
     }
     $field = esc_attr( fauth_honeypot_field_name() );
     return '<div class="fauth-hp" style="display:none!important" aria-hidden="true">'
-        . '<label for="' . $field . '">' . esc_html__( 'Leave this empty', 'frontend-auth' ) . '</label>'
+        . '<label for="' . $field . '">' . esc_html__( 'Leave this empty', 'zen-login-authentication' ) . '</label>'
         . '<input type="text" id="' . $field . '" name="' . $field . '" value="" autocomplete="off" tabindex="-1">'
         . '</div>';
 }

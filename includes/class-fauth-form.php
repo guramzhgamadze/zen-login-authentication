@@ -1,6 +1,6 @@
 <?php
 /**
- * Frontend Auth – Form Class
+ * Zen Login & Authentication – Form Class
  *
  * Each "form" is responsible for building its own fields, rendering itself
  * and carrying its own WP_Error bag.

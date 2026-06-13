@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Frontend Auth — Frontend Login &amp; Registration for WordPress</title>
+<title>Zen Login & Authentication — Frontend Login &amp; Registration for WordPress</title>
 <meta name="description" content="Secure, accessible frontend login, registration, and password recovery forms for WordPress with Elementor support, rate limiting, and honeypot protection.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -185,12 +185,12 @@ footer a:hover{color:var(--accent)}
 <section class="hero">
   <div class="container">
     <div class="badge"><span class="dot"></span> WordPress Plugin</div>
-    <h1>Frontend Auth for<br><span>WordPress &amp; Elementor</span></h1>
+    <h1>Zen Login & Authentication for<br><span>WordPress &amp; Elementor</span></h1>
     <p class="subtitle">Secure, accessible login, registration, and password recovery forms that live on your actual site — not wp-login.php.</p>
     <div class="hero-actions">
       <a href="https://github.com/guramzhgamadze/Frontend-Auth/archive/refs/heads/main.zip" class="btn btn-primary">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        Download v1.7.0
+        Download v1.7.1
       </a>
       <a href="https://github.com/guramzhgamadze/Frontend-Auth" class="btn btn-secondary">
         <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
@@ -378,7 +378,7 @@ footer a:hover{color:var(--accent)}
     <div class="section-title">Up and running in 60 seconds</div>
     <div class="code-block">
       <span class="comment"># Upload and activate</span><br>
-      <span class="cmd">wp plugin install frontend-auth.zip --activate</span><br><br>
+      <span class="cmd">wp plugin install zen-login-authentication.zip --activate</span><br><br>
       <span class="comment"># Rewrite rules flush automatically on first load (v1.4.16+)</span><br>
       <span class="comment"># Run manually if needed:</span><br>
       <span class="cmd">wp rewrite flush</span><br><br>
@@ -388,7 +388,7 @@ footer a:hover{color:var(--accent)}
       <span class="cmd">wp option update fauth_use_ajax 1</span><br>
       <span class="cmd">wp option update fauth_user_passwords 1</span><br><br>
       <span class="comment"># Optional: set the subscriber post-login destination</span><br>
-      <span class="comment"># (Settings &rarr; Frontend Auth — slug or URL — or via filter:)</span><br>
+      <span class="comment"># (Settings &rarr; Zen Login & Authentication — slug or URL — or via filter:)</span><br>
       <span class="cmd">add_filter( 'fauth_subscriber_redirect', fn() => home_url( '/dashboard/' ) );</span><br><br>
       <span class="comment"># That's it. Visit /login/ on your site.</span>
     </div>
@@ -398,7 +398,7 @@ footer a:hover{color:var(--accent)}
 <!-- FOOTER -->
 <footer>
   <div class="container">
-    <p>Frontend Auth is free and open-source software released under the <a href="https://www.gnu.org/licenses/gpl-2.0.html">GPL-2.0</a> license.</p>
+    <p>Zen Login & Authentication is free and open-source software released under the <a href="https://www.gnu.org/licenses/gpl-2.0.html">GPL-2.0</a> license.</p>
   </div>
 </footer>
 

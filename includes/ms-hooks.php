@@ -1,6 +1,6 @@
 <?php
 /**
- * Frontend Auth – Multisite Hooks
+ * Zen Login & Authentication – Multisite Hooks
  *
  * The plugin declares Network: true but previously had zero multisite code.
  * This file handles the multisite registration flow correctly.
@@ -60,7 +60,7 @@ function fauth_ms_maybe_show_activation_notice(): void {
     if ( $form ) {
         $form->add_message(
             'ms_activated',
-            __( 'Your account has been activated. You can now log in.', 'frontend-auth' )
+            __( 'Your account has been activated. You can now log in.', 'zen-login-authentication' )
         );
     }
 }

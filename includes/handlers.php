@@ -1,6 +1,6 @@
 <?php
 /**
- * Frontend Auth – Handlers
+ * Zen Login & Authentication – Handlers
  *
  * All form-processing and routing logic.
  *
@@ -30,12 +30,12 @@ function fauth_route_post_request(): void {
         // script can only render a 403 as the unhelpful generic-error fallback.
         if ( fauth_is_ajax_request() ) {
             fauth_send_ajax_error( [
-                'errors' => [ __( 'Your session has expired. Please reload the page and try again.', 'frontend-auth' ) ],
+                'errors' => [ __( 'Your session has expired. Please reload the page and try again.', 'zen-login-authentication' ) ],
             ] );
         }
         wp_die(
-            esc_html__( 'Security check failed. Please try again.', 'frontend-auth' ),
-            esc_html__( 'Security Error', 'frontend-auth' ),
+            esc_html__( 'Security check failed. Please try again.', 'zen-login-authentication' ),
+            esc_html__( 'Security Error', 'zen-login-authentication' ),
             [ 'response' => 403 ]
         );
     }
@@ -70,13 +70,13 @@ function fauth_register_default_actions(): void {
     $done = true;
 
     fauth()->register_action( 'login', [
-        'title'              => __( 'Log In', 'frontend-auth' ),
+        'title'              => __( 'Log In', 'zen-login-authentication' ),
         'slug'               => fauth_get_action_slug( 'login' ),
         'show_nav_menu_item' => ! is_user_logged_in(),
     ] );
 
     fauth()->register_action( 'logout', [
-        'title'              => __( 'Log Out', 'frontend-auth' ),
+        'title'              => __( 'Log Out', 'zen-login-authentication' ),
         'slug'               => fauth_get_action_slug( 'logout' ),
         'show_in_widget'     => false,
         'show_on_forms'      => false,
@@ -84,27 +84,27 @@ function fauth_register_default_actions(): void {
     ] );
 
     fauth()->register_action( 'register', [
-        'title'              => __( 'Register', 'frontend-auth' ),
+        'title'              => __( 'Register', 'zen-login-authentication' ),
         'slug'               => fauth_get_action_slug( 'register' ),
         'show_on_forms'      => (bool) get_option( 'users_can_register' ),
         'show_nav_menu_item' => ! is_user_logged_in(),
     ] );
 
     fauth()->register_action( 'lostpassword', [
-        'title'             => __( 'Lost Password', 'frontend-auth' ),
+        'title'             => __( 'Lost Password', 'zen-login-authentication' ),
         'slug'              => fauth_get_action_slug( 'lostpassword' ),
         'show_in_nav_menus' => false,
     ] );
 
     fauth()->register_action( 'resetpass', [
-        'title'             => __( 'Reset Password', 'frontend-auth' ),
+        'title'             => __( 'Reset Password', 'zen-login-authentication' ),
         'slug'              => fauth_get_action_slug( 'resetpass' ),
         'show_in_widget'    => false,
         'show_in_nav_menus' => false,
     ] );
 
     fauth()->register_action( 'account', [
-        'title'              => __( 'My Account', 'frontend-auth' ),
+        'title'              => __( 'My Account', 'zen-login-authentication' ),
         'slug'               => fauth_get_action_slug( 'account' ),
         'show_on_forms'      => false,
         'show_nav_menu_item' => is_user_logged_in(),
@@ -160,7 +160,7 @@ function fauth_handle_login(): void {
     if ( fauth_rate_limit_is_locked( 'login' ) ) {
         $message = sprintf(
             /* translators: %d = minutes */
-            __( 'Too many failed attempts. Please try again in %d minutes.', 'frontend-auth' ),
+            __( 'Too many failed attempts. Please try again in %d minutes.', 'zen-login-authentication' ),
             fauth_get_rate_limit_window()
         );
         $form = fauth()->get_form( 'login' );
@@ -274,7 +274,7 @@ function fauth_handle_register(): void {
     if ( fauth_honeypot_is_spam() ) {
         if ( $is_ajax ) {
             fauth_send_ajax_success( [
-                'message' => __( 'Registration complete. Please check your email.', 'frontend-auth' ),
+                'message' => __( 'Registration complete. Please check your email.', 'zen-login-authentication' ),
             ] );
         }
         wp_safe_redirect( add_query_arg( 'registered', '1', fauth_get_action_url( 'login' ) ) );
@@ -282,7 +282,7 @@ function fauth_handle_register(): void {
     }
 
     if ( fauth_rate_limit_is_locked( 'register' ) ) {
-        $message = __( 'Too many registration attempts. Please wait before trying again.', 'frontend-auth' );
+        $message = __( 'Too many registration attempts. Please wait before trying again.', 'zen-login-authentication' );
         $form    = fauth()->get_form( 'register' );
         if ( $form ) {
             $form->add_error( 'too_many_attempts', $message );
@@ -351,7 +351,7 @@ function fauth_handle_register(): void {
 
     if ( $is_ajax ) {
         fauth_send_ajax_success( [
-            'message' => __( 'Registration complete. Please check your email for login instructions.', 'frontend-auth' ),
+            'message' => __( 'Registration complete. Please check your email for login instructions.', 'zen-login-authentication' ),
         ] );
     }
 
@@ -368,7 +368,7 @@ function fauth_handle_lostpassword(): void {
     $is_ajax = fauth_is_ajax_request();
 
     if ( fauth_rate_limit_is_locked( 'lostpassword' ) ) {
-        $message = __( 'Too many attempts. Please wait a few minutes before trying again.', 'frontend-auth' );
+        $message = __( 'Too many attempts. Please wait a few minutes before trying again.', 'zen-login-authentication' );
         $form    = fauth()->get_form( 'lostpassword' );
         if ( $form ) {
             $form->add_error( 'too_many_attempts', $message );
@@ -383,7 +383,7 @@ function fauth_handle_lostpassword(): void {
     if ( fauth_honeypot_is_spam() ) {
         if ( $is_ajax ) {
             fauth_send_ajax_success( [
-                'message' => __( 'Check your email for a link to reset your password.', 'frontend-auth' ),
+                'message' => __( 'Check your email for a link to reset your password.', 'zen-login-authentication' ),
             ] );
         }
         wp_safe_redirect( add_query_arg( 'checkemail', 'confirm', fauth_get_action_url( 'lostpassword' ) ) );
@@ -424,7 +424,7 @@ function fauth_handle_lostpassword(): void {
 
     if ( $is_ajax ) {
         fauth_send_ajax_success( [
-            'message' => __( 'Check your email for a link to reset your password.', 'frontend-auth' ),
+            'message' => __( 'Check your email for a link to reset your password.', 'zen-login-authentication' ),
         ] );
     }
 
@@ -448,7 +448,7 @@ function fauth_handle_resetpass(): void {
     if ( fauth_rate_limit_is_locked( 'resetpass' ) ) {
         $message = sprintf(
             /* translators: %d = minutes */
-            __( 'Too many attempts. Please try again in %d minutes.', 'frontend-auth' ),
+            __( 'Too many attempts. Please try again in %d minutes.', 'zen-login-authentication' ),
             fauth_get_rate_limit_window()
         );
         if ( $form ) {
@@ -464,7 +464,7 @@ function fauth_handle_resetpass(): void {
 
     if ( is_wp_error( $user ) ) {
         fauth_rate_limit_bump( 'resetpass' );
-        $message = __( 'This password reset link has expired or is invalid. Please request a new one.', 'frontend-auth' );
+        $message = __( 'This password reset link has expired or is invalid. Please request a new one.', 'zen-login-authentication' );
         if ( $form ) {
             $form->add_error( 'invalid_key', $message );
         }
@@ -475,7 +475,7 @@ function fauth_handle_resetpass(): void {
     }
 
     if ( empty( $pass1 ) || $pass1 !== $pass2 ) {
-        $message = __( 'Passwords do not match. Please try again.', 'frontend-auth' );
+        $message = __( 'Passwords do not match. Please try again.', 'zen-login-authentication' );
         if ( $form ) {
             $form->add_error( 'password_mismatch', $message );
         }
@@ -486,7 +486,7 @@ function fauth_handle_resetpass(): void {
     }
 
     if ( strlen( $pass1 ) < 8 ) {
-        $message = __( 'Password must be at least 8 characters.', 'frontend-auth' );
+        $message = __( 'Password must be at least 8 characters.', 'zen-login-authentication' );
         if ( $form ) {
             $form->add_error( 'password_too_short', $message );
         }
@@ -524,7 +524,7 @@ function fauth_handle_account(): void {
     if ( ! is_user_logged_in() ) {
         if ( $is_ajax ) {
             fauth_send_ajax_error( [
-                'errors' => [ __( 'Your session has expired. Please log in and try again.', 'frontend-auth' ) ],
+                'errors' => [ __( 'Your session has expired. Please log in and try again.', 'zen-login-authentication' ) ],
             ] );
         }
         wp_safe_redirect( fauth_get_action_url( 'login' ) );
@@ -544,15 +544,15 @@ function fauth_handle_account(): void {
     $errors = new WP_Error();
 
     if ( '' === $display_name ) {
-        $errors->add( 'empty_display_name', __( 'Please choose a display name.', 'frontend-auth' ) );
+        $errors->add( 'empty_display_name', __( 'Please choose a display name.', 'zen-login-authentication' ) );
     }
 
     if ( '' === $user_email || ! is_email( $user_email ) ) {
-        $errors->add( 'invalid_email', __( 'Please enter a valid email address.', 'frontend-auth' ) );
+        $errors->add( 'invalid_email', __( 'Please enter a valid email address.', 'zen-login-authentication' ) );
     } else {
         $email_owner = email_exists( $user_email );
         if ( $email_owner && (int) $email_owner !== (int) $user->ID ) {
-            $errors->add( 'email_exists', __( 'That email address is already in use by another account.', 'frontend-auth' ) );
+            $errors->add( 'email_exists', __( 'That email address is already in use by another account.', 'zen-login-authentication' ) );
         }
     }
 
@@ -561,9 +561,9 @@ function fauth_handle_account(): void {
     $change_password = ( '' !== $pass1 || '' !== $pass2 );
     if ( $change_password ) {
         if ( $pass1 !== $pass2 ) {
-            $errors->add( 'password_mismatch', __( 'Passwords do not match. Please try again.', 'frontend-auth' ) );
+            $errors->add( 'password_mismatch', __( 'Passwords do not match. Please try again.', 'zen-login-authentication' ) );
         } elseif ( strlen( $pass1 ) < 8 ) {
-            $errors->add( 'password_too_short', __( 'Password must be at least 8 characters.', 'frontend-auth' ) );
+            $errors->add( 'password_too_short', __( 'Password must be at least 8 characters.', 'zen-login-authentication' ) );
         }
     }
 
@@ -652,7 +652,7 @@ function fauth_account_maybe_show_updated_notice(): void {
     }
     $form = fauth()->get_form( 'account' );
     if ( $form ) {
-        $form->add_message( 'account_updated', __( 'Your profile has been updated.', 'frontend-auth' ) );
+        $form->add_message( 'account_updated', __( 'Your profile has been updated.', 'zen-login-authentication' ) );
     }
 }
 
@@ -669,11 +669,11 @@ function fauth_validate_registration_password( WP_Error $errors, $sanitized_user
     $pass2 = fauth_get_request_value( 'user_pass2', 'post' );
 
     if ( empty( $pass1 ) || empty( $pass2 ) ) {
-        $errors->add( 'empty_password', __( 'Please enter a password.', 'frontend-auth' ) );
+        $errors->add( 'empty_password', __( 'Please enter a password.', 'zen-login-authentication' ) );
     } elseif ( $pass1 !== $pass2 ) {
-        $errors->add( 'password_mismatch', __( 'Passwords do not match.', 'frontend-auth' ) );
+        $errors->add( 'password_mismatch', __( 'Passwords do not match.', 'zen-login-authentication' ) );
     } elseif ( strlen( $pass1 ) < 8 ) {
-        $errors->add( 'password_too_short', __( 'Password must be at least 8 characters.', 'frontend-auth' ) );
+        $errors->add( 'password_too_short', __( 'Password must be at least 8 characters.', 'zen-login-authentication' ) );
     }
 
     return $errors;
@@ -691,13 +691,13 @@ function fauth_enforce_login_type( $user, $username, $password ) {
     if ( fauth_is_email_login_type() && ! is_email( $username ) ) {
         return new WP_Error(
             'invalid_email',
-            __( 'Please log in with your email address.', 'frontend-auth' )
+            __( 'Please log in with your email address.', 'zen-login-authentication' )
         );
     }
     if ( fauth_is_username_login_type() && is_email( $username ) ) {
         return new WP_Error(
             'invalid_username',
-            __( 'Please log in with your username, not your email address.', 'frontend-auth' )
+            __( 'Please log in with your username, not your email address.', 'zen-login-authentication' )
         );
     }
     return $user;

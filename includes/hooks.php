@@ -1,6 +1,6 @@
 <?php
 /**
- * Frontend Auth – Hooks
+ * Zen Login & Authentication – Hooks
  *
  * @package Frontend_Auth
  */
@@ -111,7 +111,7 @@ function fauth_register_assets(): void {
     $suffix = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
 
     wp_register_style(
-        'frontend-auth',
+        'zen-login-authentication',
         FAUTH_URL . "assets/styles/frontend-auth{$suffix}.css",
         [],
         FAUTH_VERSION
@@ -121,7 +121,7 @@ function fauth_register_assets(): void {
     // may need the script and Elementor's own scripts are not deferred.
     // We enqueue with defer only on non-Elementor pages (see fauth_enqueue_assets).
     wp_register_script(
-        'frontend-auth',
+        'zen-login-authentication',
         FAUTH_URL . "assets/scripts/frontend-auth{$suffix}.js",
         [ 'jquery' ],
         FAUTH_VERSION,
@@ -143,8 +143,8 @@ function fauth_enqueue_assets(): void {
         return;
     }
 
-    wp_enqueue_style( 'frontend-auth' );
-    wp_enqueue_script( 'frontend-auth' );
+    wp_enqueue_style( 'zen-login-authentication' );
+    wp_enqueue_script( 'zen-login-authentication' );
 
     /*
      * BUG FIX (v1.4.3): const fauthConfig declared twice — SyntaxError
@@ -192,22 +192,22 @@ function fauth_maybe_add_inline_script(): void {
         'useAjax' => fauth_use_ajax(),
         'action'  => fauth_get_current_action(),
         'i18n'    => [
-            'genericError'       => __( 'An error occurred. Please try again.', 'frontend-auth' ),
-            'show'               => __( 'Show', 'frontend-auth' ),
-            'hide'               => __( 'Hide', 'frontend-auth' ),
-            'passwordToggle'     => __( 'Toggle password visibility', 'frontend-auth' ),
-            'strengthVeryWeak'   => __( 'Very weak', 'frontend-auth' ),
-            'strengthWeak'       => __( 'Weak', 'frontend-auth' ),
-            'strengthGood'       => __( 'Good', 'frontend-auth' ),
-            'strengthStrong'     => __( 'Strong', 'frontend-auth' ),
-            'msgRegistered'      => __( 'Registration successful! Please check your email for login instructions.', 'frontend-auth' ),
-            'msgCheckEmail'      => __( 'Check your email for a link to reset your password.', 'frontend-auth' ),
-            'msgPasswordChanged' => __( 'Your password has been reset. You can now log in.', 'frontend-auth' ),
+            'genericError'       => __( 'An error occurred. Please try again.', 'zen-login-authentication' ),
+            'show'               => __( 'Show', 'zen-login-authentication' ),
+            'hide'               => __( 'Hide', 'zen-login-authentication' ),
+            'passwordToggle'     => __( 'Toggle password visibility', 'zen-login-authentication' ),
+            'strengthVeryWeak'   => __( 'Very weak', 'zen-login-authentication' ),
+            'strengthWeak'       => __( 'Weak', 'zen-login-authentication' ),
+            'strengthGood'       => __( 'Good', 'zen-login-authentication' ),
+            'strengthStrong'     => __( 'Strong', 'zen-login-authentication' ),
+            'msgRegistered'      => __( 'Registration successful! Please check your email for login instructions.', 'zen-login-authentication' ),
+            'msgCheckEmail'      => __( 'Check your email for a link to reset your password.', 'zen-login-authentication' ),
+            'msgPasswordChanged' => __( 'Your password has been reset. You can now log in.', 'zen-login-authentication' ),
         ],
     ] ) );
 
     if ( $script_data ) {
-        wp_add_inline_script( 'frontend-auth', 'const fauthConfig = ' . $script_data . ';', 'before' );
+        wp_add_inline_script( 'zen-login-authentication', 'const fauthConfig = ' . $script_data . ';', 'before' );
     }
 }
 
@@ -461,7 +461,7 @@ function fauth_maybe_inject_form( string $content ): string {
 
     // Register: show message if registration is disabled.
     if ( 'register' === $action && ! get_option( 'users_can_register' ) ) {
-        return '<p>' . esc_html__( 'User registration is currently not allowed.', 'frontend-auth' ) . '</p>';
+        return '<p>' . esc_html__( 'User registration is currently not allowed.', 'zen-login-authentication' ) . '</p>';
     }
 
     // Reset password: show error if key/login params are absent.
@@ -473,10 +473,10 @@ function fauth_maybe_inject_form( string $content ): string {
         if ( '' === $rp_key || '' === $rp_login ) {
             return '<div class="fauth fauth-form fauth-form-resetpass">'
                 . '<ul class="fauth-errors" role="alert">'
-                . '<li class="fauth-error">' . esc_html__( 'This password reset link is invalid or has expired. Please request a new one.', 'frontend-auth' ) . '</li>'
+                . '<li class="fauth-error">' . esc_html__( 'This password reset link is invalid or has expired. Please request a new one.', 'zen-login-authentication' ) . '</li>'
                 . '</ul>'
                 . '<p class="fauth-links"><a href="' . esc_url( fauth_get_action_url( 'lostpassword' ) ) . '">'
-                . esc_html__( 'Request a new password reset link', 'frontend-auth' ) . '</a></p>'
+                . esc_html__( 'Request a new password reset link', 'zen-login-authentication' ) . '</a></p>'
                 . '</div>';
         }
     }
@@ -506,7 +506,7 @@ function fauth_page_template( string $template ): string {
     $candidates = [
         "frontend-auth-{$action}.php",
         "fauth-{$action}.php",
-        'frontend-auth.php',
+        'zen-login-authentication.php',
         'fauth.php',
         'page.php',
     ];

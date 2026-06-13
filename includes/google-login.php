@@ -1,6 +1,6 @@
 <?php
 /**
- * Frontend Auth – Sign in with Google
+ * Zen Login & Authentication – Sign in with Google
  *
  * Server-side OpenID Connect authorization-code flow. No Google JavaScript is
  * loaded on any page and no third-party PHP libraries are used: the button is
@@ -78,7 +78,12 @@ function fauth_google_client_secret(): string {
  * (update_option → add_option both sanitize).
  */
 function fauth_sanitize_google_secret( $value ): string {
-    $value = trim( sanitize_text_field( (string) $value ) );
+    // Do NOT run the secret through sanitize_text_field(): it can strip or alter
+    // valid characters in an OAuth client secret. We only trim surrounding
+    // whitespace, then encrypt the RAW value. Storage is safe because the value
+    // is immediately encrypted to base64 ciphertext (includes/crypto.php) and is
+    // never echoed back into admin HTML (the field always renders blank).
+    $value = is_scalar( $value ) ? trim( (string) $value ) : '';
     if ( '' === $value ) {
         return (string) get_option( 'fauth_google_client_secret', '' );
     }
@@ -431,10 +436,10 @@ function fauth_google_button_html(): string {
         $url = add_query_arg( 'redirect_to', rawurlencode( $redirect_to ), $url );
     }
 
-    $text = (string) apply_filters( 'fauth_google_button_text', __( 'Continue with Google', 'frontend-auth' ) );
+    $text = (string) apply_filters( 'fauth_google_button_text', __( 'Continue with Google', 'zen-login-authentication' ) );
 
     return '<div class="fauth-sso">'
-        . '<div class="fauth-sso-divider" aria-hidden="true"><span>' . esc_html__( 'or', 'frontend-auth' ) . '</span></div>'
+        . '<div class="fauth-sso-divider" aria-hidden="true"><span>' . esc_html__( 'or', 'zen-login-authentication' ) . '</span></div>'
         . '<a class="fauth-google-btn" href="' . esc_url( $url ) . '">' . fauth_google_button_svg()
         . '<span>' . esc_html( $text ) . '</span></a>'
         . '</div>';
@@ -468,12 +473,12 @@ function fauth_google_maybe_show_error( $form ): void {
         return;
     }
     $messages = [
-        'denied'       => __( 'Google sign-in was cancelled.', 'frontend-auth' ),
-        'state'        => __( 'The sign-in attempt expired. Please try again.', 'frontend-auth' ),
-        'email'        => __( 'Your Google account email address is not verified, so it cannot be used to sign in.', 'frontend-auth' ),
-        'registration' => __( 'No account matches this Google email address, and new registrations via Google are disabled.', 'frontend-auth' ),
-        'locked'       => __( 'Too many attempts. Please try again later.', 'frontend-auth' ),
-        'failed'       => __( 'Google sign-in failed. Please try again.', 'frontend-auth' ),
+        'denied'       => __( 'Google sign-in was cancelled.', 'zen-login-authentication' ),
+        'state'        => __( 'The sign-in attempt expired. Please try again.', 'zen-login-authentication' ),
+        'email'        => __( 'Your Google account email address is not verified, so it cannot be used to sign in.', 'zen-login-authentication' ),
+        'registration' => __( 'No account matches this Google email address, and new registrations via Google are disabled.', 'zen-login-authentication' ),
+        'locked'       => __( 'Too many attempts. Please try again later.', 'zen-login-authentication' ),
+        'failed'       => __( 'Google sign-in failed. Please try again.', 'zen-login-authentication' ),
     ];
     $form->add_error( 'google_' . $code, $messages[ $code ] ?? $messages['failed'] );
 }

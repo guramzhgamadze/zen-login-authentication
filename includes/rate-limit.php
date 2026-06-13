@@ -1,6 +1,6 @@
 <?php
 /**
- * Frontend Auth – Rate Limiting
+ * Zen Login & Authentication – Rate Limiting
  *
  * Uses transients to track failed attempts per IP address.
  * Works on both single-site and multisite.

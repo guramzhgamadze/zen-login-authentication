@@ -1,10 +1,10 @@
-=== Frontend Auth ===
+=== Zen Login & Authentication ===
 Contributors: guramzhgamadze
 Tags: login, registration, authentication, elementor, frontend
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 1.7.0
+Stable tag: 1.7.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -12,7 +12,7 @@ Frontend login, registration, and password recovery for WordPress and Elementor,
 
 == Description ==
 
-Frontend Auth replaces the default `wp-login.php` experience with clean, accessible, theme-integrated forms that live on your actual site. It works out of the box on any WordPress theme and ships with first-class Elementor support: five drag-and-drop widgets that fit any page-builder layout, with full Theme Builder compatibility.
+Zen Login & Authentication replaces the default `wp-login.php` experience with clean, accessible, theme-integrated forms that live on your actual site. It works out of the box on any WordPress theme and ships with first-class Elementor support: five drag-and-drop widgets that fit any page-builder layout, with full Theme Builder compatibility.
 
 The plugin works with no configuration and adds no tracking or "phone home" behaviour. The only external service it ever contacts is Google — and only during a sign-in, when the optional "Sign in with Google" feature is enabled.
 
@@ -25,7 +25,7 @@ The plugin works with no configuration and adds no tracking or "phone home" beha
 * **Sign in with Google** (optional) — a server-side OpenID Connect flow with no Google JavaScript on your pages. New accounts can be auto-created (toggleable) and existing accounts are linked by verified email.
 * **URL rewriting** so every site-wide `wp-login.php` link is transparently redirected to your frontend pages.
 * **Multisite support** — network-activated, per-site settings, signup/activation flow handled.
-* **Smart redirects** — `?redirect_to=` is honoured everywhere. Subscribers are kept out of wp-admin and sent to a destination you set in **Settings &rarr; Frontend Auth &rarr; Subscriber redirect** (a page slug or URL; empty = site home). Privileged users always land where they intended.
+* **Smart redirects** — `?redirect_to=` is honoured everywhere. Subscribers are kept out of wp-admin and sent to a destination you set in **Settings &rarr; Zen Login & Authentication &rarr; Subscriber redirect** (a page slug or URL; empty = site home). Privileged users always land where they intended.
 * **Login activity dashboard** — a "Login Activity" widget on your WordPress dashboard summarising successful logins, failed attempts, and rate-limit lockouts over the past week, with the top failed usernames, the most-blocked IPs, and a recent-events feed. IP addresses are stored anonymised, history is auto-pruned, and the data is removed on uninstall.
 * **Cache exclusion** — auth pages are automatically excluded from LiteSpeed Cache, Super Page Cache, WP Rocket, W3 Total Cache, and WP Super Cache.
 
@@ -47,7 +47,7 @@ If the feature is disabled (the default), the plugin makes no external calls wha
 
 = Elementor integration =
 
-Five native widgets registered under a "Frontend Auth" category:
+Five native widgets registered under a "Zen Login & Authentication" category:
 
 * **Login Form** — custom labels, placeholders, toggle text, and link overrides; hidden when logged in (unless `reauth=1`); picks up `?redirect_to=` from the URL.
 * **Registration Form** — password + confirm fields when user-chosen passwords are enabled, with a live strength meter.
@@ -67,12 +67,12 @@ On activation the plugin sets up a real WordPress page for each auth action so E
 
 == Installation ==
 
-1. Upload the `frontend-auth` folder to `/wp-content/plugins/`, or install it from **Plugins &rarr; Add New**.
+1. Upload the `zen-login-authentication` folder to `/wp-content/plugins/`, or install it from **Plugins &rarr; Add New**.
 2. Activate the plugin through **Plugins &rarr; Installed Plugins**.
-3. Go to **Frontend Auth** in the admin sidebar to configure options.
+3. Go to **Zen Login & Authentication** in the admin sidebar to configure options.
 4. Auth pages are created automatically on activation. If you delete some and want them back, use **Create Missing Pages** in the Page Management section.
 5. Rewrite rules flush automatically on the first page load after activation. If a frontend URL 404s, visit **Settings &rarr; Permalinks** and click **Save Changes**.
-6. *(Elementor users)* Open a page in the Elementor editor and search the widget panel under the **Frontend Auth** category.
+6. *(Elementor users)* Open a page in the Elementor editor and search the widget panel under the **Zen Login & Authentication** category.
 
 == Frequently Asked Questions ==
 
@@ -86,7 +86,7 @@ No. It rewrites the links across your site to your frontend pages, but `wp-login
 
 = How do I let users choose their own password when registering? =
 
-Enable **User-chosen passwords** under **Settings &rarr; Frontend Auth &rarr; General**. You can also enable **Auto-login** to log users in immediately after they register.
+Enable **User-chosen passwords** under **Settings &rarr; Zen Login & Authentication &rarr; General**. You can also enable **Auto-login** to log users in immediately after they register.
 
 = Where do users go after logging in? =
 
@@ -100,7 +100,7 @@ By default the plugin uses `REMOTE_ADDR` only, because forwarded headers are spo
 = How do I set up Sign in with Google? =
 
 1. In Google Cloud Console, create an OAuth client: APIs & Services → Credentials → Create credentials → OAuth client ID → Web application.
-2. Copy the **Authorized redirect URI** shown under Settings → Frontend Auth → Sign in with Google, and add it to the OAuth client.
+2. Copy the **Authorized redirect URI** shown under Settings → Zen Login & Authentication → Sign in with Google, and add it to the OAuth client.
 3. Paste the Client ID and Client Secret into the same settings panel and switch the feature on.
 
 A "Continue with Google" button then appears on the login and registration forms (each Elementor widget has a toggle and style controls for it). The flow is entirely server-side — no Google JavaScript is loaded on your pages.
@@ -130,15 +130,21 @@ Only pages the plugin created that you never edited (no content, no Elementor da
 
 == Changelog ==
 
+= 1.7.1 =
+* Renamed the plugin to **Zen Login & Authentication** for a distinctive directory name.
+* All admin CSS is now enqueued (no inline `<style>` blocks).
+* Asset handles use a distinct prefix.
+* The Google client secret is encrypted from its raw value (no lossy pre-sanitization).
+
 = 1.7.0 =
-* New: **Login activity dashboard widget.** A "Login Activity" panel on the WordPress dashboard shows, for the past week, the number of successful logins, failed attempts, and lockouts, plus the top failed usernames, the most-blocked IPs, and a recent-events feed. Successful and failed logins are captured for every login path (the plugin's forms, wp-login.php, and programmatic logins); lockouts come from the plugin's rate limiter. IP addresses are stored anonymised (the same value the rate limiter buckets on). Settings → Frontend Auth → Login Activity lets you turn logging off, set a retention window (default 30 days; old entries auto-prune), and clear the log. The activity table is removed on uninstall.
+* New: **Login activity dashboard widget.** A "Login Activity" panel on the WordPress dashboard shows, for the past week, the number of successful logins, failed attempts, and lockouts, plus the top failed usernames, the most-blocked IPs, and a recent-events feed. Successful and failed logins are captured for every login path (the plugin's forms, wp-login.php, and programmatic logins); lockouts come from the plugin's rate limiter. IP addresses are stored anonymised (the same value the rate limiter buckets on). Settings → Zen Login & Authentication → Login Activity lets you turn logging off, set a retention window (default 30 days; old entries auto-prune), and clear the log. The activity table is removed on uninstall.
 
 = 1.6.3 =
 * Improved: post-login redirects now run WordPress's standard `login_redirect` filter on every front-end login, so membership/LMS and other plugins are respected — wherever they send a user is honoured.
 * Improved: restricted subscribers are never landed in wp-admin. A non-admin destination chosen by another plugin (a member area, a course page, an explicit redirect) is kept; only an empty or wp-admin target falls back to the Subscriber redirect. Administrators and editors are unaffected — their normal dashboard flow, including the "clicked Edit → login → back to Edit" round-trip, still works.
 
 = 1.6.2 =
-* New: **per-widget switches** under Settings → Frontend Auth → Widgets — turn each form widget (Login, Registration, Lost Password, Reset Password, Account) on or off for both the Elementor panel and classic widget areas.
+* New: **per-widget switches** under Settings → Zen Login & Authentication → Widgets — turn each form widget (Login, Registration, Lost Password, Reset Password, Account) on or off for both the Elementor panel and classic widget areas.
 * Improved: the settings screen now uses 80% of the admin content area instead of a fixed narrow column.
 
 = 1.6.1 =
@@ -148,7 +154,7 @@ Only pages the plugin created that you never edited (no content, no Elementor da
 = 1.5.0 =
 * Security: the Google Client Secret is **encrypted at rest** (AES-256-GCM, keyed from your wp-config.php salts — a database dump alone cannot leak it) and is never re-displayed in the admin once saved. Both credentials can alternatively be defined as `FAUTH_GOOGLE_CLIENT_ID` / `FAUTH_GOOGLE_CLIENT_SECRET` constants in wp-config.php to keep them out of the database entirely. If you rotate your WordPress salts, re-enter the secret.
 * Fixed: required-field asterisks were invisible — the honeypot's catch-all CSS rule (`.fauth [aria-hidden="true"]`) also hid the decorative asterisk spans. The rule is now scoped to the honeypot element only.
-* New: **Sign in with Google** (optional). A server-side OpenID Connect flow — no Google JavaScript on your pages and no third-party libraries. Configure a Client ID/Secret under Settings → Frontend Auth → Sign in with Google; a "Continue with Google" button then appears on the login and registration forms (toggleable per Elementor widget, with its own style section). First-time Google users can be auto-created (toggleable); existing accounts are linked by verified email. Google logins respect the Subscriber redirect, wp-admin blocking, rate limiting, and the hidden-toolbar default for new sign-ups. CSRF protection via a single-use state token bound to the browser; only verified Google emails are accepted.
+* New: **Sign in with Google** (optional). A server-side OpenID Connect flow — no Google JavaScript on your pages and no third-party libraries. Configure a Client ID/Secret under Settings → Zen Login & Authentication → Sign in with Google; a "Continue with Google" button then appears on the login and registration forms (toggleable per Elementor widget, with its own style section). First-time Google users can be auto-created (toggleable); existing accounts are linked by verified email. Google logins respect the Subscriber redirect, wp-admin blocking, rate limiting, and the hidden-toolbar default for new sign-ups. CSRF protection via a single-use state token bound to the browser; only verified Google emails are accepted.
 
 = 1.4.23 =
 * Fixed: the Elementor editor preview now shows the in-field password toggle layout, matching the front end (the preview templates were missing the password-field modifier class).
@@ -187,6 +193,9 @@ Older versions: see the project's CHANGELOG / README on the plugin homepage.
 
 == Upgrade Notice ==
 
+= 1.7.1 =
+Renamed to Zen Login & Authentication, with WordPress.org compliance fixes (enqueued admin CSS, prefixed asset handles, raw-value secret encryption).
+
 = 1.7.0 =
 Adds a "Login Activity" dashboard widget showing successful logins, failed attempts, and lockouts. A small activity table is created on update and removed on uninstall.
 
@@ -197,7 +206,7 @@ Post-login redirects now respect other plugins (membership/LMS) while keeping su
 Adds a frontend Account page and widget — users can now edit their name, public display name, email, and password without wp-admin. The /account/ page is created automatically on upgrade.
 
 = 1.5.0 =
-Adds optional Sign in with Google — a secure server-side flow with no Google JavaScript on your pages. Configure it under Settings → Frontend Auth.
+Adds optional Sign in with Google — a secure server-side flow with no Google JavaScript on your pages. Configure it under Settings → Zen Login & Authentication.
 
 = 1.4.20 =
 Subscribers are now reliably sent to your configured destination on every login path and kept out of wp-admin. New subscriber registrations get the front-end toolbar hidden by default.

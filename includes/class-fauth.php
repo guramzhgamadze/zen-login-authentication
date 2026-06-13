@@ -1,6 +1,6 @@
 <?php
 /**
- * Frontend Auth – Core class
+ * Zen Login & Authentication – Core class
  *
  * @package Frontend_Auth
  */

@@ -1,6 +1,6 @@
 <?php
 /**
- * Frontend Auth – Form Definitions
+ * Zen Login & Authentication – Form Definitions
  *
  * @package Frontend_Auth
  */
@@ -42,7 +42,7 @@ function fauth_register_login_form(): void {
 
     $form->add_field( 'pwd', [
         'type'     => 'password',
-        'label'    => __( 'Password', 'frontend-auth' ),
+        'label'    => __( 'Password', 'zen-login-authentication' ),
         'id'       => 'user_pass',
         'attrs'    => [ 'autocomplete' => 'current-password' ],
         'required' => true,
@@ -56,7 +56,7 @@ function fauth_register_login_form(): void {
 
     $form->add_field( 'rememberme', [
         'type'     => 'checkbox',
-        'label'    => __( 'Remember Me', 'frontend-auth' ),
+        'label'    => __( 'Remember Me', 'zen-login-authentication' ),
         'value'    => 'forever',
         'id'       => 'rememberme',
         'priority' => 20,
@@ -64,7 +64,7 @@ function fauth_register_login_form(): void {
 
     $form->add_field( 'submit', [
         'type'     => 'submit',
-        'value'    => __( 'Log In', 'frontend-auth' ),
+        'value'    => __( 'Log In', 'zen-login-authentication' ),
         'priority' => 30,
     ] );
 
@@ -84,18 +84,18 @@ function fauth_register_registration_form(): void {
 
     $form->add_field( 'user_login', [
         'type'        => 'text',
-        'label'       => __( 'Username', 'frontend-auth' ),
+        'label'       => __( 'Username', 'zen-login-authentication' ),
         'value'       => fauth_get_request_value( 'user_login', 'post' ),
         'id'          => 'user_login',
         'attrs'       => [ 'autocapitalize' => 'off', 'autocomplete' => 'username' ],
         'required'    => true,
         'priority'    => 10,
-        'description' => __( 'Letters, numbers, and underscores only.', 'frontend-auth' ),
+        'description' => __( 'Letters, numbers, and underscores only.', 'zen-login-authentication' ),
     ] );
 
     $form->add_field( 'user_email', [
         'type'     => 'email',
-        'label'    => __( 'Email Address', 'frontend-auth' ),
+        'label'    => __( 'Email Address', 'zen-login-authentication' ),
         'value'    => fauth_get_request_value( 'user_email', 'post' ),
         'id'       => 'user_email',
         'attrs'    => [ 'autocomplete' => 'email' ],
@@ -106,7 +106,7 @@ function fauth_register_registration_form(): void {
     if ( fauth_allow_user_passwords() ) {
         $form->add_field( 'user_pass1', [
             'type'     => 'password',
-            'label'    => __( 'Password', 'frontend-auth' ),
+            'label'    => __( 'Password', 'zen-login-authentication' ),
             'id'       => 'user_pass1',
             'attrs'    => [ 'autocomplete' => 'new-password' ],
             'required' => true,
@@ -114,7 +114,7 @@ function fauth_register_registration_form(): void {
         ] );
         $form->add_field( 'user_pass2', [
             'type'     => 'password',
-            'label'    => __( 'Confirm Password', 'frontend-auth' ),
+            'label'    => __( 'Confirm Password', 'zen-login-authentication' ),
             'id'       => 'user_pass2',
             'attrs'    => [ 'autocomplete' => 'new-password' ],
             'required' => true,
@@ -129,7 +129,7 @@ function fauth_register_registration_form(): void {
 
     $form->add_field( 'submit', [
         'type'     => 'submit',
-        'value'    => __( 'Register', 'frontend-auth' ),
+        'value'    => __( 'Register', 'zen-login-authentication' ),
         'priority' => 40,
     ] );
 
@@ -145,7 +145,7 @@ function fauth_register_lost_password_form(): void {
 
     $form->add_field( 'user_login', [
         'type'     => 'text',
-        'label'    => __( 'Username or Email Address', 'frontend-auth' ),
+        'label'    => __( 'Username or Email Address', 'zen-login-authentication' ),
         'value'    => fauth_get_request_value( 'user_login', 'post' ),
         'id'       => 'user_login',
         'attrs'    => [ 'autocapitalize' => 'off', 'autocomplete' => 'username email' ],
@@ -160,7 +160,7 @@ function fauth_register_lost_password_form(): void {
 
     $form->add_field( 'submit', [
         'type'     => 'submit',
-        'value'    => __( 'Get New Password', 'frontend-auth' ),
+        'value'    => __( 'Get New Password', 'zen-login-authentication' ),
         'priority' => 20,
     ] );
 
@@ -188,7 +188,7 @@ function fauth_register_password_reset_form(): void {
 
     $form->add_field( 'pass1', [
         'type'     => 'password',
-        'label'    => __( 'New Password', 'frontend-auth' ),
+        'label'    => __( 'New Password', 'zen-login-authentication' ),
         'id'       => 'pass1',
         'attrs'    => [ 'autocomplete' => 'new-password' ],
         'required' => true,
@@ -197,7 +197,7 @@ function fauth_register_password_reset_form(): void {
 
     $form->add_field( 'pass2', [
         'type'     => 'password',
-        'label'    => __( 'Confirm New Password', 'frontend-auth' ),
+        'label'    => __( 'Confirm New Password', 'zen-login-authentication' ),
         'id'       => 'pass2',
         'attrs'    => [ 'autocomplete' => 'new-password' ],
         'required' => true,
@@ -211,7 +211,7 @@ function fauth_register_password_reset_form(): void {
 
     $form->add_field( 'submit', [
         'type'     => 'submit',
-        'value'    => __( 'Reset Password', 'frontend-auth' ),
+        'value'    => __( 'Reset Password', 'zen-login-authentication' ),
         'priority' => 30,
     ] );
 
@@ -258,17 +258,17 @@ function fauth_register_account_form(): void {
     // processing) a username change.
     $form->add_field( 'user_login', [
         'type'        => 'text',
-        'label'       => __( 'Username', 'frontend-auth' ),
+        'label'       => __( 'Username', 'zen-login-authentication' ),
         'value'       => $user->exists() ? $user->user_login : '',
         'id'          => 'user_login',
         'attrs'       => [ 'disabled' => 'disabled', 'autocomplete' => 'username' ],
         'priority'    => 5,
-        'description' => __( 'Usernames cannot be changed.', 'frontend-auth' ),
+        'description' => __( 'Usernames cannot be changed.', 'zen-login-authentication' ),
     ] );
 
     $form->add_field( 'first_name', [
         'type'     => 'text',
-        'label'    => __( 'First Name', 'frontend-auth' ),
+        'label'    => __( 'First Name', 'zen-login-authentication' ),
         'value'    => $first_name,
         'id'       => 'first_name',
         'attrs'    => [ 'autocomplete' => 'given-name' ],
@@ -277,7 +277,7 @@ function fauth_register_account_form(): void {
 
     $form->add_field( 'last_name', [
         'type'     => 'text',
-        'label'    => __( 'Last Name', 'frontend-auth' ),
+        'label'    => __( 'Last Name', 'zen-login-authentication' ),
         'value'    => $last_name,
         'id'       => 'last_name',
         'attrs'    => [ 'autocomplete' => 'family-name' ],
@@ -286,7 +286,7 @@ function fauth_register_account_form(): void {
 
     $form->add_field( 'display_name', [
         'type'     => 'select',
-        'label'    => __( 'Display name publicly as', 'frontend-auth' ),
+        'label'    => __( 'Display name publicly as', 'zen-login-authentication' ),
         'value'    => $display_name,
         'id'       => 'display_name',
         'options'  => fauth_account_display_name_options( $user, $first_name, $last_name, $display_name ),
@@ -303,7 +303,7 @@ function fauth_register_account_form(): void {
 
     $form->add_field( 'user_email', [
         'type'     => 'email',
-        'label'    => __( 'Email Address', 'frontend-auth' ),
+        'label'    => __( 'Email Address', 'zen-login-authentication' ),
         'value'    => $user_email,
         'id'       => 'user_email',
         'attrs'    => [ 'autocomplete' => 'email' ],
@@ -316,16 +316,16 @@ function fauth_register_account_form(): void {
     // The two forms never render on the same page, so the ids cannot collide.
     $form->add_field( 'pass1', [
         'type'        => 'password',
-        'label'       => __( 'New Password', 'frontend-auth' ),
+        'label'       => __( 'New Password', 'zen-login-authentication' ),
         'id'          => 'pass1',
         'attrs'       => [ 'autocomplete' => 'new-password' ],
         'priority'    => 30,
-        'description' => __( 'Leave blank to keep your current password.', 'frontend-auth' ),
+        'description' => __( 'Leave blank to keep your current password.', 'zen-login-authentication' ),
     ] );
 
     $form->add_field( 'pass2', [
         'type'     => 'password',
-        'label'    => __( 'Confirm New Password', 'frontend-auth' ),
+        'label'    => __( 'Confirm New Password', 'zen-login-authentication' ),
         'id'       => 'pass2',
         'attrs'    => [ 'autocomplete' => 'new-password' ],
         'priority' => 35,
@@ -338,7 +338,7 @@ function fauth_register_account_form(): void {
 
     $form->add_field( 'submit', [
         'type'     => 'submit',
-        'value'    => __( 'Save Changes', 'frontend-auth' ),
+        'value'    => __( 'Save Changes', 'zen-login-authentication' ),
         'priority' => 40,
     ] );
 
@@ -387,25 +387,25 @@ function fauth_account_display_name_options( WP_User $user, string $first_name, 
 
 add_filter( 'fauth_form_links_login', function ( $links ) {
     if ( get_option( 'users_can_register' ) ) {
-        $links[] = [ 'label' => __( 'Register', 'frontend-auth' ), 'url' => fauth_get_action_url( 'register' ) ];
+        $links[] = [ 'label' => __( 'Register', 'zen-login-authentication' ), 'url' => fauth_get_action_url( 'register' ) ];
     }
-    $links[] = [ 'label' => __( 'Lost your password?', 'frontend-auth' ), 'url' => fauth_get_action_url( 'lostpassword' ) ];
+    $links[] = [ 'label' => __( 'Lost your password?', 'zen-login-authentication' ), 'url' => fauth_get_action_url( 'lostpassword' ) ];
     return $links;
 } );
 
 add_filter( 'fauth_form_links_register', function ( $links ) {
-    $links[] = [ 'label' => __( 'Log In', 'frontend-auth' ), 'url' => fauth_get_action_url( 'login' ) ];
+    $links[] = [ 'label' => __( 'Log In', 'zen-login-authentication' ), 'url' => fauth_get_action_url( 'login' ) ];
     return $links;
 } );
 
 add_filter( 'fauth_form_links_lostpassword', function ( $links ) {
-    $links[] = [ 'label' => __( 'Log In', 'frontend-auth' ), 'url' => fauth_get_action_url( 'login' ) ];
+    $links[] = [ 'label' => __( 'Log In', 'zen-login-authentication' ), 'url' => fauth_get_action_url( 'login' ) ];
     return $links;
 } );
 
 add_filter( 'fauth_form_links_account', function ( $links ) {
     // wp_logout_url() is rewritten to the plugin's /logout/ URL (with nonce)
     // by fauth_filter_logout_url(), so this stays correct on custom slugs.
-    $links[] = [ 'label' => __( 'Log Out', 'frontend-auth' ), 'url' => wp_logout_url() ];
+    $links[] = [ 'label' => __( 'Log Out', 'zen-login-authentication' ), 'url' => wp_logout_url() ];
     return $links;
 } );

@@ -1,6 +1,6 @@
 <?php
 /**
- * Frontend Auth – Secret encryption
+ * Zen Login & Authentication – Secret encryption
  *
  * Encrypts sensitive option values (the Google OAuth client secret) at rest so a
  * database dump alone cannot leak them. The key is derived from the site's

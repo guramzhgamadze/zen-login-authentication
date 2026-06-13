@@ -1,6 +1,6 @@
 <?php
 /**
- * Frontend Auth – Dashboard Widget
+ * Zen Login & Authentication – Dashboard Widget
  *
  * A "Login Activity" widget on the main WordPress dashboard (wp-admin/index.php)
  * summarising successful logins, failed attempts, and rate-limit lockouts over
@@ -20,7 +20,7 @@ function fauth_register_dashboard_widget(): void {
     }
     wp_add_dashboard_widget(
         'fauth_activity_widget',
-        __( 'Frontend Auth — Login Activity', 'frontend-auth' ),
+        __( 'Zen Login & Authentication — Login Activity', 'zen-login-authentication' ),
         'fauth_render_dashboard_widget'
     );
 }
@@ -33,8 +33,8 @@ function fauth_render_dashboard_widget(): void {
         echo '<p>' . wp_kses(
             sprintf(
                 /* translators: %s: settings page URL */
-                __( 'Login activity logging is turned off. Enable it under <a href="%s">Frontend Auth → Settings</a>.', 'frontend-auth' ),
-                esc_url( admin_url( 'admin.php?page=frontend-auth' ) )
+                __( 'Login activity logging is turned off. Enable it under <a href="%s">Zen Login & Authentication → Settings</a>.', 'zen-login-authentication' ),
+                esc_url( admin_url( 'admin.php?page=zen-login-authentication' ) )
             ),
             [ 'a' => [ 'href' => [] ] ]
         ) . '</p>';
@@ -44,48 +44,25 @@ function fauth_render_dashboard_widget(): void {
     $data = fauth_activity_get_summary();
     $days = (int) $data['days'];
     ?>
-    <style>
-        #fauth_activity_widget .fauth-dash-stats { display:flex; gap:10px; margin:0 0 16px; }
-        #fauth_activity_widget .fauth-dash-stat { flex:1; text-align:center; background:#f6f7f7; border:1px solid #e0e0e0; border-radius:10px; padding:12px 6px; }
-        #fauth_activity_widget .fauth-dash-stat .num { display:block; font-size:1.5rem; font-weight:700; line-height:1.2; }
-        #fauth_activity_widget .fauth-dash-stat .lbl { display:block; font-size:0.72rem; color:#646970; text-transform:uppercase; letter-spacing:.02em; margin-top:2px; }
-        #fauth_activity_widget .fauth-dash-stat.ok   .num { color:#00794f; }
-        #fauth_activity_widget .fauth-dash-stat.fail .num { color:#b32d2e; }
-        #fauth_activity_widget .fauth-dash-stat.lock .num { color:#9a6700; }
-        #fauth_activity_widget h4 { margin:14px 0 6px; font-size:0.82rem; text-transform:uppercase; letter-spacing:.02em; color:#1d2327; }
-        #fauth_activity_widget table.fauth-dash-table { width:100%; border-collapse:collapse; }
-        #fauth_activity_widget table.fauth-dash-table td { padding:5px 0; border-bottom:1px solid #f0f0f1; font-size:0.86rem; }
-        #fauth_activity_widget table.fauth-dash-table tr:last-child td { border-bottom:none; }
-        #fauth_activity_widget table.fauth-dash-table td.cnt { text-align:right; font-weight:600; color:#646970; white-space:nowrap; }
-        #fauth_activity_widget .fauth-dash-cols { display:flex; gap:22px; flex-wrap:wrap; }
-        #fauth_activity_widget .fauth-dash-cols > div { flex:1; min-width:180px; }
-        #fauth_activity_widget .fauth-dash-empty { color:#646970; font-style:italic; font-size:0.85rem; }
-        #fauth_activity_widget .fauth-pill { display:inline-block; font-size:0.7rem; font-weight:600; padding:1px 7px; border-radius:10px; }
-        #fauth_activity_widget .fauth-pill.ok   { background:#edf7f1; color:#00794f; }
-        #fauth_activity_widget .fauth-pill.fail { background:#fcefef; color:#b32d2e; }
-        #fauth_activity_widget .fauth-pill.lock { background:#fdf6e7; color:#9a6700; }
-        #fauth_activity_widget .fauth-dash-foot { margin:14px 0 0; font-size:0.8rem; }
-    </style>
-
     <div class="fauth-dash-stats">
         <div class="fauth-dash-stat ok">
             <span class="num"><?php echo esc_html( number_format_i18n( (int) $data['success'] ) ); ?></span>
-            <span class="lbl"><?php esc_html_e( 'Successful', 'frontend-auth' ); ?></span>
+            <span class="lbl"><?php esc_html_e( 'Successful', 'zen-login-authentication' ); ?></span>
         </div>
         <div class="fauth-dash-stat fail">
             <span class="num"><?php echo esc_html( number_format_i18n( (int) $data['failed'] ) ); ?></span>
-            <span class="lbl"><?php esc_html_e( 'Failed', 'frontend-auth' ); ?></span>
+            <span class="lbl"><?php esc_html_e( 'Failed', 'zen-login-authentication' ); ?></span>
         </div>
         <div class="fauth-dash-stat lock">
             <span class="num"><?php echo esc_html( number_format_i18n( (int) $data['lockouts'] ) ); ?></span>
-            <span class="lbl"><?php esc_html_e( 'Lockouts', 'frontend-auth' ); ?></span>
+            <span class="lbl"><?php esc_html_e( 'Lockouts', 'zen-login-authentication' ); ?></span>
         </div>
     </div>
     <p class="description" style="margin-top:-8px;">
         <?php
         printf(
             /* translators: %d: number of days */
-            esc_html__( 'Last %d days.', 'frontend-auth' ),
+            esc_html__( 'Last %d days.', 'zen-login-authentication' ),
             (int) $days
         );
         ?>
@@ -93,20 +70,20 @@ function fauth_render_dashboard_widget(): void {
 
     <div class="fauth-dash-cols">
         <div>
-            <h4><?php esc_html_e( 'Top failed logins', 'frontend-auth' ); ?></h4>
-            <?php fauth_dash_top_table( (array) $data['top_failed'], __( 'No failed logins.', 'frontend-auth' ) ); ?>
+            <h4><?php esc_html_e( 'Top failed logins', 'zen-login-authentication' ); ?></h4>
+            <?php fauth_dash_top_table( (array) $data['top_failed'], __( 'No failed logins.', 'zen-login-authentication' ) ); ?>
         </div>
         <div>
-            <h4><?php esc_html_e( 'Top blocked IPs', 'frontend-auth' ); ?></h4>
-            <?php fauth_dash_top_table( (array) $data['top_blocked'], __( 'No lockouts — nobody has been blocked.', 'frontend-auth' ) ); ?>
+            <h4><?php esc_html_e( 'Top blocked IPs', 'zen-login-authentication' ); ?></h4>
+            <?php fauth_dash_top_table( (array) $data['top_blocked'], __( 'No lockouts — nobody has been blocked.', 'zen-login-authentication' ) ); ?>
         </div>
     </div>
 
-    <h4><?php esc_html_e( 'Recent activity', 'frontend-auth' ); ?></h4>
+    <h4><?php esc_html_e( 'Recent activity', 'zen-login-authentication' ); ?></h4>
     <?php fauth_dash_recent_table( (array) $data['recent'] ); ?>
 
     <p class="fauth-dash-foot">
-        <a href="<?php echo esc_url( admin_url( 'admin.php?page=frontend-auth' ) ); ?>"><?php esc_html_e( 'Activity log settings →', 'frontend-auth' ); ?></a>
+        <a href="<?php echo esc_url( admin_url( 'admin.php?page=zen-login-authentication' ) ); ?>"><?php esc_html_e( 'Activity log settings →', 'zen-login-authentication' ); ?></a>
     </p>
     <?php
 }
@@ -137,14 +114,14 @@ function fauth_dash_top_table( array $rows, string $empty ): void {
  */
 function fauth_dash_recent_table( array $rows ): void {
     if ( empty( $rows ) ) {
-        echo '<p class="fauth-dash-empty">' . esc_html__( 'No activity recorded yet.', 'frontend-auth' ) . '</p>';
+        echo '<p class="fauth-dash-empty">' . esc_html__( 'No activity recorded yet.', 'zen-login-authentication' ) . '</p>';
         return;
     }
 
     $labels = [
-        'login_success' => [ 'ok',   __( 'Login', 'frontend-auth' ) ],
-        'login_failed'  => [ 'fail', __( 'Failed', 'frontend-auth' ) ],
-        'lockout'       => [ 'lock', __( 'Lockout', 'frontend-auth' ) ],
+        'login_success' => [ 'ok',   __( 'Login', 'zen-login-authentication' ) ],
+        'login_failed'  => [ 'fail', __( 'Failed', 'zen-login-authentication' ) ],
+        'lockout'       => [ 'lock', __( 'Lockout', 'zen-login-authentication' ) ],
     ];
 
     $now = time();
@@ -155,7 +132,7 @@ function fauth_dash_recent_table( array $rows ): void {
         $when  = strtotime( (string) $row->created_at . ' UTC' );
         $ago   = $when ? sprintf(
             /* translators: %s: human-readable time difference, e.g. "5 mins" */
-            __( '%s ago', 'frontend-auth' ),
+            __( '%s ago', 'zen-login-authentication' ),
             human_time_diff( $when, $now )
         ) : '';
 
@@ -183,10 +160,10 @@ add_action( 'admin_post_fauth_clear_activity', 'fauth_admin_handle_clear_activit
 
 function fauth_admin_handle_clear_activity(): void {
     if ( ! current_user_can( 'manage_options' ) ) {
-        wp_die( esc_html__( 'Unauthorized.', 'frontend-auth' ), 403 );
+        wp_die( esc_html__( 'Unauthorized.', 'zen-login-authentication' ), 403 );
     }
     check_admin_referer( 'fauth_clear_activity', 'fauth_activity_nonce' );
     fauth_activity_clear();
-    wp_safe_redirect( add_query_arg( 'fauth_notice', 'activity_cleared', admin_url( 'admin.php?page=frontend-auth' ) ) );
+    wp_safe_redirect( add_query_arg( 'fauth_notice', 'activity_cleared', admin_url( 'admin.php?page=zen-login-authentication' ) ) );
     exit;
 }

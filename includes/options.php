@@ -1,6 +1,6 @@
 <?php
 /**
- * Frontend Auth – Options & Page Management
+ * Zen Login & Authentication – Options & Page Management
  *
  * @package Frontend_Auth
  */
@@ -46,7 +46,7 @@ function fauth_use_honeypot(): bool {
 
 /**
  * Whether a form widget (Elementor + classic) is enabled.
- * Settings → Frontend Auth → Widgets. Controls registration of BOTH the
+ * Settings → Zen Login & Authentication → Widgets. Controls registration of BOTH the
  * Elementor widget and the classic WP_Widget for that form; the auth pages
  * themselves are unaffected. Default: all on.
  *
@@ -69,7 +69,7 @@ function fauth_get_rate_limit_window(): int {
  * Resolve where subscribers (and other non-admin users with no wp-admin access)
  * should land after logging in.
  *
- * Configurable via Settings → Frontend Auth → "Subscriber redirect". The stored
+ * Configurable via Settings → Zen Login & Authentication → "Subscriber redirect". The stored
  * value (option fauth_subscriber_redirect) may be:
  *   - empty       → the site home page (default)
  *   - a slug/path → resolved against home_url(), e.g. "dashboard" → https://site/dashboard/
@@ -214,11 +214,11 @@ function fauth_get_page_author_id(): int {
  */
 function fauth_get_page_actions(): array {
     return apply_filters( 'fauth_page_actions', [
-        'login'        => __( 'Login',         'frontend-auth' ),
-        'register'     => __( 'Register',       'frontend-auth' ),
-        'lostpassword' => __( 'Lost Password',  'frontend-auth' ),
-        'resetpass'    => __( 'Reset Password', 'frontend-auth' ),
-        'account'      => __( 'Account',        'frontend-auth' ),
+        'login'        => __( 'Login',         'zen-login-authentication' ),
+        'register'     => __( 'Register',       'zen-login-authentication' ),
+        'lostpassword' => __( 'Lost Password',  'zen-login-authentication' ),
+        'resetpass'    => __( 'Reset Password', 'zen-login-authentication' ),
+        'account'      => __( 'Account',        'zen-login-authentication' ),
     ] );
 }
 

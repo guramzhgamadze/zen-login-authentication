@@ -1,6 +1,6 @@
 <?php
 /**
- * Frontend Auth – Widgets
+ * Zen Login & Authentication – Widgets
  *
  * All frontend auth forms exposed as classic WP_Widget instances.
  *
@@ -177,7 +177,7 @@ abstract class FAUTH_Abstract_Widget extends WP_Widget {
         ?>
         <p>
             <label for="<?php echo esc_attr( $this->get_field_id( 'title' ) ); ?>">
-                <?php esc_html_e( 'Title:', 'frontend-auth' ); ?>
+                <?php esc_html_e( 'Title:', 'zen-login-authentication' ); ?>
             </label>
             <input class="widefat"
                    id="<?php echo esc_attr( $this->get_field_id( 'title' ) ); ?>"
@@ -192,7 +192,7 @@ abstract class FAUTH_Abstract_Widget extends WP_Widget {
      * Render the Redirect URL input.
      */
     protected function render_redirect_field( array $instance, string $label = '' ): void {
-        $label       = $label ?: __( 'Redirect URL after success:', 'frontend-auth' );
+        $label       = $label ?: __( 'Redirect URL after success:', 'zen-login-authentication' );
         $redirect_to = $instance['redirect_to'] ?? '';
         ?>
         <p>
@@ -203,7 +203,7 @@ abstract class FAUTH_Abstract_Widget extends WP_Widget {
                    id="<?php echo esc_attr( $this->get_field_id( 'redirect_to' ) ); ?>"
                    name="<?php echo esc_attr( $this->get_field_name( 'redirect_to' ) ); ?>"
                    type="text"
-                   placeholder="<?php esc_attr_e( 'Default: admin dashboard', 'frontend-auth' ); ?>"
+                   placeholder="<?php esc_attr_e( 'Default: admin dashboard', 'zen-login-authentication' ); ?>"
                    value="<?php echo esc_attr( $redirect_to ); ?>">
         </p>
         <?php
@@ -221,7 +221,7 @@ abstract class FAUTH_Abstract_Widget extends WP_Widget {
                        name="<?php echo esc_attr( $this->get_field_name( 'show_links' ) ); ?>"
                        value="1"
                        <?php checked( $show_links ); ?>>
-                <?php esc_html_e( 'Show action links below form', 'frontend-auth' ); ?>
+                <?php esc_html_e( 'Show action links below form', 'zen-login-authentication' ); ?>
             </label>
         </p>
         <?php
@@ -253,9 +253,9 @@ class FAUTH_Login_Widget extends FAUTH_Abstract_Widget {
     public function __construct() {
         $this->init_widget(
             'fauth_login_widget',
-            __( 'Frontend Auth: Login', 'frontend-auth' ),
+            __( 'Zen Login & Authentication: Login', 'zen-login-authentication' ),
             [
-                'description' => __( 'Displays the login form. Shows a welcome panel when the user is logged in.', 'frontend-auth' ),
+                'description' => __( 'Displays the login form. Shows a welcome panel when the user is logged in.', 'zen-login-authentication' ),
                 'classname'   => 'widget_fauth widget_fauth_login',
             ]
         );
@@ -263,7 +263,7 @@ class FAUTH_Login_Widget extends FAUTH_Abstract_Widget {
 
     protected function get_instance_defaults(): array {
         return array_merge( parent::get_instance_defaults(), [
-            'title'          => __( 'Login', 'frontend-auth' ),
+            'title'          => __( 'Login', 'zen-login-authentication' ),
         ] );
     }
 
@@ -276,7 +276,7 @@ class FAUTH_Login_Widget extends FAUTH_Abstract_Widget {
 
     public function form( $instance ): void {
         $instance = $this->parse_instance( $instance );
-        $this->render_title_field( $instance, __( 'Login', 'frontend-auth' ) ); // [F1]
+        $this->render_title_field( $instance, __( 'Login', 'zen-login-authentication' ) ); // [F1]
         $this->render_redirect_field( $instance );
         $this->render_show_links_field( $instance );
         ?>
@@ -300,9 +300,9 @@ class FAUTH_Register_Widget extends FAUTH_Abstract_Widget {
     public function __construct() {
         $this->init_widget(
             'fauth_register_widget',
-            __( 'Frontend Auth: Register', 'frontend-auth' ),
+            __( 'Zen Login & Authentication: Register', 'zen-login-authentication' ),
             [
-                'description' => __( 'Displays the user registration form.', 'frontend-auth' ),
+                'description' => __( 'Displays the user registration form.', 'zen-login-authentication' ),
                 'classname'   => 'widget_fauth widget_fauth_register',
             ]
         );
@@ -310,7 +310,7 @@ class FAUTH_Register_Widget extends FAUTH_Abstract_Widget {
 
     protected function get_instance_defaults(): array {
         return array_merge( parent::get_instance_defaults(), [
-            'title' => __( 'Register', 'frontend-auth' ),
+            'title' => __( 'Register', 'zen-login-authentication' ),
         ] );
     }
 
@@ -330,7 +330,7 @@ class FAUTH_Register_Widget extends FAUTH_Abstract_Widget {
             // Admins: show the notice inside the theme wrapper. [F9]
             echo $args['before_widget']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
             echo '<p class="fauth-notice">'
-                . esc_html__( 'User registration is currently disabled. Enable it under Settings → General.', 'frontend-auth' )
+                . esc_html__( 'User registration is currently disabled. Enable it under Settings → General.', 'zen-login-authentication' )
                 . '</p>';
             echo $args['after_widget']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
             return;
@@ -349,8 +349,8 @@ class FAUTH_Register_Widget extends FAUTH_Abstract_Widget {
 
     public function form( $instance ): void {
         $instance = $this->parse_instance( $instance );
-        $this->render_title_field( $instance, __( 'Register', 'frontend-auth' ) ); // [F1]
-        $this->render_redirect_field( $instance, __( 'Redirect URL after registration:', 'frontend-auth' ) );
+        $this->render_title_field( $instance, __( 'Register', 'zen-login-authentication' ) ); // [F1]
+        $this->render_redirect_field( $instance, __( 'Redirect URL after registration:', 'zen-login-authentication' ) );
         $this->render_show_links_field( $instance );
     }
 }
@@ -366,9 +366,9 @@ class FAUTH_Lost_Password_Widget extends FAUTH_Abstract_Widget {
     public function __construct() {
         $this->init_widget(
             'fauth_lost_password_widget',
-            __( 'Frontend Auth: Lost Password', 'frontend-auth' ),
+            __( 'Zen Login & Authentication: Lost Password', 'zen-login-authentication' ),
             [
-                'description' => __( 'Displays the lost password / password reset form.', 'frontend-auth' ),
+                'description' => __( 'Displays the lost password / password reset form.', 'zen-login-authentication' ),
                 'classname'   => 'widget_fauth widget_fauth_lostpassword',
             ]
         );
@@ -376,7 +376,7 @@ class FAUTH_Lost_Password_Widget extends FAUTH_Abstract_Widget {
 
     protected function get_instance_defaults(): array {
         return array_merge( parent::get_instance_defaults(), [
-            'title' => __( 'Reset Password', 'frontend-auth' ),
+            'title' => __( 'Reset Password', 'zen-login-authentication' ),
         ] );
     }
 
@@ -389,7 +389,7 @@ class FAUTH_Lost_Password_Widget extends FAUTH_Abstract_Widget {
 
     public function form( $instance ): void {
         $instance = $this->parse_instance( $instance );
-        $this->render_title_field( $instance, __( 'Reset Password', 'frontend-auth' ) ); // [F1]
+        $this->render_title_field( $instance, __( 'Reset Password', 'zen-login-authentication' ) ); // [F1]
         $this->render_show_links_field( $instance );
     }
 }
@@ -425,9 +425,9 @@ class FAUTH_Reset_Password_Widget extends FAUTH_Abstract_Widget {
     public function __construct() {
         $this->init_widget(
             'fauth_reset_password_widget',
-            __( 'Frontend Auth: Reset Password', 'frontend-auth' ),
+            __( 'Zen Login & Authentication: Reset Password', 'zen-login-authentication' ),
             [
-                'description' => __( 'Displays the password reset form. Place on the page your reset-password email links point to.', 'frontend-auth' ),
+                'description' => __( 'Displays the password reset form. Place on the page your reset-password email links point to.', 'zen-login-authentication' ),
                 'classname'   => 'widget_fauth widget_fauth_resetpass',
             ]
         );
@@ -435,7 +435,7 @@ class FAUTH_Reset_Password_Widget extends FAUTH_Abstract_Widget {
 
     protected function get_instance_defaults(): array {
         return array_merge( parent::get_instance_defaults(), [
-            'title'            => __( 'Reset Password', 'frontend-auth' ),
+            'title'            => __( 'Reset Password', 'zen-login-authentication' ),
             'show_links'       => 0,   // links rarely make sense on a reset page
             'invalid_key_text' => '',  // empty = use built-in default message
         ] );
@@ -474,14 +474,14 @@ class FAUTH_Reset_Password_Widget extends FAUTH_Abstract_Widget {
             // No valid reset-link parameters in the URL.
             $invalid_text = ! empty( $instance['invalid_key_text'] )
                 ? $instance['invalid_key_text']
-                : __( 'This password reset link is invalid or has expired. Please request a new one.', 'frontend-auth' );
+                : __( 'This password reset link is invalid or has expired. Please request a new one.', 'zen-login-authentication' );
 
             echo '<div class="fauth fauth-form fauth-form-resetpass">'
                 . '<ul class="fauth-errors" role="alert">'
                 . '<li class="fauth-error">' . esc_html( $invalid_text ) . '</li>'
                 . '</ul>'
                 . '<p class="fauth-links"><a href="' . esc_url( fauth_get_action_url( 'lostpassword' ) ) . '">'
-                . esc_html__( 'Request a new password reset link', 'frontend-auth' )
+                . esc_html__( 'Request a new password reset link', 'zen-login-authentication' )
                 . '</a></p>'
                 . '</div>';
         } else {
@@ -500,21 +500,21 @@ class FAUTH_Reset_Password_Widget extends FAUTH_Abstract_Widget {
 
     public function form( $instance ): void {
         $instance = $this->parse_instance( $instance );
-        $this->render_title_field( $instance, __( 'Reset Password', 'frontend-auth' ) );
+        $this->render_title_field( $instance, __( 'Reset Password', 'zen-login-authentication' ) );
         $this->render_show_links_field( $instance );
         ?>
         <p>
             <label for="<?php echo esc_attr( $this->get_field_id( 'invalid_key_text' ) ); ?>">
-                <?php esc_html_e( 'Message when reset link is missing or expired:', 'frontend-auth' ); ?>
+                <?php esc_html_e( 'Message when reset link is missing or expired:', 'zen-login-authentication' ); ?>
             </label>
             <textarea class="widefat"
                       id="<?php echo esc_attr( $this->get_field_id( 'invalid_key_text' ) ); ?>"
                       name="<?php echo esc_attr( $this->get_field_name( 'invalid_key_text' ) ); ?>"
                       rows="3"
-                      placeholder="<?php esc_attr_e( 'Leave empty to use the default message.', 'frontend-auth' ); ?>"><?php echo esc_textarea( $instance['invalid_key_text'] ); ?></textarea>
+                      placeholder="<?php esc_attr_e( 'Leave empty to use the default message.', 'zen-login-authentication' ); ?>"><?php echo esc_textarea( $instance['invalid_key_text'] ); ?></textarea>
         </p>
         <p class="description">
-            <?php esc_html_e( 'Place this widget on the page your reset-password email links point to. Make sure that page\'s slug matches the "resetpass slug" in Frontend Auth settings.', 'frontend-auth' ); ?>
+            <?php esc_html_e( 'Place this widget on the page your reset-password email links point to. Make sure that page\'s slug matches the "resetpass slug" in Zen Login & Authentication settings.', 'zen-login-authentication' ); ?>
         </p>
         <?php
     }
@@ -543,9 +543,9 @@ class FAUTH_Account_Widget extends FAUTH_Abstract_Widget {
     public function __construct() {
         $this->init_widget(
             'fauth_account_widget',
-            __( 'Frontend Auth: Account', 'frontend-auth' ),
+            __( 'Zen Login & Authentication: Account', 'zen-login-authentication' ),
             [
-                'description' => __( 'Lets logged-in users edit their display name, email, and password from the frontend.', 'frontend-auth' ),
+                'description' => __( 'Lets logged-in users edit their display name, email, and password from the frontend.', 'zen-login-authentication' ),
                 'classname'   => 'widget_fauth widget_fauth_account',
             ]
         );
@@ -553,7 +553,7 @@ class FAUTH_Account_Widget extends FAUTH_Abstract_Widget {
 
     protected function get_instance_defaults(): array {
         return array_merge( parent::get_instance_defaults(), [
-            'title' => __( 'My Account', 'frontend-auth' ),
+            'title' => __( 'My Account', 'zen-login-authentication' ),
         ] );
     }
 
@@ -566,11 +566,11 @@ class FAUTH_Account_Widget extends FAUTH_Abstract_Widget {
 
     public function form( $instance ): void {
         $instance = $this->parse_instance( $instance );
-        $this->render_title_field( $instance, __( 'My Account', 'frontend-auth' ) );
+        $this->render_title_field( $instance, __( 'My Account', 'zen-login-authentication' ) );
         $this->render_show_links_field( $instance );
         ?>
         <p class="description">
-            <?php esc_html_e( 'Only visible to logged-in users. Guests visiting the Account page are redirected to the login form.', 'frontend-auth' ); ?>
+            <?php esc_html_e( 'Only visible to logged-in users. Guests visiting the Account page are redirected to the login form.', 'zen-login-authentication' ); ?>
         </p>
         <?php
     }

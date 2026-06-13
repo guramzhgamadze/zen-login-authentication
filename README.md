@@ -1,10 +1,10 @@
-# Frontend Auth
+# Zen Login & Authentication
 
 Secure, accessible frontend login, registration, and password recovery forms for WordPress — with rate limiting, honeypot protection, AJAX support, native Elementor widgets, and full cache-plugin compatibility.
 
 ## Description
 
-Frontend Auth replaces the default `wp-login.php` experience with clean, theme-integrated forms that live on your actual site. It works out of the box on any WordPress theme and ships with first-class Elementor support — five drag-and-drop widgets that fit into any page builder layout with full Theme Builder compatibility.
+Zen Login & Authentication replaces the default `wp-login.php` experience with clean, theme-integrated forms that live on your actual site. It works out of the box on any WordPress theme and ships with first-class Elementor support — five drag-and-drop widgets that fit into any page builder layout with full Theme Builder compatibility.
 
 ### What It Does
 
@@ -13,11 +13,11 @@ Frontend Auth replaces the default `wp-login.php` experience with clean, theme-i
 - **Lost Password / Reset Password** forms with full email flow integration.
 - **Account page** — logged-in users edit their first/last name, public display name (live "Display name publicly as" dropdown, like the core profile screen), email, and password entirely on the frontend. Guests visiting the account page are sent to login and returned after signing in.
 - **Login activity dashboard** — a "Login Activity" widget on the WordPress dashboard summarising successful logins, failed attempts, and rate-limit lockouts over the past week, with the top failed usernames, most-blocked IPs, and a recent-events feed. IPs are stored anonymised, history auto-prunes, and the data is removed on uninstall.
-- **Per-widget toggles** — enable or disable each form widget (login, register, lost password, reset password, account) for both the Elementor panel and classic widget areas, under **Settings → Frontend Auth → Widgets**.
-- **Sign in with Google** (optional) — a server-side OpenID Connect flow with no Google JavaScript on your pages and no third-party libraries. New accounts can be auto-created (toggleable); existing accounts are linked by verified email. Configured under **Settings → Frontend Auth → Sign in with Google**.
+- **Per-widget toggles** — enable or disable each form widget (login, register, lost password, reset password, account) for both the Elementor panel and classic widget areas, under **Settings → Zen Login & Authentication → Widgets**.
+- **Sign in with Google** (optional) — a server-side OpenID Connect flow with no Google JavaScript on your pages and no third-party libraries. New accounts can be auto-created (toggleable); existing accounts are linked by verified email. Configured under **Settings → Zen Login & Authentication → Sign in with Google**.
 - **URL rewriting** — all `wp-login.php` links site-wide are transparently redirected to your frontend pages.
 - **Multisite support** — network-activated, per-site settings, signup/activation flow handled.
-- **Smart redirects** — every front-end login runs WordPress's standard `login_redirect` filter, so membership/LMS and other plugins are respected. Restricted subscribers are kept out of wp-admin and sent to a configurable destination — set a page slug or URL under **Settings → Frontend Auth → Subscriber redirect** (default: the site home page; also filterable via `fauth_subscriber_redirect`). Administrators and editors keep their normal flow, including the "clicked Edit → login → back to Edit" round-trip. `?redirect_to=` is fully honoured on both virtual and Elementor pages.
+- **Smart redirects** — every front-end login runs WordPress's standard `login_redirect` filter, so membership/LMS and other plugins are respected. Restricted subscribers are kept out of wp-admin and sent to a configurable destination — set a page slug or URL under **Settings → Zen Login & Authentication → Subscriber redirect** (default: the site home page; also filterable via `fauth_subscriber_redirect`). Administrators and editors keep their normal flow, including the "clicked Edit → login → back to Edit" round-trip. `?redirect_to=` is fully honoured on both virtual and Elementor pages.
 - **Cache exclusion** — auth pages are automatically excluded from LiteSpeed Cache, Super Page Cache, WP Rocket, W3 Total Cache, and WP Super Cache. Stale 404 cache entries are purged automatically on plugin update.
 
 ### Security
@@ -32,7 +32,7 @@ Frontend Auth replaces the default `wp-login.php` experience with clean, theme-i
 
 ### Elementor Integration
 
-Five native `Widget_Base` widgets registered via `elementor/widgets/register` (each can be toggled off under **Settings → Frontend Auth → Widgets**):
+Five native `Widget_Base` widgets registered via `elementor/widgets/register` (each can be toggled off under **Settings → Zen Login & Authentication → Widgets**):
 
 | Widget | Class | Description |
 |--------|-------|-------------|
@@ -72,16 +72,16 @@ All expose `show_instance_in_rest` for the WP 5.8+ block-based Widgets screen, a
 
 ## Installation
 
-1. Upload the `frontend-auth` folder to `/wp-content/plugins/`.
+1. Upload the `zen-login-authentication` folder to `/wp-content/plugins/`.
 2. Activate the plugin through **Plugins → Installed Plugins**.
-3. Go to **Frontend Auth** in the admin sidebar to configure options.
+3. Go to **Zen Login & Authentication** in the admin sidebar to configure options.
 4. *(Optional)* The auth pages are created automatically on activation. If you later delete some and want them back, click **Create Missing Pages** in the Page Management section.
 5. Rewrite rules are flushed automatically on the first page load after activation (v1.4.16+). If needed, go to **Settings → Permalinks** and click **Save Changes**, or run `wp rewrite flush`.
-6. *(Elementor users)* Open any page in the Elementor editor and search for "Login Form", "Registration Form", etc. in the widget panel under the **Frontend Auth** category.
+6. *(Elementor users)* Open any page in the Elementor editor and search for "Login Form", "Registration Form", etc. in the widget panel under the **Zen Login & Authentication** category.
 
 ## Settings
 
-All settings are under the **Frontend Auth** admin menu:
+All settings are under the **Zen Login & Authentication** admin menu:
 
 ### General
 
@@ -200,7 +200,7 @@ Every front-end login runs WordPress's standard `login_redirect` filter (exactly
 
 ## 3rd-Party Plugin Compatibility
 
-Frontend Auth fires the standard WordPress form hooks (`login_form`, `register_form`, `lostpassword_form`, `resetpass_form`) inside its forms. This means plugins that add fields to WordPress's native login — including 2FA plugins, CAPTCHA plugins, and social login plugins — will render their fields inside FAUTH forms automatically.
+Zen Login & Authentication fires the standard WordPress form hooks (`login_form`, `register_form`, `lostpassword_form`, `resetpass_form`) inside its forms. This means plugins that add fields to WordPress's native login — including 2FA plugins, CAPTCHA plugins, and social login plugins — will render their fields inside FAUTH forms automatically.
 
 An OAuth/REST exemption system is built in. When another plugin (e.g. WordPress MCP Bridge) calls `wp_login_url()` or `site_url('wp-login.php')` with a REST API redirect target, FAUTH automatically stands aside and returns the native `/wp-login.php` URL so the OAuth handshake completes correctly. Plugins can also use the `fauth_login_url_exempt` filter for an explicit opt-out.
 
@@ -220,8 +220,8 @@ Auth pages are automatically excluded from caching and stale entries are purged 
 ## File Structure
 
 ```
-frontend-auth/
-├── frontend-auth.php          Main plugin file (activation, deactivation, Elementor loader)
+zen-login-authentication/
+├── zen-login-authentication.php   Main plugin file (activation, deactivation, Elementor loader)
 ├── uninstall.php                 Cleanup on deletion (respects user-created pages)
 ├── README.md                     This file
 ├── index.html                    GitHub Pages landing page
@@ -236,7 +236,8 @@ frontend-auth/
 │   └── styles/
 │       ├── frontend-auth.css       Frontend CSS (CSS custom properties, V4 compatible)
 │       ├── frontend-auth.min.css
-│       └── frontend-auth-editor.css  Elementor editor-only styles
+│       ├── frontend-auth-editor.css  Elementor editor-only styles
+│       └── frontend-auth-admin.css   Settings page + dashboard widget styles (enqueued)
 ├── includes/
 │   ├── class-fauth.php            Core singleton (actions & forms registry)
 │   ├── class-fauth-form.php       Form class (fields, rendering, errors)
@@ -259,18 +260,25 @@ frontend-auth/
 
 ## Changelog
 
+### 1.7.1
+
+- **Renamed** the plugin to **Zen Login & Authentication** (slug `zen-login-authentication`) for a distinctive WordPress.org directory name.
+- All admin CSS is now **enqueued** via a registered stylesheet instead of inline `<style>` blocks (settings page + dashboard widget).
+- Asset handles use a distinct prefix instead of the generic `frontend-auth`.
+- The Google client secret is encrypted from its **raw** value — no lossy `sanitize_text_field()` pass that could alter secret characters.
+
 ### 1.7.0
 
 **New: Login activity dashboard**
 
-- A **"Frontend Auth — Login Activity"** widget on the WordPress dashboard summarises, for the past 7 days, the number of successful logins, failed attempts, and rate-limit lockouts, plus the **top failed usernames**, the **most-blocked IPs**, and a colour-coded **recent-events** feed.
+- A **"Zen Login & Authentication — Login Activity"** widget on the WordPress dashboard summarises, for the past 7 days, the number of successful logins, failed attempts, and rate-limit lockouts, plus the **top failed usernames**, the **most-blocked IPs**, and a colour-coded **recent-events** feed.
 - Successful and failed logins are captured via core's `wp_login` / `wp_login_failed`, so the dashboard reflects every login path — the plugin's forms, `wp-login.php`, and programmatic `wp_signon()`. Lockouts come from the rate limiter via the new `fauth_rate_limit_locked` action.
 - Events are stored in a dedicated `{prefix}_fauth_activity` table (created on activation/update, dropped on uninstall). **IPs are stored anonymised** — the same value the rate limiter buckets on (IPv4 last octet zeroed, IPv6 to /48).
-- **Settings → Frontend Auth → Login Activity**: toggle logging, set a retention window (default 30 days; old rows auto-prune), and a separate **Clear Activity Log** button. Cached in a 5-minute transient so the dashboard never hammers the table.
+- **Settings → Zen Login & Authentication → Login Activity**: toggle logging, set a retention window (default 30 days; old rows auto-prune), and a separate **Clear Activity Log** button. Cached in a 5-minute transient so the dashboard never hammers the table.
 
 ### 1.6.2
 
-- **New:** per-widget on/off toggles under **Settings → Frontend Auth → Widgets** for each form widget (Login, Registration, Lost Password, Reset Password, Account) — applies to both the Elementor panel and classic widget areas (filter: `fauth_widget_enabled`).
+- **New:** per-widget on/off toggles under **Settings → Zen Login & Authentication → Widgets** for each form widget (Login, Registration, Lost Password, Reset Password, Account) — applies to both the Elementor panel and classic widget areas (filter: `fauth_widget_enabled`).
 - The settings screen now uses the full admin content width instead of a fixed narrow column.
 
 ### 1.6.3
@@ -340,7 +348,7 @@ frontend-auth/
 **Changes**
 
 - **Auto page setup on activation (adopt-or-create).** On install the plugin again creates a real page for each auth action — but now checks each default slug first: if a page already exists there it is reused as-is; otherwise a new page is created. Reused pages are never flagged for deletion, and the routine is idempotent, so activate/deactivate cycles can't duplicate pages (the duplication that caused auto-creation to be disabled in 1.4.16 cannot recur). The **Create Missing Pages** / **Delete Auto-Created Pages** buttons remain for manual control.
-- **Configurable subscriber redirect.** Replaced the hardcoded `/instructor_dashboard/` default with a **Subscriber redirect** field under **Settings → Frontend Auth → General**. Enter a page slug or full URL, or leave it empty to send subscribers to the site home page. The `fauth_subscriber_redirect` filter still works.
+- **Configurable subscriber redirect.** Replaced the hardcoded `/instructor_dashboard/` default with a **Subscriber redirect** field under **Settings → Zen Login & Authentication → General**. Enter a page slug or full URL, or leave it empty to send subscribers to the site home page. The `fauth_subscriber_redirect` filter still works.
 - **Housekeeping:** removed an unreachable duplicate guard in `fauth_filter_site_url()`, removed an empty admin-enqueue no-op, switched a `DOING_AJAX` constant check to `wp_doing_ajax()`, and corrected `current_time('mysql', 1)` to `current_time('mysql', true)`. No behaviour change.
 
 ### 1.4.18
@@ -353,7 +361,7 @@ frontend-auth/
 
 **New Features**
 
-- **Per-Form Rate Limiting panel** in **Frontend Auth → Settings**. Each of the four forms (Login, Registration, Lost Password, Reset Password) gets:
+- **Per-Form Rate Limiting panel** in **Zen Login & Authentication → Settings**. Each of the four forms (Login, Registration, Lost Password, Reset Password) gets:
   - An **enable/disable toggle** — turn rate limiting off for an individual form without affecting the others
   - A **Max attempts override** — leave at `0` to inherit the global default, or set a specific number (e.g. login=5, register=10, lostpassword=3) for per-form strictness
 - **Two new filters**: `fauth_rate_limit_enabled_{action}` (override the per-form toggle in code) and `fauth_rate_limit_{action}` (override the per-form threshold in code).

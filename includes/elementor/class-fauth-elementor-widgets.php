@@ -1,6 +1,6 @@
 <?php
 /**
- * Frontend Auth – Elementor Widgets
+ * Zen Login & Authentication – Elementor Widgets
  *
  * v1.4.8 — Second audit bug-fix release.
  *
@@ -50,8 +50,8 @@ defined( 'ABSPATH' ) || exit;
  * ===================================================================== */
 
 function fauth_register_elementor_category( $elements_manager ): void {
-    $elements_manager->add_category( 'frontend-auth', [
-        'title' => esc_html__( 'Frontend Auth', 'frontend-auth' ),
+    $elements_manager->add_category( 'zen-login-authentication', [
+        'title' => esc_html__( 'Zen Login & Authentication', 'zen-login-authentication' ),
         'icon'  => 'eicon-lock-user',
     ] );
 }
@@ -77,10 +77,10 @@ function fauth_register_elementor_widgets( $manager ): void {
 
 abstract class FAUTH_Elementor_Base_Widget extends \Elementor\Widget_Base {
 
-    public function get_categories(): array  { return [ 'frontend-auth' ]; }
+    public function get_categories(): array  { return [ 'zen-login-authentication' ]; }
     public function get_keywords(): array    { return [ 'login', 'auth', 'register', 'password', 'fauth' ]; }
-    public function get_style_depends(): array  { return [ 'frontend-auth' ]; }
-    public function get_script_depends(): array { return [ 'frontend-auth' ]; }
+    public function get_style_depends(): array  { return [ 'zen-login-authentication' ]; }
+    public function get_script_depends(): array { return [ 'zen-login-authentication' ]; }
     public function has_widget_inner_wrapper(): bool { return false; }
     // Auth forms must NEVER be cached by Elementor's element cache: every form
     // carries a per-request nonce (a cached/stale nonce makes login fail with a
@@ -94,15 +94,15 @@ abstract class FAUTH_Elementor_Base_Widget extends \Elementor\Widget_Base {
 
     protected function register_title_controls(): void {
         $this->add_control( 'form_title_text', [
-            'label'       => esc_html__( 'Form Title', 'frontend-auth' ),
+            'label'       => esc_html__( 'Form Title', 'zen-login-authentication' ),
             'type'        => \Elementor\Controls_Manager::TEXT,
             'default'     => '',
-            'placeholder' => esc_html__( 'Leave empty to hide', 'frontend-auth' ),
+            'placeholder' => esc_html__( 'Leave empty to hide', 'zen-login-authentication' ),
             'label_block' => true,
             'dynamic'     => [ 'active' => true ], // Fix #6
         ] );
         $this->add_control( 'form_title_tag', [
-            'label'   => esc_html__( 'Title HTML Tag', 'frontend-auth' ),
+            'label'   => esc_html__( 'Title HTML Tag', 'zen-login-authentication' ),
             'type'    => \Elementor\Controls_Manager::SELECT,
             'default' => 'h3',
             'options' => [ 'h1'=>'H1','h2'=>'H2','h3'=>'H3','h4'=>'H4','h5'=>'H5','h6'=>'H6','div'=>'div','span'=>'span','p'=>'p' ], // Fix #9 — matches renderer allowlist
@@ -112,19 +112,19 @@ abstract class FAUTH_Elementor_Base_Widget extends \Elementor\Widget_Base {
 
     protected function register_redirect_controls(): void {
         $this->add_control( 'redirect_to', [
-            'label'       => esc_html__( 'Redirect URL', 'frontend-auth' ),
+            'label'       => esc_html__( 'Redirect URL', 'zen-login-authentication' ),
             'type'        => \Elementor\Controls_Manager::URL, // Fix #3
             'dynamic'     => [ 'active' => true ],              // Fix #6
             'default'     => [ 'url' => '' ],
-            'placeholder' => esc_html__( 'Default: admin dashboard', 'frontend-auth' ),
+            'placeholder' => esc_html__( 'Default: admin dashboard', 'zen-login-authentication' ),
             'label_block' => true,
             'separator'   => 'before',
         ] );
         $this->add_control( 'show_links', [
-            'label'        => esc_html__( 'Show action links', 'frontend-auth' ),
+            'label'        => esc_html__( 'Show action links', 'zen-login-authentication' ),
             'type'         => \Elementor\Controls_Manager::SWITCHER,
-            'label_on'     => esc_html__( 'Yes', 'frontend-auth' ),
-            'label_off'    => esc_html__( 'No', 'frontend-auth' ),
+            'label_on'     => esc_html__( 'Yes', 'zen-login-authentication' ),
+            'label_off'    => esc_html__( 'No', 'zen-login-authentication' ),
             'return_value' => 'yes',
             'default'      => 'yes',
         ] );
@@ -135,12 +135,12 @@ abstract class FAUTH_Elementor_Base_Widget extends \Elementor\Widget_Base {
     protected function register_form_style_controls(): void {
         // Form Container
         $this->start_controls_section( 'section_style_form', [
-            'label' => esc_html__( 'Form Container', 'frontend-auth' ),
+            'label' => esc_html__( 'Form Container', 'zen-login-authentication' ),
             'tab'   => \Elementor\Controls_Manager::TAB_STYLE,
         ] );
 
         $this->add_responsive_control( 'form_width', [
-            'label'      => esc_html__( 'Width', 'frontend-auth' ),
+            'label'      => esc_html__( 'Width', 'zen-login-authentication' ),
             'type'       => \Elementor\Controls_Manager::SLIDER,
             'size_units' => [ 'px', '%', 'vw' ],
             'range'      => [
@@ -154,7 +154,7 @@ abstract class FAUTH_Elementor_Base_Widget extends \Elementor\Widget_Base {
         ] );
 
         $this->add_responsive_control( 'form_max_width', [
-            'label'      => esc_html__( 'Max Width', 'frontend-auth' ),
+            'label'      => esc_html__( 'Max Width', 'zen-login-authentication' ),
             'type'       => \Elementor\Controls_Manager::SLIDER,
             'size_units' => [ 'px', '%', 'vw' ],
             'range'      => [
@@ -187,14 +187,14 @@ abstract class FAUTH_Elementor_Base_Widget extends \Elementor\Widget_Base {
          * both legacy Section/Column and new Flexbox Container contexts.
          */
         $this->add_responsive_control( 'form_align', [
-            'label'       => esc_html__( 'Alignment', 'frontend-auth' ),
+            'label'       => esc_html__( 'Alignment', 'zen-login-authentication' ),
             'type'        => \Elementor\Controls_Manager::CHOOSE,
             'options'     => [
-                'left'   => [ 'title' => esc_html__( 'Left',   'frontend-auth' ), 'icon' => 'eicon-h-align-left' ],
-                'center' => [ 'title' => esc_html__( 'Center', 'frontend-auth' ), 'icon' => 'eicon-h-align-center' ],
-                'right'  => [ 'title' => esc_html__( 'Right',  'frontend-auth' ), 'icon' => 'eicon-h-align-right' ],
+                'left'   => [ 'title' => esc_html__( 'Left',   'zen-login-authentication' ), 'icon' => 'eicon-h-align-left' ],
+                'center' => [ 'title' => esc_html__( 'Center', 'zen-login-authentication' ), 'icon' => 'eicon-h-align-center' ],
+                'right'  => [ 'title' => esc_html__( 'Right',  'zen-login-authentication' ), 'icon' => 'eicon-h-align-right' ],
             ],
-            'description' => esc_html__( 'Requires a Form Width value smaller than the column width to be visible.', 'frontend-auth' ),
+            'description' => esc_html__( 'Requires a Form Width value smaller than the column width to be visible.', 'zen-login-authentication' ),
             'selectors_dictionary' => [
                 'left'   => 'margin-left: 0; margin-right: auto;',
                 'center' => 'margin-left: auto; margin-right: auto;',
@@ -207,22 +207,22 @@ abstract class FAUTH_Elementor_Base_Widget extends \Elementor\Widget_Base {
         ] );
 
         $this->add_control( 'form_bg_color', [
-            'label' => esc_html__( 'Background', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR,
+            'label' => esc_html__( 'Background', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::COLOR,
             'selectors' => [ '{{WRAPPER}} .fauth-form-wrap' => 'background-color: {{VALUE}};' ],
         ] );
         $this->add_responsive_control( 'form_padding', [
-            'label' => esc_html__( 'Padding', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::DIMENSIONS,
+            'label' => esc_html__( 'Padding', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::DIMENSIONS,
             'size_units' => [ 'px', 'em', '%' ],
             'selectors' => [ '{{WRAPPER}} .fauth-form-wrap' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ],
         ] );
         $this->add_responsive_control( 'form_spacing_top', [
-            'label' => esc_html__( 'Spacing Top', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::SLIDER,
+            'label' => esc_html__( 'Spacing Top', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::SLIDER,
             'size_units' => [ 'px', 'em' ],
             'range' => [ 'px' => [ 'min' => 0, 'max' => 100 ], 'em' => [ 'min' => 0, 'max' => 6 ] ],
             'selectors' => [ '{{WRAPPER}} .fauth-form-wrap' => 'margin-top: {{SIZE}}{{UNIT}};' ],
         ] );
         $this->add_responsive_control( 'form_spacing_bottom', [
-            'label' => esc_html__( 'Spacing Bottom', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::SLIDER,
+            'label' => esc_html__( 'Spacing Bottom', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::SLIDER,
             'size_units' => [ 'px', 'em' ],
             'range' => [ 'px' => [ 'min' => 0, 'max' => 100 ], 'em' => [ 'min' => 0, 'max' => 6 ] ],
             'selectors' => [ '{{WRAPPER}} .fauth-form-wrap' => 'margin-bottom: {{SIZE}}{{UNIT}};' ],
@@ -230,7 +230,7 @@ abstract class FAUTH_Elementor_Base_Widget extends \Elementor\Widget_Base {
         ] );
         $this->add_group_control( \Elementor\Group_Control_Border::get_type(), [ 'name' => 'form_border', 'selector' => '{{WRAPPER}} .fauth-form-wrap' ] );
         $this->add_responsive_control( 'form_border_radius', [
-            'label' => esc_html__( 'Border Radius', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::DIMENSIONS,
+            'label' => esc_html__( 'Border Radius', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::DIMENSIONS,
             'size_units' => [ 'px', '%' ],
             'selectors' => [ '{{WRAPPER}} .fauth-form-wrap' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ],
         ] );
@@ -242,44 +242,44 @@ abstract class FAUTH_Elementor_Base_Widget extends \Elementor\Widget_Base {
 
         // Title
         $this->start_controls_section( 'section_style_title', [
-            'label' => esc_html__( 'Form Title', 'frontend-auth' ), 'tab' => \Elementor\Controls_Manager::TAB_STYLE,
+            'label' => esc_html__( 'Form Title', 'zen-login-authentication' ), 'tab' => \Elementor\Controls_Manager::TAB_STYLE,
             'condition' => [ 'form_title_text!' => '' ],
         ] );
-        $this->add_control( 'title_color', [ 'label' => esc_html__( 'Color', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-form-title' => 'color: {{VALUE}};' ] ] );
+        $this->add_control( 'title_color', [ 'label' => esc_html__( 'Color', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-form-title' => 'color: {{VALUE}};' ] ] );
         $this->add_group_control( \Elementor\Group_Control_Typography::get_type(), [ 'name' => 'title_typography', 'selector' => '{{WRAPPER}} .fauth-form-title' ] );
         $this->add_responsive_control( 'title_align', [
-            'label' => esc_html__( 'Alignment', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::CHOOSE,
+            'label' => esc_html__( 'Alignment', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::CHOOSE,
             'options' => [ 'left' => [ 'title' => 'Left', 'icon' => 'eicon-text-align-left' ], 'center' => [ 'title' => 'Center', 'icon' => 'eicon-text-align-center' ], 'right' => [ 'title' => 'Right', 'icon' => 'eicon-text-align-right' ] ],
             'selectors' => [ '{{WRAPPER}} .fauth-form-title' => 'text-align: {{VALUE}};' ],
         ] );
-        $this->add_responsive_control( 'title_spacing', [ 'label' => esc_html__( 'Bottom Spacing', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::SLIDER, 'size_units' => [ 'px', 'em' ], 'range' => [ 'px' => [ 'min' => 0, 'max' => 60 ] ], 'selectors' => [ '{{WRAPPER}} .fauth-form-title' => 'margin-bottom: {{SIZE}}{{UNIT}};' ] ] );
+        $this->add_responsive_control( 'title_spacing', [ 'label' => esc_html__( 'Bottom Spacing', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::SLIDER, 'size_units' => [ 'px', 'em' ], 'range' => [ 'px' => [ 'min' => 0, 'max' => 60 ] ], 'selectors' => [ '{{WRAPPER}} .fauth-form-title' => 'margin-bottom: {{SIZE}}{{UNIT}};' ] ] );
         $this->end_controls_section();
 
         // Labels
         $this->start_controls_section( 'section_style_labels', [
-            'label' => esc_html__( 'Labels', 'frontend-auth' ), 'tab' => \Elementor\Controls_Manager::TAB_STYLE,
+            'label' => esc_html__( 'Labels', 'zen-login-authentication' ), 'tab' => \Elementor\Controls_Manager::TAB_STYLE,
         ] );
-        $this->add_control( 'label_color', [ 'label' => esc_html__( 'Color', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-label' => 'color: {{VALUE}};' ] ] );
+        $this->add_control( 'label_color', [ 'label' => esc_html__( 'Color', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-label' => 'color: {{VALUE}};' ] ] );
         $this->add_group_control( \Elementor\Group_Control_Typography::get_type(), [ 'name' => 'label_typography', 'selector' => '{{WRAPPER}} .fauth-label' ] );
-        $this->add_responsive_control( 'label_spacing', [ 'label' => esc_html__( 'Bottom Spacing', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::SLIDER, 'size_units' => [ 'px', 'em', 'rem' ], 'range' => [ 'px' => [ 'min' => 0, 'max' => 30 ], 'em' => [ 'min' => 0, 'max' => 4 ], 'rem' => [ 'min' => 0, 'max' => 4 ] ], 'selectors' => [ '{{WRAPPER}} .fauth-label' => 'margin-bottom: {{SIZE}}{{UNIT}};' ] ] ); // Fix I
+        $this->add_responsive_control( 'label_spacing', [ 'label' => esc_html__( 'Bottom Spacing', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::SLIDER, 'size_units' => [ 'px', 'em', 'rem' ], 'range' => [ 'px' => [ 'min' => 0, 'max' => 30 ], 'em' => [ 'min' => 0, 'max' => 4 ], 'rem' => [ 'min' => 0, 'max' => 4 ] ], 'selectors' => [ '{{WRAPPER}} .fauth-label' => 'margin-bottom: {{SIZE}}{{UNIT}};' ] ] ); // Fix I
         $this->end_controls_section();
 
         // Fields
         $this->start_controls_section( 'section_style_fields', [
-            'label' => esc_html__( 'Input Fields', 'frontend-auth' ), 'tab' => \Elementor\Controls_Manager::TAB_STYLE,
+            'label' => esc_html__( 'Input Fields', 'zen-login-authentication' ), 'tab' => \Elementor\Controls_Manager::TAB_STYLE,
         ] );
-        $this->add_control( 'field_text_color', [ 'label' => esc_html__( 'Text Color', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-field' => 'color: {{VALUE}};' ] ] );
-        $this->add_control( 'field_placeholder_color', [ 'label' => esc_html__( 'Placeholder Color', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-field::placeholder' => 'color: {{VALUE}};' ] ] );
-        $this->add_control( 'field_bg', [ 'label' => esc_html__( 'Background', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-field' => 'background-color: {{VALUE}};' ] ] );
+        $this->add_control( 'field_text_color', [ 'label' => esc_html__( 'Text Color', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-field' => 'color: {{VALUE}};' ] ] );
+        $this->add_control( 'field_placeholder_color', [ 'label' => esc_html__( 'Placeholder Color', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-field::placeholder' => 'color: {{VALUE}};' ] ] );
+        $this->add_control( 'field_bg', [ 'label' => esc_html__( 'Background', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-field' => 'background-color: {{VALUE}};' ] ] );
         $this->add_group_control( \Elementor\Group_Control_Typography::get_type(), [ 'name' => 'field_typography', 'selector' => '{{WRAPPER}} .fauth-field' ] );
         $this->add_group_control( \Elementor\Group_Control_Border::get_type(), [ 'name' => 'field_border', 'selector' => '{{WRAPPER}} .fauth-field' ] );
-        $this->add_responsive_control( 'field_border_radius', [ 'label' => esc_html__( 'Border Radius', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::DIMENSIONS, 'size_units' => [ 'px', '%' ], 'selectors' => [ '{{WRAPPER}} .fauth-field' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ] ] );
-        $this->add_responsive_control( 'field_padding', [ 'label' => esc_html__( 'Padding', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::DIMENSIONS, 'size_units' => [ 'px', 'em' ], 'selectors' => [ '{{WRAPPER}} .fauth-field' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ] ] );
-        $this->add_control( 'heading_focus', [ 'label' => esc_html__( 'Focus State', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
-        $this->add_control( 'field_focus_color', [ 'label' => esc_html__( 'Border Color', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-field:focus' => 'border-color: {{VALUE}};' ] ] );
+        $this->add_responsive_control( 'field_border_radius', [ 'label' => esc_html__( 'Border Radius', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::DIMENSIONS, 'size_units' => [ 'px', '%' ], 'selectors' => [ '{{WRAPPER}} .fauth-field' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ] ] );
+        $this->add_responsive_control( 'field_padding', [ 'label' => esc_html__( 'Padding', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::DIMENSIONS, 'size_units' => [ 'px', 'em' ], 'selectors' => [ '{{WRAPPER}} .fauth-field' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ] ] );
+        $this->add_control( 'heading_focus', [ 'label' => esc_html__( 'Focus State', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
+        $this->add_control( 'field_focus_color', [ 'label' => esc_html__( 'Border Color', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-field:focus' => 'border-color: {{VALUE}};' ] ] );
         // Fix F — separated spread and color so both are independently adjustable
         $this->add_control( 'field_focus_shadow_spread', [
-            'label'      => esc_html__( 'Glow Spread (px)', 'frontend-auth' ),
+            'label'      => esc_html__( 'Glow Spread (px)', 'zen-login-authentication' ),
             'type'       => \Elementor\Controls_Manager::SLIDER,
             'size_units' => [ 'px' ],
             'range'      => [ 'px' => [ 'min' => 0, 'max' => 8, 'step' => 1 ] ],
@@ -287,9 +287,9 @@ abstract class FAUTH_Elementor_Base_Widget extends \Elementor\Widget_Base {
             'selectors'  => [],  // combined below via field_focus_shadow_color
         ] );
         $this->add_control( 'field_focus_shadow_color', [
-            'label'       => esc_html__( 'Glow Color', 'frontend-auth' ),
+            'label'       => esc_html__( 'Glow Color', 'zen-login-authentication' ),
             'type'        => \Elementor\Controls_Manager::COLOR,
-            'description' => esc_html__( 'Set to transparent to remove the focus glow.', 'frontend-auth' ),
+            'description' => esc_html__( 'Set to transparent to remove the focus glow.', 'zen-login-authentication' ),
             'selectors'   => [
                 // Uses spread from field_focus_shadow_spread. Elementor doesn't
                 // cross-reference controls in selectors, so the spread is read
@@ -297,21 +297,21 @@ abstract class FAUTH_Elementor_Base_Widget extends \Elementor\Widget_Base {
                 '{{WRAPPER}} .fauth-field:focus' => 'box-shadow: 0 0 0 {{field_focus_shadow_spread.SIZE}}px {{VALUE}};',
             ],
         ] );
-        $this->add_responsive_control( 'field_spacing', [ 'label' => esc_html__( 'Field Spacing', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::SLIDER, 'size_units' => [ 'px', 'em', 'rem' ], 'range' => [ 'px' => [ 'min' => 0, 'max' => 40 ], 'em' => [ 'min' => 0, 'max' => 5 ], 'rem' => [ 'min' => 0, 'max' => 5 ] ], 'selectors' => [ '{{WRAPPER}} .fauth-field-wrap' => 'margin-bottom: {{SIZE}}{{UNIT}};' ], 'separator' => 'before' ] ); // Fix I
+        $this->add_responsive_control( 'field_spacing', [ 'label' => esc_html__( 'Field Spacing', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::SLIDER, 'size_units' => [ 'px', 'em', 'rem' ], 'range' => [ 'px' => [ 'min' => 0, 'max' => 40 ], 'em' => [ 'min' => 0, 'max' => 5 ], 'rem' => [ 'min' => 0, 'max' => 5 ] ], 'selectors' => [ '{{WRAPPER}} .fauth-field-wrap' => 'margin-bottom: {{SIZE}}{{UNIT}};' ], 'separator' => 'before' ] ); // Fix I
         $this->end_controls_section();
 
         // Button
         $this->start_controls_section( 'section_style_button', [
-            'label' => esc_html__( 'Button', 'frontend-auth' ), 'tab' => \Elementor\Controls_Manager::TAB_STYLE,
+            'label' => esc_html__( 'Button', 'zen-login-authentication' ), 'tab' => \Elementor\Controls_Manager::TAB_STYLE,
         ] );
         $this->add_group_control( \Elementor\Group_Control_Typography::get_type(), [ 'name' => 'btn_typography', 'selector' => '{{WRAPPER}} .fauth-submit-button' ] );
         // Fix #8 — CHOOSE + selectors_dictionary is the correct pattern for non-numeric CSS toggles.
         $this->add_responsive_control( 'btn_width', [
-            'label'               => esc_html__( 'Width', 'frontend-auth' ),
+            'label'               => esc_html__( 'Width', 'zen-login-authentication' ),
             'type'                => \Elementor\Controls_Manager::CHOOSE,
             'options'             => [
-                'auto' => [ 'title' => esc_html__( 'Auto',       'frontend-auth' ), 'icon' => 'eicon-fit-to-screen' ],
-                'full' => [ 'title' => esc_html__( 'Full Width', 'frontend-auth' ), 'icon' => 'eicon-h-align-stretch' ],
+                'auto' => [ 'title' => esc_html__( 'Auto',       'zen-login-authentication' ), 'icon' => 'eicon-fit-to-screen' ],
+                'full' => [ 'title' => esc_html__( 'Full Width', 'zen-login-authentication' ), 'icon' => 'eicon-h-align-stretch' ],
             ],
             'default'             => 'auto',
             'selectors_dictionary' => [
@@ -322,48 +322,48 @@ abstract class FAUTH_Elementor_Base_Widget extends \Elementor\Widget_Base {
                 '{{WRAPPER}} .fauth-submit-button' => '{{VALUE}}',
             ],
         ] );
-        $this->add_responsive_control( 'btn_padding', [ 'label' => esc_html__( 'Padding', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::DIMENSIONS, 'size_units' => [ 'px', 'em' ], 'selectors' => [ '{{WRAPPER}} .fauth-submit-button' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ] ] );
-        $this->add_responsive_control( 'btn_radius', [ 'label' => esc_html__( 'Border Radius', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::DIMENSIONS, 'size_units' => [ 'px', '%' ], 'selectors' => [ '{{WRAPPER}} .fauth-submit-button' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ] ] );
+        $this->add_responsive_control( 'btn_padding', [ 'label' => esc_html__( 'Padding', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::DIMENSIONS, 'size_units' => [ 'px', 'em' ], 'selectors' => [ '{{WRAPPER}} .fauth-submit-button' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ] ] );
+        $this->add_responsive_control( 'btn_radius', [ 'label' => esc_html__( 'Border Radius', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::DIMENSIONS, 'size_units' => [ 'px', '%' ], 'selectors' => [ '{{WRAPPER}} .fauth-submit-button' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ] ] );
         $this->start_controls_tabs( 'btn_tabs' );
-        $this->start_controls_tab( 'btn_normal', [ 'label' => esc_html__( 'Normal', 'frontend-auth' ) ] );
-        $this->add_control( 'btn_color', [ 'label' => esc_html__( 'Text', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-submit-button' => 'color: {{VALUE}};' ] ] );
-        $this->add_control( 'btn_bg', [ 'label' => esc_html__( 'Background', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-submit-button' => 'background-color: {{VALUE}};' ] ] );
+        $this->start_controls_tab( 'btn_normal', [ 'label' => esc_html__( 'Normal', 'zen-login-authentication' ) ] );
+        $this->add_control( 'btn_color', [ 'label' => esc_html__( 'Text', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-submit-button' => 'color: {{VALUE}};' ] ] );
+        $this->add_control( 'btn_bg', [ 'label' => esc_html__( 'Background', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-submit-button' => 'background-color: {{VALUE}};' ] ] );
         $this->add_group_control( \Elementor\Group_Control_Border::get_type(), [ 'name' => 'btn_border', 'selector' => '{{WRAPPER}} .fauth-submit-button' ] );
         // Fix #2
         if ( class_exists( '\\Elementor\\Group_Control_Box_Shadow' ) ) {
             $this->add_group_control( \Elementor\Group_Control_Box_Shadow::get_type(), [ 'name' => 'btn_shadow', 'selector' => '{{WRAPPER}} .fauth-submit-button' ] );
         }
         $this->end_controls_tab();
-        $this->start_controls_tab( 'btn_hover', [ 'label' => esc_html__( 'Hover', 'frontend-auth' ) ] );
-        $this->add_control( 'btn_color_h', [ 'label' => esc_html__( 'Text', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-submit-button:hover,{{WRAPPER}} .fauth-submit-button:focus' => 'color: {{VALUE}};' ] ] );
-        $this->add_control( 'btn_bg_h', [ 'label' => esc_html__( 'Background', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-submit-button:hover,{{WRAPPER}} .fauth-submit-button:focus' => 'background-color: {{VALUE}};' ] ] );
-        $this->add_control( 'btn_border_h', [ 'label' => esc_html__( 'Border Color', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-submit-button:hover,{{WRAPPER}} .fauth-submit-button:focus' => 'border-color: {{VALUE}};' ] ] );
+        $this->start_controls_tab( 'btn_hover', [ 'label' => esc_html__( 'Hover', 'zen-login-authentication' ) ] );
+        $this->add_control( 'btn_color_h', [ 'label' => esc_html__( 'Text', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-submit-button:hover,{{WRAPPER}} .fauth-submit-button:focus' => 'color: {{VALUE}};' ] ] );
+        $this->add_control( 'btn_bg_h', [ 'label' => esc_html__( 'Background', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-submit-button:hover,{{WRAPPER}} .fauth-submit-button:focus' => 'background-color: {{VALUE}};' ] ] );
+        $this->add_control( 'btn_border_h', [ 'label' => esc_html__( 'Border Color', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-submit-button:hover,{{WRAPPER}} .fauth-submit-button:focus' => 'border-color: {{VALUE}};' ] ] );
         // Fix #2
         if ( class_exists( '\\Elementor\\Group_Control_Box_Shadow' ) ) {
             $this->add_group_control( \Elementor\Group_Control_Box_Shadow::get_type(), [ 'name' => 'btn_shadow_h', 'selector' => '{{WRAPPER}} .fauth-submit-button:hover,{{WRAPPER}} .fauth-submit-button:focus' ] );
         }
-        $this->add_control( 'btn_transition', [ 'label' => esc_html__( 'Transition (ms)', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::SLIDER, 'range' => [ 'px' => [ 'min' => 0, 'max' => 1000, 'step' => 50 ] ], 'default' => [ 'size' => 200 ], 'selectors' => [ '{{WRAPPER}} .fauth-submit-button' => 'transition-duration: {{SIZE}}ms;' ] ] );
+        $this->add_control( 'btn_transition', [ 'label' => esc_html__( 'Transition (ms)', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::SLIDER, 'range' => [ 'px' => [ 'min' => 0, 'max' => 1000, 'step' => 50 ] ], 'default' => [ 'size' => 200 ], 'selectors' => [ '{{WRAPPER}} .fauth-submit-button' => 'transition-duration: {{SIZE}}ms;' ] ] );
         $this->end_controls_tab();
         $this->end_controls_tabs();
         $this->end_controls_section();
 
         // Links
         $this->start_controls_section( 'section_style_links', [
-            'label' => esc_html__( 'Action Links', 'frontend-auth' ), 'tab' => \Elementor\Controls_Manager::TAB_STYLE,
+            'label' => esc_html__( 'Action Links', 'zen-login-authentication' ), 'tab' => \Elementor\Controls_Manager::TAB_STYLE,
         ] );
-        $this->add_control( 'links_color', [ 'label' => esc_html__( 'Color', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-links a' => 'color: {{VALUE}};' ] ] );
-        $this->add_control( 'links_color_h', [ 'label' => esc_html__( 'Hover', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-links a:hover' => 'color: {{VALUE}};' ] ] );
+        $this->add_control( 'links_color', [ 'label' => esc_html__( 'Color', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-links a' => 'color: {{VALUE}};' ] ] );
+        $this->add_control( 'links_color_h', [ 'label' => esc_html__( 'Hover', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-links a:hover' => 'color: {{VALUE}};' ] ] );
         $this->add_group_control( \Elementor\Group_Control_Typography::get_type(), [ 'name' => 'links_typography', 'selector' => '{{WRAPPER}} .fauth-links' ] );
-        $this->add_responsive_control( 'links_align', [ 'label' => esc_html__( 'Alignment', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::CHOOSE, 'options' => [ 'left' => [ 'title' => 'Left', 'icon' => 'eicon-text-align-left' ], 'center' => [ 'title' => 'Center', 'icon' => 'eicon-text-align-center' ], 'right' => [ 'title' => 'Right', 'icon' => 'eicon-text-align-right' ] ], 'selectors' => [ '{{WRAPPER}} .fauth-links' => 'text-align: {{VALUE}};' ] ] );
+        $this->add_responsive_control( 'links_align', [ 'label' => esc_html__( 'Alignment', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::CHOOSE, 'options' => [ 'left' => [ 'title' => 'Left', 'icon' => 'eicon-text-align-left' ], 'center' => [ 'title' => 'Center', 'icon' => 'eicon-text-align-center' ], 'right' => [ 'title' => 'Right', 'icon' => 'eicon-text-align-right' ] ], 'selectors' => [ '{{WRAPPER}} .fauth-links' => 'text-align: {{VALUE}};' ] ] );
         // Fix K — text-decoration control for links
         $this->add_control( 'links_text_decoration', [
-            'label'               => esc_html__( 'Underline', 'frontend-auth' ),
+            'label'               => esc_html__( 'Underline', 'zen-login-authentication' ),
             'type'                => \Elementor\Controls_Manager::SELECT,
             'default'             => 'default',
             'options'             => [
-                'default'   => esc_html__( 'Default (hover only)',  'frontend-auth' ),
-                'always'    => esc_html__( 'Always',                'frontend-auth' ),
-                'none'      => esc_html__( 'Never',                 'frontend-auth' ),
+                'default'   => esc_html__( 'Default (hover only)',  'zen-login-authentication' ),
+                'always'    => esc_html__( 'Always',                'zen-login-authentication' ),
+                'none'      => esc_html__( 'Never',                 'zen-login-authentication' ),
             ],
             'selectors_dictionary' => [
                 'always'  => 'text-decoration: underline;',
@@ -379,18 +379,18 @@ abstract class FAUTH_Elementor_Base_Widget extends \Elementor\Widget_Base {
 
         // Messages
         $this->start_controls_section( 'section_style_msg', [
-            'label' => esc_html__( 'Messages & Errors', 'frontend-auth' ), 'tab' => \Elementor\Controls_Manager::TAB_STYLE,
+            'label' => esc_html__( 'Messages & Errors', 'zen-login-authentication' ), 'tab' => \Elementor\Controls_Manager::TAB_STYLE,
         ] );
         // Fix G — added Typography controls for error and message text
-        $this->add_control( 'h_err', [ 'label' => esc_html__( 'Errors', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::HEADING ] );
-        $this->add_control( 'err_color', [ 'label' => esc_html__( 'Text', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-error' => 'color: {{VALUE}};' ] ] );
-        $this->add_control( 'err_bg', [ 'label' => esc_html__( 'Background', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-error' => 'background-color: {{VALUE}};' ] ] );
-        $this->add_control( 'err_border', [ 'label' => esc_html__( 'Border', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-error' => 'border-left-color: {{VALUE}};' ] ] );
+        $this->add_control( 'h_err', [ 'label' => esc_html__( 'Errors', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::HEADING ] );
+        $this->add_control( 'err_color', [ 'label' => esc_html__( 'Text', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-error' => 'color: {{VALUE}};' ] ] );
+        $this->add_control( 'err_bg', [ 'label' => esc_html__( 'Background', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-error' => 'background-color: {{VALUE}};' ] ] );
+        $this->add_control( 'err_border', [ 'label' => esc_html__( 'Border', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-error' => 'border-left-color: {{VALUE}};' ] ] );
         $this->add_group_control( \Elementor\Group_Control_Typography::get_type(), [ 'name' => 'err_typography', 'selector' => '{{WRAPPER}} .fauth-error' ] );
-        $this->add_control( 'h_msg', [ 'label' => esc_html__( 'Success', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
-        $this->add_control( 'msg_color', [ 'label' => esc_html__( 'Text', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-message' => 'color: {{VALUE}};' ] ] );
-        $this->add_control( 'msg_bg', [ 'label' => esc_html__( 'Background', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-message' => 'background-color: {{VALUE}};' ] ] );
-        $this->add_control( 'msg_border', [ 'label' => esc_html__( 'Border', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-message' => 'border-left-color: {{VALUE}};' ] ] );
+        $this->add_control( 'h_msg', [ 'label' => esc_html__( 'Success', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
+        $this->add_control( 'msg_color', [ 'label' => esc_html__( 'Text', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-message' => 'color: {{VALUE}};' ] ] );
+        $this->add_control( 'msg_bg', [ 'label' => esc_html__( 'Background', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-message' => 'background-color: {{VALUE}};' ] ] );
+        $this->add_control( 'msg_border', [ 'label' => esc_html__( 'Border', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-message' => 'border-left-color: {{VALUE}};' ] ] );
         $this->add_group_control( \Elementor\Group_Control_Typography::get_type(), [ 'name' => 'msg_typography', 'selector' => '{{WRAPPER}} .fauth-message' ] );
         $this->end_controls_section();
     }
@@ -404,27 +404,27 @@ abstract class FAUTH_Elementor_Base_Widget extends \Elementor\Widget_Base {
      */
     protected function register_password_toggle_content_controls(): void {
         $this->add_control( 'fauth_h_toggle', [
-            'label'     => esc_html__( 'Password Toggle Button', 'frontend-auth' ),
+            'label'     => esc_html__( 'Password Toggle Button', 'zen-login-authentication' ),
             'type'      => \Elementor\Controls_Manager::HEADING,
             'separator' => 'before',
         ] );
         $this->add_control( 'toggle_show_text', [
-            'label'       => esc_html__( 'Show label', 'frontend-auth' ),
+            'label'       => esc_html__( 'Show label', 'zen-login-authentication' ),
             'type'        => \Elementor\Controls_Manager::TEXT,
             'default'     => '',
-            'placeholder' => esc_html__( 'Show', 'frontend-auth' ),
+            'placeholder' => esc_html__( 'Show', 'zen-login-authentication' ),
             'label_block' => true,
             'dynamic'     => [ 'active' => true ],
-            'description' => esc_html__( 'Text on the toggle button when the password is hidden.', 'frontend-auth' ),
+            'description' => esc_html__( 'Text on the toggle button when the password is hidden.', 'zen-login-authentication' ),
         ] );
         $this->add_control( 'toggle_hide_text', [
-            'label'       => esc_html__( 'Hide label', 'frontend-auth' ),
+            'label'       => esc_html__( 'Hide label', 'zen-login-authentication' ),
             'type'        => \Elementor\Controls_Manager::TEXT,
             'default'     => '',
-            'placeholder' => esc_html__( 'Hide', 'frontend-auth' ),
+            'placeholder' => esc_html__( 'Hide', 'zen-login-authentication' ),
             'label_block' => true,
             'dynamic'     => [ 'active' => true ],
-            'description' => esc_html__( 'Text on the toggle button when the password is visible.', 'frontend-auth' ),
+            'description' => esc_html__( 'Text on the toggle button when the password is visible.', 'zen-login-authentication' ),
         ] );
     }
 
@@ -432,24 +432,24 @@ abstract class FAUTH_Elementor_Base_Widget extends \Elementor\Widget_Base {
 
     protected function register_google_button_controls(): void {
         $this->add_control( 'fauth_h_google', [
-            'label'     => esc_html__( 'Google Sign-In', 'frontend-auth' ),
+            'label'     => esc_html__( 'Google Sign-In', 'zen-login-authentication' ),
             'type'      => \Elementor\Controls_Manager::HEADING,
             'separator' => 'before',
         ] );
         $this->add_control( 'show_google_button', [
-            'label'        => esc_html__( 'Show Google button', 'frontend-auth' ),
+            'label'        => esc_html__( 'Show Google button', 'zen-login-authentication' ),
             'type'         => \Elementor\Controls_Manager::SWITCHER,
-            'label_on'     => esc_html__( 'Yes', 'frontend-auth' ),
-            'label_off'    => esc_html__( 'No', 'frontend-auth' ),
+            'label_on'     => esc_html__( 'Yes', 'zen-login-authentication' ),
+            'label_off'    => esc_html__( 'No', 'zen-login-authentication' ),
             'return_value' => 'yes',
             'default'      => 'yes',
-            'description'  => esc_html__( 'Appears on the live page only when Google sign-in is configured under Settings → Frontend Auth.', 'frontend-auth' ),
+            'description'  => esc_html__( 'Appears on the live page only when Google sign-in is configured under Settings → Zen Login & Authentication.', 'zen-login-authentication' ),
         ] );
         $this->add_control( 'google_button_text', [
-            'label'       => esc_html__( 'Google button text', 'frontend-auth' ),
+            'label'       => esc_html__( 'Google button text', 'zen-login-authentication' ),
             'type'        => \Elementor\Controls_Manager::TEXT,
             'default'     => '',
-            'placeholder' => esc_html__( 'Continue with Google', 'frontend-auth' ),
+            'placeholder' => esc_html__( 'Continue with Google', 'zen-login-authentication' ),
             'label_block' => true,
             'dynamic'     => [ 'active' => true ],
             'condition'   => [ 'show_google_button' => 'yes' ],
@@ -461,7 +461,7 @@ abstract class FAUTH_Elementor_Base_Widget extends \Elementor\Widget_Base {
      */
     protected function register_google_button_style_controls(): void {
         $this->start_controls_section( 'section_style_google', [
-            'label'     => esc_html__( 'Google Button', 'frontend-auth' ),
+            'label'     => esc_html__( 'Google Button', 'zen-login-authentication' ),
             'tab'       => \Elementor\Controls_Manager::TAB_STYLE,
             'condition' => [ 'show_google_button' => 'yes' ],
         ] );
@@ -470,31 +470,31 @@ abstract class FAUTH_Elementor_Base_Widget extends \Elementor\Widget_Base {
             'selector' => '{{WRAPPER}} .fauth-google-btn',
         ] );
         $this->add_responsive_control( 'google_btn_padding', [
-            'label'      => esc_html__( 'Padding', 'frontend-auth' ),
+            'label'      => esc_html__( 'Padding', 'zen-login-authentication' ),
             'type'       => \Elementor\Controls_Manager::DIMENSIONS,
             'size_units' => [ 'px', 'em' ],
             'selectors'  => [ '{{WRAPPER}} .fauth-google-btn' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ],
         ] );
         $this->add_responsive_control( 'google_btn_radius', [
-            'label'      => esc_html__( 'Border Radius', 'frontend-auth' ),
+            'label'      => esc_html__( 'Border Radius', 'zen-login-authentication' ),
             'type'       => \Elementor\Controls_Manager::DIMENSIONS,
             'size_units' => [ 'px', '%' ],
             'selectors'  => [ '{{WRAPPER}} .fauth-google-btn' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ],
         ] );
         $this->start_controls_tabs( 'google_btn_tabs' );
-        $this->start_controls_tab( 'google_btn_normal', [ 'label' => esc_html__( 'Normal', 'frontend-auth' ) ] );
-        $this->add_control( 'google_btn_color', [ 'label' => esc_html__( 'Text', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-google-btn' => 'color: {{VALUE}};' ] ] );
-        $this->add_control( 'google_btn_bg', [ 'label' => esc_html__( 'Background', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-google-btn' => 'background-color: {{VALUE}};' ] ] );
-        $this->add_control( 'google_btn_border', [ 'label' => esc_html__( 'Border Color', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-google-btn' => 'border-color: {{VALUE}};' ] ] );
+        $this->start_controls_tab( 'google_btn_normal', [ 'label' => esc_html__( 'Normal', 'zen-login-authentication' ) ] );
+        $this->add_control( 'google_btn_color', [ 'label' => esc_html__( 'Text', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-google-btn' => 'color: {{VALUE}};' ] ] );
+        $this->add_control( 'google_btn_bg', [ 'label' => esc_html__( 'Background', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-google-btn' => 'background-color: {{VALUE}};' ] ] );
+        $this->add_control( 'google_btn_border', [ 'label' => esc_html__( 'Border Color', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-google-btn' => 'border-color: {{VALUE}};' ] ] );
         $this->end_controls_tab();
-        $this->start_controls_tab( 'google_btn_hover', [ 'label' => esc_html__( 'Hover', 'frontend-auth' ) ] );
-        $this->add_control( 'google_btn_color_h', [ 'label' => esc_html__( 'Text', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-google-btn:hover,{{WRAPPER}} .fauth-google-btn:focus' => 'color: {{VALUE}};' ] ] );
-        $this->add_control( 'google_btn_bg_h', [ 'label' => esc_html__( 'Background', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-google-btn:hover,{{WRAPPER}} .fauth-google-btn:focus' => 'background-color: {{VALUE}};' ] ] );
-        $this->add_control( 'google_btn_border_h', [ 'label' => esc_html__( 'Border Color', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-google-btn:hover,{{WRAPPER}} .fauth-google-btn:focus' => 'border-color: {{VALUE}};' ] ] );
+        $this->start_controls_tab( 'google_btn_hover', [ 'label' => esc_html__( 'Hover', 'zen-login-authentication' ) ] );
+        $this->add_control( 'google_btn_color_h', [ 'label' => esc_html__( 'Text', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-google-btn:hover,{{WRAPPER}} .fauth-google-btn:focus' => 'color: {{VALUE}};' ] ] );
+        $this->add_control( 'google_btn_bg_h', [ 'label' => esc_html__( 'Background', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-google-btn:hover,{{WRAPPER}} .fauth-google-btn:focus' => 'background-color: {{VALUE}};' ] ] );
+        $this->add_control( 'google_btn_border_h', [ 'label' => esc_html__( 'Border Color', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-google-btn:hover,{{WRAPPER}} .fauth-google-btn:focus' => 'border-color: {{VALUE}};' ] ] );
         $this->end_controls_tab();
         $this->end_controls_tabs();
         $this->add_control( 'google_divider_color', [
-            'label'     => esc_html__( 'Divider Color', 'frontend-auth' ),
+            'label'     => esc_html__( 'Divider Color', 'zen-login-authentication' ),
             'type'      => \Elementor\Controls_Manager::COLOR,
             'separator' => 'before',
             'selectors' => [
@@ -540,9 +540,9 @@ abstract class FAUTH_Elementor_Base_Widget extends \Elementor\Widget_Base {
     protected function google_button_content_template(): string {
         $svg = function_exists( 'fauth_google_button_svg' ) ? fauth_google_button_svg() : '';
         return '<# if ( "yes" === settings.show_google_button ) { #>'
-            . '<div class="fauth-sso"><div class="fauth-sso-divider"><span>' . esc_html__( 'or', 'frontend-auth' ) . '</span></div>'
+            . '<div class="fauth-sso"><div class="fauth-sso-divider"><span>' . esc_html__( 'or', 'zen-login-authentication' ) . '</span></div>'
             . '<a class="fauth-google-btn" href="#" onclick="return false;">' . $svg
-            . '<span><# if(settings.google_button_text){#>{{{settings.google_button_text}}}<#}else{#>' . esc_html__( 'Continue with Google', 'frontend-auth' ) . '<#}#></span></a></div>'
+            . '<span><# if(settings.google_button_text){#>{{{settings.google_button_text}}}<#}else{#>' . esc_html__( 'Continue with Google', 'zen-login-authentication' ) . '<#}#></span></a></div>'
             . '<# } #>';
     }
 
@@ -555,7 +555,7 @@ abstract class FAUTH_Elementor_Base_Widget extends \Elementor\Widget_Base {
      */
     protected function register_strength_meter_style_controls(): void {
         $this->start_controls_section( 'section_style_strength', [
-            'label' => esc_html__( 'Password Strength Meter', 'frontend-auth' ),
+            'label' => esc_html__( 'Password Strength Meter', 'zen-login-authentication' ),
             'tab'   => \Elementor\Controls_Manager::TAB_STYLE,
         ] );
         $this->add_group_control( \Elementor\Group_Control_Typography::get_type(), [
@@ -563,27 +563,27 @@ abstract class FAUTH_Elementor_Base_Widget extends \Elementor\Widget_Base {
             'selector' => '{{WRAPPER}} #pass-strength-result',
         ] );
         $this->add_responsive_control( 'strength_border_radius', [
-            'label'      => esc_html__( 'Border Radius', 'frontend-auth' ),
+            'label'      => esc_html__( 'Border Radius', 'zen-login-authentication' ),
             'type'       => \Elementor\Controls_Manager::DIMENSIONS,
             'size_units' => [ 'px', '%' ],
             'selectors'  => [ '{{WRAPPER}} #pass-strength-result' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ],
         ] );
-        $this->add_control( 'h_str_short', [ 'label' => esc_html__( 'Too Short', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
-        $this->add_control( 'strength_color_short', [ 'label' => esc_html__( 'Text', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} #pass-strength-result.short' => 'color: {{VALUE}};' ] ] );
-        $this->add_control( 'strength_bg_short',    [ 'label' => esc_html__( 'Background', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} #pass-strength-result.short' => 'background-color: {{VALUE}};' ] ] );
-        $this->add_control( 'strength_border_short',[ 'label' => esc_html__( 'Border Color', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} #pass-strength-result.short' => 'border-color: {{VALUE}};' ] ] );
-        $this->add_control( 'h_str_bad', [ 'label' => esc_html__( 'Weak', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
-        $this->add_control( 'strength_color_bad', [ 'label' => esc_html__( 'Text', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} #pass-strength-result.bad' => 'color: {{VALUE}};' ] ] );
-        $this->add_control( 'strength_bg_bad',    [ 'label' => esc_html__( 'Background', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} #pass-strength-result.bad' => 'background-color: {{VALUE}};' ] ] );
-        $this->add_control( 'strength_border_bad',[ 'label' => esc_html__( 'Border Color', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} #pass-strength-result.bad' => 'border-color: {{VALUE}};' ] ] );
-        $this->add_control( 'h_str_good', [ 'label' => esc_html__( 'Good', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
-        $this->add_control( 'strength_color_good', [ 'label' => esc_html__( 'Text', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} #pass-strength-result.good' => 'color: {{VALUE}};' ] ] );
-        $this->add_control( 'strength_bg_good',    [ 'label' => esc_html__( 'Background', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} #pass-strength-result.good' => 'background-color: {{VALUE}};' ] ] );
-        $this->add_control( 'strength_border_good',[ 'label' => esc_html__( 'Border Color', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} #pass-strength-result.good' => 'border-color: {{VALUE}};' ] ] );
-        $this->add_control( 'h_str_strong', [ 'label' => esc_html__( 'Strong', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
-        $this->add_control( 'strength_color_strong', [ 'label' => esc_html__( 'Text', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} #pass-strength-result.strong' => 'color: {{VALUE}};' ] ] );
-        $this->add_control( 'strength_bg_strong',    [ 'label' => esc_html__( 'Background', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} #pass-strength-result.strong' => 'background-color: {{VALUE}};' ] ] );
-        $this->add_control( 'strength_border_strong',[ 'label' => esc_html__( 'Border Color', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} #pass-strength-result.strong' => 'border-color: {{VALUE}};' ] ] );
+        $this->add_control( 'h_str_short', [ 'label' => esc_html__( 'Too Short', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
+        $this->add_control( 'strength_color_short', [ 'label' => esc_html__( 'Text', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} #pass-strength-result.short' => 'color: {{VALUE}};' ] ] );
+        $this->add_control( 'strength_bg_short',    [ 'label' => esc_html__( 'Background', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} #pass-strength-result.short' => 'background-color: {{VALUE}};' ] ] );
+        $this->add_control( 'strength_border_short',[ 'label' => esc_html__( 'Border Color', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} #pass-strength-result.short' => 'border-color: {{VALUE}};' ] ] );
+        $this->add_control( 'h_str_bad', [ 'label' => esc_html__( 'Weak', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
+        $this->add_control( 'strength_color_bad', [ 'label' => esc_html__( 'Text', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} #pass-strength-result.bad' => 'color: {{VALUE}};' ] ] );
+        $this->add_control( 'strength_bg_bad',    [ 'label' => esc_html__( 'Background', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} #pass-strength-result.bad' => 'background-color: {{VALUE}};' ] ] );
+        $this->add_control( 'strength_border_bad',[ 'label' => esc_html__( 'Border Color', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} #pass-strength-result.bad' => 'border-color: {{VALUE}};' ] ] );
+        $this->add_control( 'h_str_good', [ 'label' => esc_html__( 'Good', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
+        $this->add_control( 'strength_color_good', [ 'label' => esc_html__( 'Text', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} #pass-strength-result.good' => 'color: {{VALUE}};' ] ] );
+        $this->add_control( 'strength_bg_good',    [ 'label' => esc_html__( 'Background', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} #pass-strength-result.good' => 'background-color: {{VALUE}};' ] ] );
+        $this->add_control( 'strength_border_good',[ 'label' => esc_html__( 'Border Color', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} #pass-strength-result.good' => 'border-color: {{VALUE}};' ] ] );
+        $this->add_control( 'h_str_strong', [ 'label' => esc_html__( 'Strong', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
+        $this->add_control( 'strength_color_strong', [ 'label' => esc_html__( 'Text', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} #pass-strength-result.strong' => 'color: {{VALUE}};' ] ] );
+        $this->add_control( 'strength_bg_strong',    [ 'label' => esc_html__( 'Background', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} #pass-strength-result.strong' => 'background-color: {{VALUE}};' ] ] );
+        $this->add_control( 'strength_border_strong',[ 'label' => esc_html__( 'Border Color', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} #pass-strength-result.strong' => 'border-color: {{VALUE}};' ] ] );
         $this->end_controls_section();
     }
 
@@ -593,11 +593,11 @@ abstract class FAUTH_Elementor_Base_Widget extends \Elementor\Widget_Base {
      */
     protected function register_checkbox_style_controls(): void {
         $this->start_controls_section( 'section_style_checkbox', [
-            'label' => esc_html__( 'Remember Me', 'frontend-auth' ),
+            'label' => esc_html__( 'Remember Me', 'zen-login-authentication' ),
             'tab'   => \Elementor\Controls_Manager::TAB_STYLE,
         ] );
         $this->add_control( 'checkbox_color', [
-            'label'     => esc_html__( 'Label Color', 'frontend-auth' ),
+            'label'     => esc_html__( 'Label Color', 'zen-login-authentication' ),
             'type'      => \Elementor\Controls_Manager::COLOR,
             'selectors' => [ '{{WRAPPER}} .fauth-checkbox-label' => 'color: {{VALUE}};' ],
         ] );
@@ -606,7 +606,7 @@ abstract class FAUTH_Elementor_Base_Widget extends \Elementor\Widget_Base {
             'selector' => '{{WRAPPER}} .fauth-checkbox-label',
         ] );
         $this->add_responsive_control( 'checkbox_gap', [
-            'label'      => esc_html__( 'Gap (checkbox ↔ label)', 'frontend-auth' ),
+            'label'      => esc_html__( 'Gap (checkbox ↔ label)', 'zen-login-authentication' ),
             'type'       => \Elementor\Controls_Manager::SLIDER,
             'size_units' => [ 'px', 'em' ],
             'range'      => [ 'px' => [ 'min' => 0, 'max' => 20 ] ],
@@ -623,7 +623,7 @@ abstract class FAUTH_Elementor_Base_Widget extends \Elementor\Widget_Base {
      */
     protected function register_password_toggle_style_controls(): void {
         $this->start_controls_section( 'section_style_toggle', [
-            'label' => esc_html__( 'Password Toggle', 'frontend-auth' ),
+            'label' => esc_html__( 'Password Toggle', 'zen-login-authentication' ),
             'tab'   => \Elementor\Controls_Manager::TAB_STYLE,
         ] );
 
@@ -632,7 +632,7 @@ abstract class FAUTH_Elementor_Base_Widget extends \Elementor\Widget_Base {
             'selector' => '{{WRAPPER}} .fauth-password-toggle',
         ] );
         $this->add_responsive_control( 'toggle_padding', [
-            'label'      => esc_html__( 'Padding', 'frontend-auth' ),
+            'label'      => esc_html__( 'Padding', 'zen-login-authentication' ),
             'type'       => \Elementor\Controls_Manager::DIMENSIONS,
             'size_units' => [ 'px', 'em' ],
             'selectors'  => [ '{{WRAPPER}} .fauth-password-toggle' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ],
@@ -640,7 +640,7 @@ abstract class FAUTH_Elementor_Base_Widget extends \Elementor\Widget_Base {
         // Fix N — negative range removed; Fix J means flex gap replaces margin-top
         // Renamed to toggle_gap and targets the flex gap between input and button
         $this->add_responsive_control( 'toggle_gap', [
-            'label'      => esc_html__( 'Gap (input ↔ button)', 'frontend-auth' ),
+            'label'      => esc_html__( 'Gap (input ↔ button)', 'zen-login-authentication' ),
             'type'       => \Elementor\Controls_Manager::SLIDER,
             'size_units' => [ 'px', 'em', 'rem' ],
             'range'      => [ 'px' => [ 'min' => 0, 'max' => 20 ], 'em' => [ 'min' => 0, 'max' => 2 ], 'rem' => [ 'min' => 0, 'max' => 2 ] ],
@@ -652,7 +652,7 @@ abstract class FAUTH_Elementor_Base_Widget extends \Elementor\Widget_Base {
             'selector' => '{{WRAPPER}} .fauth-password-toggle',
         ] );
         $this->add_responsive_control( 'toggle_border_radius', [
-            'label'      => esc_html__( 'Border Radius', 'frontend-auth' ),
+            'label'      => esc_html__( 'Border Radius', 'zen-login-authentication' ),
             'type'       => \Elementor\Controls_Manager::DIMENSIONS,
             'size_units' => [ 'px', '%' ],
             'selectors'  => [ '{{WRAPPER}} .fauth-password-toggle' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ],
@@ -661,14 +661,14 @@ abstract class FAUTH_Elementor_Base_Widget extends \Elementor\Widget_Base {
         // Normal / Hover tabs
         $this->start_controls_tabs( 'toggle_tabs' );
 
-        $this->start_controls_tab( 'toggle_tab_normal', [ 'label' => esc_html__( 'Normal', 'frontend-auth' ) ] );
+        $this->start_controls_tab( 'toggle_tab_normal', [ 'label' => esc_html__( 'Normal', 'zen-login-authentication' ) ] );
         $this->add_control( 'toggle_color', [
-            'label'     => esc_html__( 'Text Color', 'frontend-auth' ),
+            'label'     => esc_html__( 'Text Color', 'zen-login-authentication' ),
             'type'      => \Elementor\Controls_Manager::COLOR,
             'selectors' => [ '{{WRAPPER}} .fauth-password-toggle' => 'color: {{VALUE}};' ],
         ] );
         $this->add_control( 'toggle_bg', [
-            'label'     => esc_html__( 'Background', 'frontend-auth' ),
+            'label'     => esc_html__( 'Background', 'zen-login-authentication' ),
             'type'      => \Elementor\Controls_Manager::COLOR,
             'selectors' => [ '{{WRAPPER}} .fauth-password-toggle' => 'background-color: {{VALUE}};' ],
         ] );
@@ -680,19 +680,19 @@ abstract class FAUTH_Elementor_Base_Widget extends \Elementor\Widget_Base {
         }
         $this->end_controls_tab();
 
-        $this->start_controls_tab( 'toggle_tab_hover', [ 'label' => esc_html__( 'Hover', 'frontend-auth' ) ] );
+        $this->start_controls_tab( 'toggle_tab_hover', [ 'label' => esc_html__( 'Hover', 'zen-login-authentication' ) ] );
         $this->add_control( 'toggle_color_h', [
-            'label'     => esc_html__( 'Text Color', 'frontend-auth' ),
+            'label'     => esc_html__( 'Text Color', 'zen-login-authentication' ),
             'type'      => \Elementor\Controls_Manager::COLOR,
             'selectors' => [ '{{WRAPPER}} .fauth-password-toggle:hover, {{WRAPPER}} .fauth-password-toggle:focus' => 'color: {{VALUE}};' ],
         ] );
         $this->add_control( 'toggle_bg_h', [
-            'label'     => esc_html__( 'Background', 'frontend-auth' ),
+            'label'     => esc_html__( 'Background', 'zen-login-authentication' ),
             'type'      => \Elementor\Controls_Manager::COLOR,
             'selectors' => [ '{{WRAPPER}} .fauth-password-toggle:hover, {{WRAPPER}} .fauth-password-toggle:focus' => 'background-color: {{VALUE}};' ],
         ] );
         $this->add_control( 'toggle_border_color_h', [
-            'label'     => esc_html__( 'Border Color', 'frontend-auth' ),
+            'label'     => esc_html__( 'Border Color', 'zen-login-authentication' ),
             'type'      => \Elementor\Controls_Manager::COLOR,
             'selectors' => [ '{{WRAPPER}} .fauth-password-toggle:hover, {{WRAPPER}} .fauth-password-toggle:focus' => 'border-color: {{VALUE}};' ],
         ] );
@@ -707,7 +707,7 @@ abstract class FAUTH_Elementor_Base_Widget extends \Elementor\Widget_Base {
         $this->end_controls_tabs();
 
         $this->add_control( 'toggle_transition', [
-            'label'     => esc_html__( 'Transition (ms)', 'frontend-auth' ),
+            'label'     => esc_html__( 'Transition (ms)', 'zen-login-authentication' ),
             'type'      => \Elementor\Controls_Manager::SLIDER,
             'separator' => 'before',
             'range'     => [ 'px' => [ 'min' => 0, 'max' => 1000, 'step' => 50 ] ],
@@ -848,39 +848,39 @@ abstract class FAUTH_Elementor_Base_Widget extends \Elementor\Widget_Base {
 class FAUTH_Elementor_Login_Widget extends FAUTH_Elementor_Base_Widget {
 
     public function get_name(): string  { return 'fauth-login'; }
-    public function get_title(): string { return esc_html__( 'Login Form', 'frontend-auth' ); }
+    public function get_title(): string { return esc_html__( 'Login Form', 'zen-login-authentication' ); }
     public function get_icon(): string  { return 'eicon-lock-user'; }
 
     protected function register_controls(): void {
         $this->start_controls_section( 'section_content', [
-            'label' => esc_html__( 'Login Form', 'frontend-auth' ),
+            'label' => esc_html__( 'Login Form', 'zen-login-authentication' ),
             'tab'   => \Elementor\Controls_Manager::TAB_CONTENT,
         ] );
         $this->register_title_controls();
 
         // --- Field Labels ---
-        $this->add_control( 'h_labels', [ 'label' => esc_html__( 'Field Labels', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
+        $this->add_control( 'h_labels', [ 'label' => esc_html__( 'Field Labels', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
         // Fix #6 — dynamic tags enabled on all text controls
-        $this->add_control( 'label_username', [ 'label' => esc_html__( 'Username label', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Username or Email Address', 'frontend-auth' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
-        $this->add_control( 'label_password', [ 'label' => esc_html__( 'Password label', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Password', 'frontend-auth' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
-        $this->add_control( 'label_remember', [ 'label' => esc_html__( 'Remember Me label', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Remember Me', 'frontend-auth' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
-        $this->add_control( 'button_text', [ 'label' => esc_html__( 'Button text', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Log In', 'frontend-auth' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
+        $this->add_control( 'label_username', [ 'label' => esc_html__( 'Username label', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Username or Email Address', 'zen-login-authentication' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
+        $this->add_control( 'label_password', [ 'label' => esc_html__( 'Password label', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Password', 'zen-login-authentication' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
+        $this->add_control( 'label_remember', [ 'label' => esc_html__( 'Remember Me label', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Remember Me', 'zen-login-authentication' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
+        $this->add_control( 'button_text', [ 'label' => esc_html__( 'Button text', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Log In', 'zen-login-authentication' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
 
         // --- Field Placeholders ---
-        $this->add_control( 'fauth_h_placeholders', [ 'label' => esc_html__( 'Field Placeholders', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
-        $this->add_control( 'placeholder_username', [ 'label' => esc_html__( 'Username placeholder', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'e.g. your@email.com', 'frontend-auth' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
-        $this->add_control( 'placeholder_password', [ 'label' => esc_html__( 'Password placeholder', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'e.g. ••••••••', 'frontend-auth' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
+        $this->add_control( 'fauth_h_placeholders', [ 'label' => esc_html__( 'Field Placeholders', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
+        $this->add_control( 'placeholder_username', [ 'label' => esc_html__( 'Username placeholder', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'e.g. your@email.com', 'zen-login-authentication' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
+        $this->add_control( 'placeholder_password', [ 'label' => esc_html__( 'Password placeholder', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'e.g. ••••••••', 'zen-login-authentication' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
 
         // --- Password Toggle ---
         $this->register_password_toggle_content_controls();
 
         // --- Action Links (text + URL for each) ---
-        $this->add_control( 'h_links', [ 'label' => esc_html__( 'Action Links', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
+        $this->add_control( 'h_links', [ 'label' => esc_html__( 'Action Links', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
         // Fix #3 + #6 — URL controls and dynamic tags
-        $this->add_control( 'link_register_text', [ 'label' => esc_html__( 'Register link text', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Register', 'frontend-auth' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
-        $this->add_control( 'link_register_url', [ 'label' => esc_html__( 'Register link URL', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::URL, 'dynamic' => [ 'active' => true ], 'default' => [ 'url' => '' ], 'placeholder' => esc_html__( 'Leave empty for auto-detect', 'frontend-auth' ), 'label_block' => true ] );
-        $this->add_control( 'link_lostpw_text', [ 'label' => esc_html__( 'Lost password link text', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Lost your password?', 'frontend-auth' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
-        $this->add_control( 'link_lostpw_url', [ 'label' => esc_html__( 'Lost password link URL', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::URL, 'dynamic' => [ 'active' => true ], 'default' => [ 'url' => '' ], 'placeholder' => esc_html__( 'Leave empty for auto-detect', 'frontend-auth' ), 'label_block' => true ] );
+        $this->add_control( 'link_register_text', [ 'label' => esc_html__( 'Register link text', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Register', 'zen-login-authentication' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
+        $this->add_control( 'link_register_url', [ 'label' => esc_html__( 'Register link URL', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::URL, 'dynamic' => [ 'active' => true ], 'default' => [ 'url' => '' ], 'placeholder' => esc_html__( 'Leave empty for auto-detect', 'zen-login-authentication' ), 'label_block' => true ] );
+        $this->add_control( 'link_lostpw_text', [ 'label' => esc_html__( 'Lost password link text', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Lost your password?', 'zen-login-authentication' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
+        $this->add_control( 'link_lostpw_url', [ 'label' => esc_html__( 'Lost password link URL', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::URL, 'dynamic' => [ 'active' => true ], 'default' => [ 'url' => '' ], 'placeholder' => esc_html__( 'Leave empty for auto-detect', 'zen-login-authentication' ), 'label_block' => true ] );
 
 
         $this->register_google_button_controls();
@@ -1013,12 +1013,12 @@ class FAUTH_Elementor_Login_Widget extends FAUTH_Elementor_Base_Widget {
         echo '<{{{ tag }}} class="fauth-form-title">{{{ settings.form_title_text }}}</{{{ tag }}}>';
         echo '<# } #>';
         echo '<div class="fauth fauth-form fauth-form-login"><div class="fauth-inner-form">';
-        echo '<p class="fauth-field-wrap"><label class="fauth-label"><# if(settings.label_username){#>{{{settings.label_username}}}<#}else{#>' . esc_html__( 'Username or Email', 'frontend-auth' ) . '<#}#></label><input type="text" class="fauth-field" placeholder="<# if(settings.placeholder_username){#>{{settings.placeholder_username}}<#}#>" disabled></p>';
-        echo '<p class="fauth-field-wrap fauth-field-wrap--password"><label class="fauth-label"><# if(settings.label_password){#>{{{settings.label_password}}}<#}else{#>' . esc_html__( 'Password', 'frontend-auth' ) . '<#}#></label><input type="password" class="fauth-field" placeholder="<# if(settings.placeholder_password){#>{{settings.placeholder_password}}<#}#>" disabled><button type="button" class="fauth-password-toggle"><# if(settings.toggle_show_text){#>{{{settings.toggle_show_text}}}<#}else{#>' . esc_html__( 'Show', 'frontend-auth' ) . '<#}#></button></p>';
-        echo '<p class="fauth-submit"><button type="button" class="fauth-button fauth-submit-button"><# if(settings.button_text){#>{{{settings.button_text}}}<#}else{#>' . esc_html__( 'Log In', 'frontend-auth' ) . '<#}#></button></p>';
+        echo '<p class="fauth-field-wrap"><label class="fauth-label"><# if(settings.label_username){#>{{{settings.label_username}}}<#}else{#>' . esc_html__( 'Username or Email', 'zen-login-authentication' ) . '<#}#></label><input type="text" class="fauth-field" placeholder="<# if(settings.placeholder_username){#>{{settings.placeholder_username}}<#}#>" disabled></p>';
+        echo '<p class="fauth-field-wrap fauth-field-wrap--password"><label class="fauth-label"><# if(settings.label_password){#>{{{settings.label_password}}}<#}else{#>' . esc_html__( 'Password', 'zen-login-authentication' ) . '<#}#></label><input type="password" class="fauth-field" placeholder="<# if(settings.placeholder_password){#>{{settings.placeholder_password}}<#}#>" disabled><button type="button" class="fauth-password-toggle"><# if(settings.toggle_show_text){#>{{{settings.toggle_show_text}}}<#}else{#>' . esc_html__( 'Show', 'zen-login-authentication' ) . '<#}#></button></p>';
+        echo '<p class="fauth-submit"><button type="button" class="fauth-button fauth-submit-button"><# if(settings.button_text){#>{{{settings.button_text}}}<#}else{#>' . esc_html__( 'Log In', 'zen-login-authentication' ) . '<#}#></button></p>';
         echo '</div>';
         echo '<# if ( "yes" === settings.show_links ) { #>';
-        echo '<p class="fauth-links"><a href="#"><# if(settings.link_register_text){#>{{{settings.link_register_text}}}<#}else{#>' . esc_html__( 'Register', 'frontend-auth' ) . '<#}#></a> &bull; <a href="#"><# if(settings.link_lostpw_text){#>{{{settings.link_lostpw_text}}}<#}else{#>' . esc_html__( 'Lost your password?', 'frontend-auth' ) . '<#}#></a></p>';
+        echo '<p class="fauth-links"><a href="#"><# if(settings.link_register_text){#>{{{settings.link_register_text}}}<#}else{#>' . esc_html__( 'Register', 'zen-login-authentication' ) . '<#}#></a> &bull; <a href="#"><# if(settings.link_lostpw_text){#>{{{settings.link_lostpw_text}}}<#}else{#>' . esc_html__( 'Lost your password?', 'zen-login-authentication' ) . '<#}#></a></p>';
         echo '<# } #></div>';
         echo $this->google_button_content_template(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped during construction
         echo '</div><!-- /.fauth-form-wrap -->';
@@ -1033,35 +1033,35 @@ class FAUTH_Elementor_Login_Widget extends FAUTH_Elementor_Base_Widget {
 class FAUTH_Elementor_Register_Widget extends FAUTH_Elementor_Base_Widget {
 
     public function get_name(): string  { return 'fauth-register'; }
-    public function get_title(): string { return esc_html__( 'Registration Form', 'frontend-auth' ); }
+    public function get_title(): string { return esc_html__( 'Registration Form', 'zen-login-authentication' ); }
     public function get_icon(): string  { return 'eicon-person'; }
 
     protected function register_controls(): void {
         $this->start_controls_section( 'section_content', [
-            'label' => esc_html__( 'Registration Form', 'frontend-auth' ), 'tab' => \Elementor\Controls_Manager::TAB_CONTENT,
+            'label' => esc_html__( 'Registration Form', 'zen-login-authentication' ), 'tab' => \Elementor\Controls_Manager::TAB_CONTENT,
         ] );
         $this->register_title_controls();
-        $this->add_control( 'h_labels', [ 'label' => esc_html__( 'Field Labels', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
+        $this->add_control( 'h_labels', [ 'label' => esc_html__( 'Field Labels', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
         // Fix #6 — dynamic tags; Fix #3 — URL controls
-        $this->add_control( 'label_username', [ 'label' => esc_html__( 'Username label', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Username', 'frontend-auth' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
-        $this->add_control( 'label_email', [ 'label' => esc_html__( 'Email label', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Email Address', 'frontend-auth' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
-        $this->add_control( 'label_password', [ 'label' => esc_html__( 'Password label', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Password', 'frontend-auth' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
-        $this->add_control( 'label_confirm_pw', [ 'label' => esc_html__( 'Confirm Password label', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Confirm Password', 'frontend-auth' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
-        $this->add_control( 'button_text', [ 'label' => esc_html__( 'Button text', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Register', 'frontend-auth' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
+        $this->add_control( 'label_username', [ 'label' => esc_html__( 'Username label', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Username', 'zen-login-authentication' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
+        $this->add_control( 'label_email', [ 'label' => esc_html__( 'Email label', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Email Address', 'zen-login-authentication' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
+        $this->add_control( 'label_password', [ 'label' => esc_html__( 'Password label', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Password', 'zen-login-authentication' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
+        $this->add_control( 'label_confirm_pw', [ 'label' => esc_html__( 'Confirm Password label', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Confirm Password', 'zen-login-authentication' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
+        $this->add_control( 'button_text', [ 'label' => esc_html__( 'Button text', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Register', 'zen-login-authentication' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
 
         // --- Field Placeholders ---
-        $this->add_control( 'fauth_h_placeholders', [ 'label' => esc_html__( 'Field Placeholders', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
-        $this->add_control( 'placeholder_username', [ 'label' => esc_html__( 'Username placeholder', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'e.g. johndoe', 'frontend-auth' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
-        $this->add_control( 'placeholder_email', [ 'label' => esc_html__( 'Email placeholder', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'e.g. your@email.com', 'frontend-auth' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
-        $this->add_control( 'placeholder_password', [ 'label' => esc_html__( 'Password placeholder', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'e.g. ••••••••', 'frontend-auth' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
-        $this->add_control( 'placeholder_confirm_pw', [ 'label' => esc_html__( 'Confirm Password placeholder', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'e.g. ••••••••', 'frontend-auth' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
+        $this->add_control( 'fauth_h_placeholders', [ 'label' => esc_html__( 'Field Placeholders', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
+        $this->add_control( 'placeholder_username', [ 'label' => esc_html__( 'Username placeholder', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'e.g. johndoe', 'zen-login-authentication' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
+        $this->add_control( 'placeholder_email', [ 'label' => esc_html__( 'Email placeholder', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'e.g. your@email.com', 'zen-login-authentication' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
+        $this->add_control( 'placeholder_password', [ 'label' => esc_html__( 'Password placeholder', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'e.g. ••••••••', 'zen-login-authentication' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
+        $this->add_control( 'placeholder_confirm_pw', [ 'label' => esc_html__( 'Confirm Password placeholder', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'e.g. ••••••••', 'zen-login-authentication' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
 
         // --- Password Toggle ---
         $this->register_password_toggle_content_controls();
 
-        $this->add_control( 'h_links', [ 'label' => esc_html__( 'Action Links', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
-        $this->add_control( 'link_login_text', [ 'label' => esc_html__( 'Log In link text', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Log In', 'frontend-auth' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
-        $this->add_control( 'link_login_url', [ 'label' => esc_html__( 'Log In link URL', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::URL, 'dynamic' => [ 'active' => true ], 'default' => [ 'url' => '' ], 'placeholder' => esc_html__( 'Leave empty for auto-detect', 'frontend-auth' ), 'label_block' => true ] );
+        $this->add_control( 'h_links', [ 'label' => esc_html__( 'Action Links', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
+        $this->add_control( 'link_login_text', [ 'label' => esc_html__( 'Log In link text', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Log In', 'zen-login-authentication' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
+        $this->add_control( 'link_login_url', [ 'label' => esc_html__( 'Log In link URL', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::URL, 'dynamic' => [ 'active' => true ], 'default' => [ 'url' => '' ], 'placeholder' => esc_html__( 'Leave empty for auto-detect', 'zen-login-authentication' ), 'label_block' => true ] );
         $this->register_google_button_controls();
         $this->register_redirect_controls();
         $this->end_controls_section();
@@ -1074,7 +1074,7 @@ class FAUTH_Elementor_Register_Widget extends FAUTH_Elementor_Base_Widget {
     protected function render(): void {
         $this->maybe_print_script_data();
         $s = $this->get_settings_for_display();
-        if ( ! get_option( 'users_can_register' ) ) { $this->render_editor_placeholder( __( 'Registration disabled in Settings > General.', 'frontend-auth' ) ); return; }
+        if ( ! get_option( 'users_can_register' ) ) { $this->render_editor_placeholder( __( 'Registration disabled in Settings > General.', 'zen-login-authentication' ) ); return; }
         if ( is_user_logged_in() ) { return; }
 
         $link_callback = null; // Fix #4 — initialise before conditional to avoid undefined variable
@@ -1133,13 +1133,13 @@ class FAUTH_Elementor_Register_Widget extends FAUTH_Elementor_Base_Widget {
         echo '<div class="fauth-form-wrap">';
         echo '<# var tag = settings.form_title_tag || "h3"; if ( settings.form_title_text ) { #><{{{ tag }}} class="fauth-form-title">{{{ settings.form_title_text }}}</{{{ tag }}}><# } #>';
         echo '<div class="fauth fauth-form fauth-form-register"><div class="fauth-inner-form">';
-        echo '<p class="fauth-field-wrap"><label class="fauth-label"><# if(settings.label_username){#>{{{settings.label_username}}}<#}else{#>' . esc_html__('Username','frontend-auth') . '<#}#></label><input type="text" class="fauth-field" placeholder="<# if(settings.placeholder_username){#>{{settings.placeholder_username}}<#}#>" disabled></p>';
-        echo '<p class="fauth-field-wrap"><label class="fauth-label"><# if(settings.label_email){#>{{{settings.label_email}}}<#}else{#>' . esc_html__('Email Address','frontend-auth') . '<#}#></label><input type="email" class="fauth-field" placeholder="<# if(settings.placeholder_email){#>{{settings.placeholder_email}}<#}#>" disabled></p>';
+        echo '<p class="fauth-field-wrap"><label class="fauth-label"><# if(settings.label_username){#>{{{settings.label_username}}}<#}else{#>' . esc_html__('Username','zen-login-authentication') . '<#}#></label><input type="text" class="fauth-field" placeholder="<# if(settings.placeholder_username){#>{{settings.placeholder_username}}<#}#>" disabled></p>';
+        echo '<p class="fauth-field-wrap"><label class="fauth-label"><# if(settings.label_email){#>{{{settings.label_email}}}<#}else{#>' . esc_html__('Email Address','zen-login-authentication') . '<#}#></label><input type="email" class="fauth-field" placeholder="<# if(settings.placeholder_email){#>{{settings.placeholder_email}}<#}#>" disabled></p>';
         // Fix #1 — password fields + toggle button previews
-        echo '<p class="fauth-field-wrap fauth-field-wrap--password"><label class="fauth-label"><# if(settings.label_password){#>{{{settings.label_password}}}<#}else{#>' . esc_html__('Password','frontend-auth') . '<#}#> <span class="fauth-required">*</span></label><input type="password" class="fauth-field" placeholder="<# if(settings.placeholder_password){#>{{settings.placeholder_password}}<#}#>" disabled><button type="button" class="fauth-password-toggle"><# if(settings.toggle_show_text){#>{{{settings.toggle_show_text}}}<#}else{#>' . esc_html__('Show','frontend-auth') . '<#}#></button></p>';
-        echo '<p class="fauth-field-wrap fauth-field-wrap--password"><label class="fauth-label"><# if(settings.label_confirm_pw){#>{{{settings.label_confirm_pw}}}<#}else{#>' . esc_html__('Confirm Password','frontend-auth') . '<#}#> <span class="fauth-required">*</span></label><input type="password" class="fauth-field" placeholder="<# if(settings.placeholder_confirm_pw){#>{{settings.placeholder_confirm_pw}}<#}#>" disabled><button type="button" class="fauth-password-toggle"><# if(settings.toggle_show_text){#>{{{settings.toggle_show_text}}}<#}else{#>' . esc_html__('Show','frontend-auth') . '<#}#></button></p>';
-        echo '<p class="fauth-submit"><button type="button" class="fauth-button fauth-submit-button"><# if(settings.button_text){#>{{{settings.button_text}}}<#}else{#>' . esc_html__('Register','frontend-auth') . '<#}#></button></p>';
-        echo '</div><# if("yes"===settings.show_links){#><p class="fauth-links"><a href="#"><# if(settings.link_login_text){#>{{{settings.link_login_text}}}<#}else{#>' . esc_html__('Log In','frontend-auth') . '<#}#></a></p><#}#></div>';
+        echo '<p class="fauth-field-wrap fauth-field-wrap--password"><label class="fauth-label"><# if(settings.label_password){#>{{{settings.label_password}}}<#}else{#>' . esc_html__('Password','zen-login-authentication') . '<#}#> <span class="fauth-required">*</span></label><input type="password" class="fauth-field" placeholder="<# if(settings.placeholder_password){#>{{settings.placeholder_password}}<#}#>" disabled><button type="button" class="fauth-password-toggle"><# if(settings.toggle_show_text){#>{{{settings.toggle_show_text}}}<#}else{#>' . esc_html__('Show','zen-login-authentication') . '<#}#></button></p>';
+        echo '<p class="fauth-field-wrap fauth-field-wrap--password"><label class="fauth-label"><# if(settings.label_confirm_pw){#>{{{settings.label_confirm_pw}}}<#}else{#>' . esc_html__('Confirm Password','zen-login-authentication') . '<#}#> <span class="fauth-required">*</span></label><input type="password" class="fauth-field" placeholder="<# if(settings.placeholder_confirm_pw){#>{{settings.placeholder_confirm_pw}}<#}#>" disabled><button type="button" class="fauth-password-toggle"><# if(settings.toggle_show_text){#>{{{settings.toggle_show_text}}}<#}else{#>' . esc_html__('Show','zen-login-authentication') . '<#}#></button></p>';
+        echo '<p class="fauth-submit"><button type="button" class="fauth-button fauth-submit-button"><# if(settings.button_text){#>{{{settings.button_text}}}<#}else{#>' . esc_html__('Register','zen-login-authentication') . '<#}#></button></p>';
+        echo '</div><# if("yes"===settings.show_links){#><p class="fauth-links"><a href="#"><# if(settings.link_login_text){#>{{{settings.link_login_text}}}<#}else{#>' . esc_html__('Log In','zen-login-authentication') . '<#}#></a></p><#}#></div>';
         echo $this->google_button_content_template(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped during construction
         echo '</div><!-- /.fauth-form-wrap -->';
     }
@@ -1153,26 +1153,26 @@ class FAUTH_Elementor_Register_Widget extends FAUTH_Elementor_Base_Widget {
 class FAUTH_Elementor_Lost_Password_Widget extends FAUTH_Elementor_Base_Widget {
 
     public function get_name(): string  { return 'fauth-lost-password'; }
-    public function get_title(): string { return esc_html__( 'Lost Password Form', 'frontend-auth' ); }
+    public function get_title(): string { return esc_html__( 'Lost Password Form', 'zen-login-authentication' ); }
     public function get_icon(): string  { return 'eicon-email'; }
 
     protected function register_controls(): void {
         $this->start_controls_section( 'section_content', [
-            'label' => esc_html__( 'Lost Password Form', 'frontend-auth' ), 'tab' => \Elementor\Controls_Manager::TAB_CONTENT,
+            'label' => esc_html__( 'Lost Password Form', 'zen-login-authentication' ), 'tab' => \Elementor\Controls_Manager::TAB_CONTENT,
         ] );
         $this->register_title_controls();
-        $this->add_control( 'h_labels', [ 'label' => esc_html__( 'Field Labels', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
+        $this->add_control( 'h_labels', [ 'label' => esc_html__( 'Field Labels', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
         // Fix #6 + #3
-        $this->add_control( 'label_user_login', [ 'label' => esc_html__( 'Username / Email label', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Username or Email Address', 'frontend-auth' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
-        $this->add_control( 'button_text', [ 'label' => esc_html__( 'Button text', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Get New Password', 'frontend-auth' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
+        $this->add_control( 'label_user_login', [ 'label' => esc_html__( 'Username / Email label', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Username or Email Address', 'zen-login-authentication' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
+        $this->add_control( 'button_text', [ 'label' => esc_html__( 'Button text', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Get New Password', 'zen-login-authentication' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
 
         // --- Field Placeholders ---
-        $this->add_control( 'fauth_h_placeholders', [ 'label' => esc_html__( 'Field Placeholders', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
-        $this->add_control( 'placeholder_user_login', [ 'label' => esc_html__( 'Username / Email placeholder', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'e.g. your@email.com', 'frontend-auth' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
+        $this->add_control( 'fauth_h_placeholders', [ 'label' => esc_html__( 'Field Placeholders', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
+        $this->add_control( 'placeholder_user_login', [ 'label' => esc_html__( 'Username / Email placeholder', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'e.g. your@email.com', 'zen-login-authentication' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
 
-        $this->add_control( 'h_links', [ 'label' => esc_html__( 'Action Links', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
-        $this->add_control( 'link_login_text', [ 'label' => esc_html__( 'Log In link text', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Log In', 'frontend-auth' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
-        $this->add_control( 'link_login_url', [ 'label' => esc_html__( 'Log In link URL', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::URL, 'dynamic' => [ 'active' => true ], 'default' => [ 'url' => '' ], 'placeholder' => esc_html__( 'Leave empty for auto-detect', 'frontend-auth' ), 'label_block' => true ] );
+        $this->add_control( 'h_links', [ 'label' => esc_html__( 'Action Links', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
+        $this->add_control( 'link_login_text', [ 'label' => esc_html__( 'Log In link text', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Log In', 'zen-login-authentication' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
+        $this->add_control( 'link_login_url', [ 'label' => esc_html__( 'Log In link URL', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::URL, 'dynamic' => [ 'active' => true ], 'default' => [ 'url' => '' ], 'placeholder' => esc_html__( 'Leave empty for auto-detect', 'zen-login-authentication' ), 'label_block' => true ] );
         $this->register_redirect_controls();
         $this->end_controls_section();
         $this->register_form_style_controls();
@@ -1222,9 +1222,9 @@ class FAUTH_Elementor_Lost_Password_Widget extends FAUTH_Elementor_Base_Widget {
         echo '<div class="fauth-form-wrap">';
         echo '<# var tag=settings.form_title_tag||"h3";if(settings.form_title_text){#><{{{tag}}} class="fauth-form-title">{{{settings.form_title_text}}}</{{{tag}}}><#}#>';
         echo '<div class="fauth fauth-form fauth-form-lostpassword"><div class="fauth-inner-form">';
-        echo '<p class="fauth-field-wrap"><label class="fauth-label"><# if(settings.label_user_login){#>{{{settings.label_user_login}}}<#}else{#>' . esc_html__('Username or Email','frontend-auth') . '<#}#></label><input type="text" class="fauth-field" placeholder="<# if(settings.placeholder_user_login){#>{{settings.placeholder_user_login}}<#}#>" disabled></p>';
-        echo '<p class="fauth-submit"><button type="button" class="fauth-button fauth-submit-button"><# if(settings.button_text){#>{{{settings.button_text}}}<#}else{#>' . esc_html__('Get New Password','frontend-auth') . '<#}#></button></p>';
-        echo '</div><# if("yes"===settings.show_links){#><p class="fauth-links"><a href="#"><# if(settings.link_login_text){#>{{{settings.link_login_text}}}<#}else{#>' . esc_html__('Log In','frontend-auth') . '<#}#></a></p><#}#></div>';
+        echo '<p class="fauth-field-wrap"><label class="fauth-label"><# if(settings.label_user_login){#>{{{settings.label_user_login}}}<#}else{#>' . esc_html__('Username or Email','zen-login-authentication') . '<#}#></label><input type="text" class="fauth-field" placeholder="<# if(settings.placeholder_user_login){#>{{settings.placeholder_user_login}}<#}#>" disabled></p>';
+        echo '<p class="fauth-submit"><button type="button" class="fauth-button fauth-submit-button"><# if(settings.button_text){#>{{{settings.button_text}}}<#}else{#>' . esc_html__('Get New Password','zen-login-authentication') . '<#}#></button></p>';
+        echo '</div><# if("yes"===settings.show_links){#><p class="fauth-links"><a href="#"><# if(settings.link_login_text){#>{{{settings.link_login_text}}}<#}else{#>' . esc_html__('Log In','zen-login-authentication') . '<#}#></a></p><#}#></div>';
         echo '</div><!-- /.fauth-form-wrap -->';
     }
 }
@@ -1240,40 +1240,40 @@ class FAUTH_Elementor_Reset_Password_Widget extends FAUTH_Elementor_Base_Widget 
     protected function is_dynamic_content(): bool { return true; }
 
     public function get_name(): string  { return 'fauth-reset-password'; }
-    public function get_title(): string { return esc_html__( 'Reset Password Form', 'frontend-auth' ); }
+    public function get_title(): string { return esc_html__( 'Reset Password Form', 'zen-login-authentication' ); }
     public function get_icon(): string  { return 'eicon-lock'; }
 
     protected function register_controls(): void {
         $this->start_controls_section( 'section_content', [
-            'label' => esc_html__( 'Reset Password Form', 'frontend-auth' ), 'tab' => \Elementor\Controls_Manager::TAB_CONTENT,
+            'label' => esc_html__( 'Reset Password Form', 'zen-login-authentication' ), 'tab' => \Elementor\Controls_Manager::TAB_CONTENT,
         ] );
         $this->register_title_controls();
-        $this->add_control( 'h_labels', [ 'label' => esc_html__( 'Field Labels', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
+        $this->add_control( 'h_labels', [ 'label' => esc_html__( 'Field Labels', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
         // Fix #6
-        $this->add_control( 'label_new_pw', [ 'label' => esc_html__( 'New Password label', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'New Password', 'frontend-auth' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
-        $this->add_control( 'label_confirm_pw', [ 'label' => esc_html__( 'Confirm Password label', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Confirm New Password', 'frontend-auth' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
-        $this->add_control( 'button_text', [ 'label' => esc_html__( 'Button text', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Reset Password', 'frontend-auth' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
+        $this->add_control( 'label_new_pw', [ 'label' => esc_html__( 'New Password label', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'New Password', 'zen-login-authentication' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
+        $this->add_control( 'label_confirm_pw', [ 'label' => esc_html__( 'Confirm Password label', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Confirm New Password', 'zen-login-authentication' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
+        $this->add_control( 'button_text', [ 'label' => esc_html__( 'Button text', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Reset Password', 'zen-login-authentication' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
 
         // --- Field Placeholders ---
-        $this->add_control( 'fauth_h_placeholders', [ 'label' => esc_html__( 'Field Placeholders', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
-        $this->add_control( 'placeholder_new_pw', [ 'label' => esc_html__( 'New Password placeholder', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'e.g. ••••••••', 'frontend-auth' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
-        $this->add_control( 'placeholder_confirm_pw', [ 'label' => esc_html__( 'Confirm Password placeholder', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'e.g. ••••••••', 'frontend-auth' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
+        $this->add_control( 'fauth_h_placeholders', [ 'label' => esc_html__( 'Field Placeholders', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
+        $this->add_control( 'placeholder_new_pw', [ 'label' => esc_html__( 'New Password placeholder', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'e.g. ••••••••', 'zen-login-authentication' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
+        $this->add_control( 'placeholder_confirm_pw', [ 'label' => esc_html__( 'Confirm Password placeholder', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'e.g. ••••••••', 'zen-login-authentication' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
 
         // --- Password Toggle ---
         $this->register_password_toggle_content_controls();
 
-        $this->add_control( 'h_invalid', [ 'label' => esc_html__( 'Invalid / Expired Link State', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
+        $this->add_control( 'h_invalid', [ 'label' => esc_html__( 'Invalid / Expired Link State', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
         // Fix #6 + #3
-        $this->add_control( 'invalid_key_message', [ 'label' => esc_html__( 'Error message', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::TEXTAREA, 'default' => '', 'placeholder' => esc_html__( 'This password reset link is invalid or has expired. Please request a new one.', 'frontend-auth' ), 'rows' => 3, 'dynamic' => [ 'active' => true ] ] );
-        $this->add_control( 'link_request_text', [ 'label' => esc_html__( 'Link text', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Request a new password reset link', 'frontend-auth' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
+        $this->add_control( 'invalid_key_message', [ 'label' => esc_html__( 'Error message', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXTAREA, 'default' => '', 'placeholder' => esc_html__( 'This password reset link is invalid or has expired. Please request a new one.', 'zen-login-authentication' ), 'rows' => 3, 'dynamic' => [ 'active' => true ] ] );
+        $this->add_control( 'link_request_text', [ 'label' => esc_html__( 'Link text', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Request a new password reset link', 'zen-login-authentication' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
         $this->add_control( 'link_request_url', [
-            'label'       => esc_html__( 'Link URL (override)', 'frontend-auth' ),
+            'label'       => esc_html__( 'Link URL (override)', 'zen-login-authentication' ),
             'type'        => \Elementor\Controls_Manager::URL, // Fix #3
             'dynamic'     => [ 'active' => true ],              // Fix #6
             'default'     => [ 'url' => '' ],
-            'placeholder' => esc_html__( 'Leave empty to auto-detect from plugin settings', 'frontend-auth' ),
+            'placeholder' => esc_html__( 'Leave empty to auto-detect from plugin settings', 'zen-login-authentication' ),
             'label_block' => true,
-            'description' => esc_html__( 'Override the "request new link" URL. Leave empty to use your Lost Password page slug from Frontend Auth settings.', 'frontend-auth' ),
+            'description' => esc_html__( 'Override the "request new link" URL. Leave empty to use your Lost Password page slug from Zen Login & Authentication settings.', 'zen-login-authentication' ),
         ] );
 
         $this->end_controls_section();
@@ -1305,8 +1305,8 @@ class FAUTH_Elementor_Reset_Password_Widget extends FAUTH_Elementor_Base_Widget 
         if ( empty( $rp_key ) || empty( $rp_login ) ) {
             // No valid reset key in URL. In the editor this is ALWAYS the case.
             // Show the error message + link so the user can preview and customise the text.
-            $msg       = ( $s['invalid_key_message'] ?? '' ) ?: __( 'This password reset link is invalid or has expired. Please request a new one.', 'frontend-auth' );
-            $link_text = ( $s['link_request_text']   ?? '' ) ?: __( 'Request a new password reset link', 'frontend-auth' );
+            $msg       = ( $s['invalid_key_message'] ?? '' ) ?: __( 'This password reset link is invalid or has expired. Please request a new one.', 'zen-login-authentication' );
+            $link_text = ( $s['link_request_text']   ?? '' ) ?: __( 'Request a new password reset link', 'zen-login-authentication' );
 
             $this->open_form_wrap();
             $this->render_form_title( $s );
@@ -1318,14 +1318,14 @@ class FAUTH_Elementor_Reset_Password_Widget extends FAUTH_Elementor_Base_Widget 
             // In editor only: also show the form fields below so the user can style them
             if ( $is_editor ) {
                 echo '<div class="fauth-editor-preview-wrap">';
-                echo '<p class="fauth-editor-preview-label">' . esc_html__( 'Form preview (visible only in editor):', 'frontend-auth' ) . '</p>'; // Fix #11
+                echo '<p class="fauth-editor-preview-label">' . esc_html__( 'Form preview (visible only in editor):', 'zen-login-authentication' ) . '</p>'; // Fix #11
                 echo '<div class="fauth fauth-form fauth-form-resetpass fauth-form--preview"><div class="fauth-inner-form">';
-                $lbl_new     = ( $s['label_new_pw']     ?? '' ) ?: esc_html__( 'New Password', 'frontend-auth' );
-                $lbl_confirm = ( $s['label_confirm_pw'] ?? '' ) ?: esc_html__( 'Confirm New Password', 'frontend-auth' );
-                $btn_text    = ( $s['button_text']       ?? '' ) ?: esc_html__( 'Reset Password', 'frontend-auth' );
+                $lbl_new     = ( $s['label_new_pw']     ?? '' ) ?: esc_html__( 'New Password', 'zen-login-authentication' );
+                $lbl_confirm = ( $s['label_confirm_pw'] ?? '' ) ?: esc_html__( 'Confirm New Password', 'zen-login-authentication' );
+                $btn_text    = ( $s['button_text']       ?? '' ) ?: esc_html__( 'Reset Password', 'zen-login-authentication' );
                 $ph_new     = ( $s['placeholder_new_pw']    ?? '' );
                 $ph_confirm = ( $s['placeholder_confirm_pw'] ?? '' );
-                $show_lbl   = ( $s['toggle_show_text'] ?? '' ) ?: esc_html__( 'Show', 'frontend-auth' );
+                $show_lbl   = ( $s['toggle_show_text'] ?? '' ) ?: esc_html__( 'Show', 'zen-login-authentication' );
                 echo '<p class="fauth-field-wrap fauth-field-wrap--password"><label class="fauth-label">' . esc_html( $lbl_new ) . ' <span class="fauth-required">*</span></label>'
                     . '<input type="password" class="fauth-field"' . ( $ph_new ? ' placeholder="' . esc_attr( $ph_new ) . '"' : '' ) . ' disabled>'
                     . '<button type="button" class="fauth-password-toggle">' . esc_html( $show_lbl ) . '</button></p>';
@@ -1371,19 +1371,19 @@ class FAUTH_Elementor_Reset_Password_Widget extends FAUTH_Elementor_Base_Widget 
         // Error message + link
         echo '<div class="fauth fauth-form fauth-form-resetpass">';
         echo '<ul class="fauth-errors" role="alert"><li class="fauth-error">';
-        echo '<# if(settings.invalid_key_message){#>{{{settings.invalid_key_message}}}<#}else{#>' . esc_html__( 'This password reset link is invalid or has expired. Please request a new one.', 'frontend-auth' ) . '<#}#>';
+        echo '<# if(settings.invalid_key_message){#>{{{settings.invalid_key_message}}}<#}else{#>' . esc_html__( 'This password reset link is invalid or has expired. Please request a new one.', 'zen-login-authentication' ) . '<#}#>';
         echo '</li></ul>';
         echo '<p class="fauth-links"><a href="#">';
-        echo '<# if(settings.link_request_text){#>{{{settings.link_request_text}}}<#}else{#>' . esc_html__( 'Request a new password reset link', 'frontend-auth' ) . '<#}#>';
+        echo '<# if(settings.link_request_text){#>{{{settings.link_request_text}}}<#}else{#>' . esc_html__( 'Request a new password reset link', 'zen-login-authentication' ) . '<#}#>';
         echo '</a></p></div>';
 
         // Form preview
         echo '<div class="fauth-editor-preview-wrap">'; // Fix #11
-        echo '<p class="fauth-editor-preview-label">' . esc_html__( 'Form preview (visible only in editor):', 'frontend-auth' ) . '</p>';
+        echo '<p class="fauth-editor-preview-label">' . esc_html__( 'Form preview (visible only in editor):', 'zen-login-authentication' ) . '</p>';
         echo '<div class="fauth fauth-form fauth-form-resetpass fauth-form--preview"><div class="fauth-inner-form">';
-        echo '<p class="fauth-field-wrap fauth-field-wrap--password"><label class="fauth-label"><# if(settings.label_new_pw){#>{{{settings.label_new_pw}}}<#}else{#>' . esc_html__('New Password','frontend-auth') . '<#}#> <span class="fauth-required">*</span></label><input type="password" class="fauth-field" placeholder="<# if(settings.placeholder_new_pw){#>{{settings.placeholder_new_pw}}<#}#>" disabled><button type="button" class="fauth-password-toggle"><# if(settings.toggle_show_text){#>{{{settings.toggle_show_text}}}<#}else{#>' . esc_html__('Show','frontend-auth') . '<#}#></button></p>';
-        echo '<p class="fauth-field-wrap fauth-field-wrap--password"><label class="fauth-label"><# if(settings.label_confirm_pw){#>{{{settings.label_confirm_pw}}}<#}else{#>' . esc_html__('Confirm New Password','frontend-auth') . '<#}#> <span class="fauth-required">*</span></label><input type="password" class="fauth-field" placeholder="<# if(settings.placeholder_confirm_pw){#>{{settings.placeholder_confirm_pw}}<#}#>" disabled><button type="button" class="fauth-password-toggle"><# if(settings.toggle_show_text){#>{{{settings.toggle_show_text}}}<#}else{#>' . esc_html__('Show','frontend-auth') . '<#}#></button></p>';
-        echo '<p class="fauth-submit"><button type="button" class="fauth-button fauth-submit-button"><# if(settings.button_text){#>{{{settings.button_text}}}<#}else{#>' . esc_html__('Reset Password','frontend-auth') . '<#}#></button></p>';
+        echo '<p class="fauth-field-wrap fauth-field-wrap--password"><label class="fauth-label"><# if(settings.label_new_pw){#>{{{settings.label_new_pw}}}<#}else{#>' . esc_html__('New Password','zen-login-authentication') . '<#}#> <span class="fauth-required">*</span></label><input type="password" class="fauth-field" placeholder="<# if(settings.placeholder_new_pw){#>{{settings.placeholder_new_pw}}<#}#>" disabled><button type="button" class="fauth-password-toggle"><# if(settings.toggle_show_text){#>{{{settings.toggle_show_text}}}<#}else{#>' . esc_html__('Show','zen-login-authentication') . '<#}#></button></p>';
+        echo '<p class="fauth-field-wrap fauth-field-wrap--password"><label class="fauth-label"><# if(settings.label_confirm_pw){#>{{{settings.label_confirm_pw}}}<#}else{#>' . esc_html__('Confirm New Password','zen-login-authentication') . '<#}#> <span class="fauth-required">*</span></label><input type="password" class="fauth-field" placeholder="<# if(settings.placeholder_confirm_pw){#>{{settings.placeholder_confirm_pw}}<#}#>" disabled><button type="button" class="fauth-password-toggle"><# if(settings.toggle_show_text){#>{{{settings.toggle_show_text}}}<#}else{#>' . esc_html__('Show','zen-login-authentication') . '<#}#></button></p>';
+        echo '<p class="fauth-submit"><button type="button" class="fauth-button fauth-submit-button"><# if(settings.button_text){#>{{{settings.button_text}}}<#}else{#>' . esc_html__('Reset Password','zen-login-authentication') . '<#}#></button></p>';
         echo '</div></div></div>';
         echo '</div><!-- /.fauth-form-wrap -->';
     }
@@ -1397,50 +1397,50 @@ class FAUTH_Elementor_Reset_Password_Widget extends FAUTH_Elementor_Base_Widget 
 class FAUTH_Elementor_Account_Widget extends FAUTH_Elementor_Base_Widget {
 
     public function get_name(): string  { return 'fauth-account'; }
-    public function get_title(): string { return esc_html__( 'Account Form', 'frontend-auth' ); }
+    public function get_title(): string { return esc_html__( 'Account Form', 'zen-login-authentication' ); }
     public function get_icon(): string  { return 'eicon-user-circle-o'; }
     public function get_keywords(): array { return [ 'account', 'profile', 'edit', 'auth', 'password', 'fauth' ]; }
 
     protected function register_controls(): void {
         $this->start_controls_section( 'section_content', [
-            'label' => esc_html__( 'Account Form', 'frontend-auth' ), 'tab' => \Elementor\Controls_Manager::TAB_CONTENT,
+            'label' => esc_html__( 'Account Form', 'zen-login-authentication' ), 'tab' => \Elementor\Controls_Manager::TAB_CONTENT,
         ] );
         $this->register_title_controls();
 
-        $this->add_control( 'h_labels', [ 'label' => esc_html__( 'Field Labels', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
-        $this->add_control( 'label_username', [ 'label' => esc_html__( 'Username label', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Username', 'frontend-auth' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
+        $this->add_control( 'h_labels', [ 'label' => esc_html__( 'Field Labels', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
+        $this->add_control( 'label_username', [ 'label' => esc_html__( 'Username label', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Username', 'zen-login-authentication' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
         $this->add_control( 'show_username', [
-            'label'        => esc_html__( 'Show username field', 'frontend-auth' ),
+            'label'        => esc_html__( 'Show username field', 'zen-login-authentication' ),
             'type'         => \Elementor\Controls_Manager::SWITCHER,
-            'label_on'     => esc_html__( 'Yes', 'frontend-auth' ),
-            'label_off'    => esc_html__( 'No', 'frontend-auth' ),
+            'label_on'     => esc_html__( 'Yes', 'zen-login-authentication' ),
+            'label_off'    => esc_html__( 'No', 'zen-login-authentication' ),
             'return_value' => 'yes',
             'default'      => 'yes',
-            'description'  => esc_html__( 'Read-only, like the wp-admin profile screen — usernames cannot be changed.', 'frontend-auth' ),
+            'description'  => esc_html__( 'Read-only, like the wp-admin profile screen — usernames cannot be changed.', 'zen-login-authentication' ),
         ] );
-        $this->add_control( 'label_first_name', [ 'label' => esc_html__( 'First Name label', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'First Name', 'frontend-auth' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
-        $this->add_control( 'label_last_name', [ 'label' => esc_html__( 'Last Name label', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Last Name', 'frontend-auth' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
-        $this->add_control( 'label_display_name', [ 'label' => esc_html__( 'Display Name label', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Display name publicly as', 'frontend-auth' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
-        $this->add_control( 'label_email', [ 'label' => esc_html__( 'Email label', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Email Address', 'frontend-auth' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
-        $this->add_control( 'label_password', [ 'label' => esc_html__( 'New Password label', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'New Password', 'frontend-auth' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
-        $this->add_control( 'label_confirm_pw', [ 'label' => esc_html__( 'Confirm Password label', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Confirm New Password', 'frontend-auth' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
-        $this->add_control( 'password_hint', [ 'label' => esc_html__( 'Password hint text', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Leave blank to keep your current password.', 'frontend-auth' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
-        $this->add_control( 'button_text', [ 'label' => esc_html__( 'Button text', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Save Changes', 'frontend-auth' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
+        $this->add_control( 'label_first_name', [ 'label' => esc_html__( 'First Name label', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'First Name', 'zen-login-authentication' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
+        $this->add_control( 'label_last_name', [ 'label' => esc_html__( 'Last Name label', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Last Name', 'zen-login-authentication' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
+        $this->add_control( 'label_display_name', [ 'label' => esc_html__( 'Display Name label', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Display name publicly as', 'zen-login-authentication' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
+        $this->add_control( 'label_email', [ 'label' => esc_html__( 'Email label', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Email Address', 'zen-login-authentication' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
+        $this->add_control( 'label_password', [ 'label' => esc_html__( 'New Password label', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'New Password', 'zen-login-authentication' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
+        $this->add_control( 'label_confirm_pw', [ 'label' => esc_html__( 'Confirm Password label', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Confirm New Password', 'zen-login-authentication' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
+        $this->add_control( 'password_hint', [ 'label' => esc_html__( 'Password hint text', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Leave blank to keep your current password.', 'zen-login-authentication' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
+        $this->add_control( 'button_text', [ 'label' => esc_html__( 'Button text', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Save Changes', 'zen-login-authentication' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
 
         // --- Field Placeholders ---
-        $this->add_control( 'fauth_h_placeholders', [ 'label' => esc_html__( 'Field Placeholders', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
-        $this->add_control( 'placeholder_first_name', [ 'label' => esc_html__( 'First Name placeholder', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'e.g. John', 'frontend-auth' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
-        $this->add_control( 'placeholder_last_name', [ 'label' => esc_html__( 'Last Name placeholder', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'e.g. Doe', 'frontend-auth' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
-        $this->add_control( 'placeholder_email', [ 'label' => esc_html__( 'Email placeholder', 'frontend-auth' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'e.g. your@email.com', 'frontend-auth' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
+        $this->add_control( 'fauth_h_placeholders', [ 'label' => esc_html__( 'Field Placeholders', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
+        $this->add_control( 'placeholder_first_name', [ 'label' => esc_html__( 'First Name placeholder', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'e.g. John', 'zen-login-authentication' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
+        $this->add_control( 'placeholder_last_name', [ 'label' => esc_html__( 'Last Name placeholder', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'e.g. Doe', 'zen-login-authentication' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
+        $this->add_control( 'placeholder_email', [ 'label' => esc_html__( 'Email placeholder', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'e.g. your@email.com', 'zen-login-authentication' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
 
         // --- Password Toggle ---
         $this->register_password_toggle_content_controls();
 
         $this->add_control( 'show_links', [
-            'label'        => esc_html__( 'Show Log Out link', 'frontend-auth' ),
+            'label'        => esc_html__( 'Show Log Out link', 'zen-login-authentication' ),
             'type'         => \Elementor\Controls_Manager::SWITCHER,
-            'label_on'     => esc_html__( 'Yes', 'frontend-auth' ),
-            'label_off'    => esc_html__( 'No', 'frontend-auth' ),
+            'label_on'     => esc_html__( 'Yes', 'zen-login-authentication' ),
+            'label_off'    => esc_html__( 'No', 'zen-login-authentication' ),
             'return_value' => 'yes',
             'default'      => 'yes',
             'separator'    => 'before',
@@ -1510,15 +1510,15 @@ class FAUTH_Elementor_Account_Widget extends FAUTH_Elementor_Base_Widget {
         echo '<div class="fauth-form-wrap">';
         echo '<# var tag=settings.form_title_tag||"h3";if(settings.form_title_text){#><{{{tag}}} class="fauth-form-title">{{{settings.form_title_text}}}</{{{tag}}}><#}#>';
         echo '<div class="fauth fauth-form fauth-form-account"><div class="fauth-inner-form">';
-        echo '<# if ( "yes" === settings.show_username ) { #><p class="fauth-field-wrap"><label class="fauth-label"><# if(settings.label_username){#>{{{settings.label_username}}}<#}else{#>' . esc_html__('Username','frontend-auth') . '<#}#></label><input type="text" class="fauth-field" value="username" disabled><span class="fauth-description">' . esc_html__('Usernames cannot be changed.','frontend-auth') . '</span></p><# } #>';
-        echo '<p class="fauth-field-wrap"><label class="fauth-label"><# if(settings.label_first_name){#>{{{settings.label_first_name}}}<#}else{#>' . esc_html__('First Name','frontend-auth') . '<#}#></label><input type="text" class="fauth-field" placeholder="<# if(settings.placeholder_first_name){#>{{settings.placeholder_first_name}}<#}#>" disabled></p>';
-        echo '<p class="fauth-field-wrap"><label class="fauth-label"><# if(settings.label_last_name){#>{{{settings.label_last_name}}}<#}else{#>' . esc_html__('Last Name','frontend-auth') . '<#}#></label><input type="text" class="fauth-field" placeholder="<# if(settings.placeholder_last_name){#>{{settings.placeholder_last_name}}<#}#>" disabled></p>';
-        echo '<p class="fauth-field-wrap"><label class="fauth-label"><# if(settings.label_display_name){#>{{{settings.label_display_name}}}<#}else{#>' . esc_html__('Display name publicly as','frontend-auth') . '<#}#> <span class="fauth-required">*</span></label><select class="fauth-field fauth-select" disabled><option>' . esc_html__('Your Name','frontend-auth') . '</option></select></p>';
-        echo '<p class="fauth-field-wrap"><label class="fauth-label"><# if(settings.label_email){#>{{{settings.label_email}}}<#}else{#>' . esc_html__('Email Address','frontend-auth') . '<#}#> <span class="fauth-required">*</span></label><input type="email" class="fauth-field" placeholder="<# if(settings.placeholder_email){#>{{settings.placeholder_email}}<#}#>" disabled></p>';
-        echo '<p class="fauth-field-wrap fauth-field-wrap--password"><label class="fauth-label"><# if(settings.label_password){#>{{{settings.label_password}}}<#}else{#>' . esc_html__('New Password','frontend-auth') . '<#}#></label><input type="password" class="fauth-field" disabled><button type="button" class="fauth-password-toggle"><# if(settings.toggle_show_text){#>{{{settings.toggle_show_text}}}<#}else{#>' . esc_html__('Show','frontend-auth') . '<#}#></button><span class="fauth-description"><# if(settings.password_hint){#>{{{settings.password_hint}}}<#}else{#>' . esc_html__('Leave blank to keep your current password.','frontend-auth') . '<#}#></span></p>';
-        echo '<p class="fauth-field-wrap fauth-field-wrap--password"><label class="fauth-label"><# if(settings.label_confirm_pw){#>{{{settings.label_confirm_pw}}}<#}else{#>' . esc_html__('Confirm New Password','frontend-auth') . '<#}#></label><input type="password" class="fauth-field" disabled><button type="button" class="fauth-password-toggle"><# if(settings.toggle_show_text){#>{{{settings.toggle_show_text}}}<#}else{#>' . esc_html__('Show','frontend-auth') . '<#}#></button></p>';
-        echo '<p class="fauth-submit"><button type="button" class="fauth-button fauth-submit-button"><# if(settings.button_text){#>{{{settings.button_text}}}<#}else{#>' . esc_html__('Save Changes','frontend-auth') . '<#}#></button></p>';
-        echo '</div><# if("yes"===settings.show_links){#><p class="fauth-links"><a href="#">' . esc_html__('Log Out','frontend-auth') . '</a></p><#}#></div>';
+        echo '<# if ( "yes" === settings.show_username ) { #><p class="fauth-field-wrap"><label class="fauth-label"><# if(settings.label_username){#>{{{settings.label_username}}}<#}else{#>' . esc_html__('Username','zen-login-authentication') . '<#}#></label><input type="text" class="fauth-field" value="username" disabled><span class="fauth-description">' . esc_html__('Usernames cannot be changed.','zen-login-authentication') . '</span></p><# } #>';
+        echo '<p class="fauth-field-wrap"><label class="fauth-label"><# if(settings.label_first_name){#>{{{settings.label_first_name}}}<#}else{#>' . esc_html__('First Name','zen-login-authentication') . '<#}#></label><input type="text" class="fauth-field" placeholder="<# if(settings.placeholder_first_name){#>{{settings.placeholder_first_name}}<#}#>" disabled></p>';
+        echo '<p class="fauth-field-wrap"><label class="fauth-label"><# if(settings.label_last_name){#>{{{settings.label_last_name}}}<#}else{#>' . esc_html__('Last Name','zen-login-authentication') . '<#}#></label><input type="text" class="fauth-field" placeholder="<# if(settings.placeholder_last_name){#>{{settings.placeholder_last_name}}<#}#>" disabled></p>';
+        echo '<p class="fauth-field-wrap"><label class="fauth-label"><# if(settings.label_display_name){#>{{{settings.label_display_name}}}<#}else{#>' . esc_html__('Display name publicly as','zen-login-authentication') . '<#}#> <span class="fauth-required">*</span></label><select class="fauth-field fauth-select" disabled><option>' . esc_html__('Your Name','zen-login-authentication') . '</option></select></p>';
+        echo '<p class="fauth-field-wrap"><label class="fauth-label"><# if(settings.label_email){#>{{{settings.label_email}}}<#}else{#>' . esc_html__('Email Address','zen-login-authentication') . '<#}#> <span class="fauth-required">*</span></label><input type="email" class="fauth-field" placeholder="<# if(settings.placeholder_email){#>{{settings.placeholder_email}}<#}#>" disabled></p>';
+        echo '<p class="fauth-field-wrap fauth-field-wrap--password"><label class="fauth-label"><# if(settings.label_password){#>{{{settings.label_password}}}<#}else{#>' . esc_html__('New Password','zen-login-authentication') . '<#}#></label><input type="password" class="fauth-field" disabled><button type="button" class="fauth-password-toggle"><# if(settings.toggle_show_text){#>{{{settings.toggle_show_text}}}<#}else{#>' . esc_html__('Show','zen-login-authentication') . '<#}#></button><span class="fauth-description"><# if(settings.password_hint){#>{{{settings.password_hint}}}<#}else{#>' . esc_html__('Leave blank to keep your current password.','zen-login-authentication') . '<#}#></span></p>';
+        echo '<p class="fauth-field-wrap fauth-field-wrap--password"><label class="fauth-label"><# if(settings.label_confirm_pw){#>{{{settings.label_confirm_pw}}}<#}else{#>' . esc_html__('Confirm New Password','zen-login-authentication') . '<#}#></label><input type="password" class="fauth-field" disabled><button type="button" class="fauth-password-toggle"><# if(settings.toggle_show_text){#>{{{settings.toggle_show_text}}}<#}else{#>' . esc_html__('Show','zen-login-authentication') . '<#}#></button></p>';
+        echo '<p class="fauth-submit"><button type="button" class="fauth-button fauth-submit-button"><# if(settings.button_text){#>{{{settings.button_text}}}<#}else{#>' . esc_html__('Save Changes','zen-login-authentication') . '<#}#></button></p>';
+        echo '</div><# if("yes"===settings.show_links){#><p class="fauth-links"><a href="#">' . esc_html__('Log Out','zen-login-authentication') . '</a></p><#}#></div>';
         echo '</div><!-- /.fauth-form-wrap -->';
     }
 }

@@ -1,6 +1,6 @@
 <?php
 /**
- * Frontend Auth – Uninstall
+ * Zen Login & Authentication – Uninstall
  *
  * Runs when the plugin is deleted (not just deactivated).
  * Removes all plugin options, and deletes only the pages the plugin itself

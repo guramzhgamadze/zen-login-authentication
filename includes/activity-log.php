@@ -1,6 +1,6 @@
 <?php
 /**
- * Frontend Auth – Login Activity Log
+ * Zen Login & Authentication – Login Activity Log
  *
  * Records three kinds of authentication events into a dedicated table so the
  * dashboard widget (admin/dashboard.php) can show recent activity at a glance:

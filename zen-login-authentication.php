@@ -1,16 +1,16 @@
 <?php
 /**
- * Plugin Name:       Frontend Auth
+ * Plugin Name:       Zen Login & Authentication
  * Plugin URI:        https://github.com/guramzhgamadze/Frontend-Auth
  * Description:       Secure, accessible frontend login, registration, and password recovery forms — with rate limiting, honeypot protection, AJAX support, and native Elementor widgets.
- * Version:           1.7.0
+ * Version:           1.7.1
  * Requires at least: 6.5
  * Requires PHP:      8.0
  * Author:            Guram Zhgamadze
  * Author URI:        https://github.com/guramzhgamadze
  * License:           GPL-2.0-or-later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
- * Text Domain:       frontend-auth
+ * Text Domain:       zen-login-authentication
  * Domain Path:       /languages
  * Network:           true
  */
@@ -41,10 +41,10 @@ if ( defined( 'FAUTH_VERSION' ) ) {
 if ( version_compare( PHP_VERSION, '8.0.0', '<' ) ) {
     add_action( 'admin_notices', static function (): void {
         echo '<div class="notice notice-error"><p>';
-        echo '<strong>Frontend Auth</strong> requires PHP 8.0 or higher. ';
+        echo '<strong>Zen Login & Authentication</strong> requires PHP 8.0 or higher. ';
         printf(
             /* translators: %s: the PHP version the server is currently running. */
-            esc_html__( 'Your server is running PHP %s. Please upgrade to PHP 8.0 or higher, or deactivate the plugin.', 'frontend-auth' ),
+            esc_html__( 'Your server is running PHP %s. Please upgrade to PHP 8.0 or higher, or deactivate the plugin.', 'zen-login-authentication' ),
             esc_html( PHP_VERSION )
         );
         echo '</p></div>';
@@ -61,14 +61,14 @@ if ( version_compare( PHP_VERSION, '8.0.0', '<' ) ) {
 if ( version_compare( get_bloginfo( 'version' ), '6.5', '<' ) ) {
     add_action( 'admin_notices', static function (): void {
         echo '<div class="notice notice-error"><p>';
-        echo '<strong>' . esc_html__( 'Frontend Auth', 'frontend-auth' ) . '</strong> ';
-        echo esc_html__( 'requires WordPress 6.5 or higher. Please update WordPress or deactivate the plugin.', 'frontend-auth' );
+        echo '<strong>' . esc_html__( 'Zen Login & Authentication', 'zen-login-authentication' ) . '</strong> ';
+        echo esc_html__( 'requires WordPress 6.5 or higher. Please update WordPress or deactivate the plugin.', 'zen-login-authentication' );
         echo '</p></div>';
     } );
     return;
 }
 
-define( 'FAUTH_VERSION', '1.7.0' );
+define( 'FAUTH_VERSION', '1.7.1' );
 define( 'FAUTH_PATH',    plugin_dir_path( __FILE__ ) );
 define( 'FAUTH_URL',     plugin_dir_url( __FILE__ ) );
 

@@ -1,6 +1,6 @@
 <?php
 /**
- * Frontend Auth – Admin Hooks
+ * Zen Login & Authentication – Admin Hooks
  *
  * @package Frontend_Auth
  */
@@ -10,13 +10,13 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Add a "Settings" link on the plugins list page.
  */
-add_filter( 'plugin_action_links_' . plugin_basename( FAUTH_PATH . 'frontend-auth.php' ), 'fauth_plugin_action_links' );
+add_filter( 'plugin_action_links_' . plugin_basename( FAUTH_PATH . 'zen-login-authentication.php' ), 'fauth_plugin_action_links' );
 
 function fauth_plugin_action_links( array $links ): array {
     array_unshift(
         $links,
-        '<a href="' . esc_url( admin_url( 'admin.php?page=frontend-auth' ) ) . '">'
-            . esc_html__( 'Settings', 'frontend-auth' )
+        '<a href="' . esc_url( admin_url( 'admin.php?page=zen-login-authentication' ) ) . '">'
+            . esc_html__( 'Settings', 'zen-login-authentication' )
         . '</a>'
     );
     return $links;
@@ -60,6 +60,27 @@ function fauth_admin_on_slug_change( $old_value, $new_value, $option ): void {
 }
 
 /* -----------------------------------------------------------------------
+ * Admin CSS — enqueued (not inline) per WordPress.org guidelines.
+ * Loads on the plugin's settings page and on the dashboard (for the
+ * Login Activity widget). Replaces the former inline <style> blocks.
+ * -------------------------------------------------------------------- */
+add_action( 'admin_enqueue_scripts', 'fauth_admin_enqueue_assets' );
+
+function fauth_admin_enqueue_assets( $hook_suffix ): void {
+    // toplevel_page_{slug} is this plugin's settings screen; index.php is the dashboard.
+    $screens = [ 'toplevel_page_zen-login-authentication', 'index.php' ];
+    if ( ! in_array( (string) $hook_suffix, $screens, true ) ) {
+        return;
+    }
+    wp_enqueue_style(
+        'zen-login-authentication-admin',
+        FAUTH_URL . 'assets/styles/frontend-auth-admin.css',
+        [],
+        FAUTH_VERSION
+    );
+}
+
+/* -----------------------------------------------------------------------
  * Fix #11 — Enqueue editor-only CSS for the Reset Password preview wrapper.
  * Replaces hardcoded hex colours with CSS-variable-driven classes.
  * -------------------------------------------------------------------- */
@@ -70,7 +91,7 @@ function fauth_enqueue_elementor_editor_styles(): void {
         return;
     }
     wp_enqueue_style(
-        'frontend-auth-editor',
+        'zen-login-authentication-editor',
         FAUTH_URL . 'assets/styles/frontend-auth-editor.css',
         [],
         FAUTH_VERSION
@@ -88,12 +109,12 @@ add_action( 'admin_post_fauth_create_pages', 'fauth_admin_handle_create_pages' )
 
 function fauth_admin_handle_create_pages(): void {
     if ( ! current_user_can( 'manage_options' ) ) {
-        wp_die( esc_html__( 'Unauthorized.', 'frontend-auth' ), 403 );
+        wp_die( esc_html__( 'Unauthorized.', 'zen-login-authentication' ), 403 );
     }
     check_admin_referer( 'fauth_create_pages', 'fauth_pages_nonce' );
     fauth_create_action_pages();
     fauth_flush_rewrite_rules();
-    wp_safe_redirect( add_query_arg( 'fauth_notice', 'pages_created', admin_url( 'admin.php?page=frontend-auth' ) ) );
+    wp_safe_redirect( add_query_arg( 'fauth_notice', 'pages_created', admin_url( 'admin.php?page=zen-login-authentication' ) ) );
     exit;
 }
 
@@ -101,7 +122,7 @@ add_action( 'admin_post_fauth_delete_pages', 'fauth_admin_handle_delete_pages' )
 
 function fauth_admin_handle_delete_pages(): void {
     if ( ! current_user_can( 'manage_options' ) ) {
-        wp_die( esc_html__( 'Unauthorized.', 'frontend-auth' ), 403 );
+        wp_die( esc_html__( 'Unauthorized.', 'zen-login-authentication' ), 403 );
     }
     check_admin_referer( 'fauth_delete_pages', 'fauth_pages_nonce' );
 
@@ -120,7 +141,7 @@ function fauth_admin_handle_delete_pages(): void {
     }
 
     fauth_flush_rewrite_rules();
-    wp_safe_redirect( add_query_arg( 'fauth_notice', 'pages_deleted', admin_url( 'admin.php?page=frontend-auth' ) ) );
+    wp_safe_redirect( add_query_arg( 'fauth_notice', 'pages_deleted', admin_url( 'admin.php?page=zen-login-authentication' ) ) );
     exit;
 }
 
@@ -135,9 +156,9 @@ function fauth_admin_page_notices(): void {
     }
     $notice = sanitize_key( wp_unslash( $_GET['fauth_notice'] ) ); // phpcs:ignore WordPress.Security.NonceVerification
     $messages = [
-        'pages_created'    => __( 'Auth pages have been created successfully.', 'frontend-auth' ),
-        'pages_deleted'    => __( 'Auto-created auth pages have been deleted.', 'frontend-auth' ),
-        'activity_cleared' => __( 'Login activity log cleared.', 'frontend-auth' ),
+        'pages_created'    => __( 'Auth pages have been created successfully.', 'zen-login-authentication' ),
+        'pages_deleted'    => __( 'Auto-created auth pages have been deleted.', 'zen-login-authentication' ),
+        'activity_cleared' => __( 'Login activity log cleared.', 'zen-login-authentication' ),
     ];
     if ( isset( $messages[ $notice ] ) ) {
         echo '<div class="notice notice-success is-dismissible"><p>' . esc_html( $messages[ $notice ] ) . '</p></div>';
