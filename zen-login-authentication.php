@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name:       Zen Login & Authentication
- * Plugin URI:        https://github.com/guramzhgamadze/Frontend-Auth
+ * Plugin URI:        https://github.com/guramzhgamadze/zen-login-authentication
  * Description:       Secure, accessible frontend login, registration, and password recovery forms — with rate limiting, honeypot protection, AJAX support, and native Elementor widgets.
  * Version:           1.7.1
  * Requires at least: 6.5
