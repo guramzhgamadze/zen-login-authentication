@@ -4,7 +4,7 @@ Tags: login, registration, authentication, elementor, frontend
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 1.7.1
+Stable tag: 1.7.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -130,6 +130,9 @@ Only pages the plugin created that you never edited (no content, no Elementor da
 
 == Changelog ==
 
+= 1.7.2 =
+* Removed a read of WP Super Cache's `$file_prefix` global during cache purge; auth pages already set `DONOTCACHEPAGE`, which WP Super Cache honours, so no explicit purge is needed.
+
 = 1.7.1 =
 * Renamed the plugin to **Zen Login & Authentication** for a distinctive directory name.
 * All admin CSS is now enqueued (no inline `<style>` blocks).
@@ -192,6 +195,9 @@ Only pages the plugin created that you never edited (no content, no Elementor da
 Older versions: see the project's CHANGELOG / README on the plugin homepage.
 
 == Upgrade Notice ==
+
+= 1.7.2 =
+Minor cleanup: dropped a read of WP Super Cache's global during cache purge (auth pages are already excluded via DONOTCACHEPAGE).
 
 = 1.7.1 =
 Renamed to Zen Login & Authentication, with WordPress.org compliance fixes (enqueued admin CSS, prefixed asset handles, raw-value secret encryption).

@@ -260,6 +260,10 @@ zen-login-authentication/
 
 ## Changelog
 
+### 1.7.2
+
+- Removed a read of WP Super Cache's `$file_prefix` global during the version-change cache purge. Auth pages already set `DONOTCACHEPAGE` (which WP Super Cache honours), so they are never cached and need no explicit purge.
+
 ### 1.7.1
 
 - **Renamed** the plugin to **Zen Login & Authentication** (slug `zen-login-authentication`) for a distinctive WordPress.org directory name.

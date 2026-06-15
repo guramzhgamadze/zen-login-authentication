@@ -802,11 +802,10 @@ function fauth_purge_auth_page_cache(): void {
     if ( function_exists( 'super_cache_purge_all' ) ) {
         super_cache_purge_all();
     }
-    // WP Super Cache
-    if ( function_exists( 'wp_cache_clean_cache' ) ) {
-        global $file_prefix;
-        wp_cache_clean_cache( $file_prefix ?? 'wp-cache-', true );
-    }
+    // WP Super Cache needs no explicit purge here: every auth-page request sets
+    // DONOTCACHEPAGE (see fauth_exclude_from_cache), which WP Super Cache honours,
+    // so those pages are never cached in the first place.
+
     // WP Rocket
     if ( function_exists( 'rocket_clean_domain' ) ) {
         rocket_clean_domain();
