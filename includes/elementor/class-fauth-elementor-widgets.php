@@ -38,7 +38,7 @@
  *  L  CSS: description + strength meter colors tokenised as custom properties
  *  M  Password strength meter: full style section (typography + 4-state colours)
  *  N  toggle_margin_top removed; replaced with toggle_gap targeting flex gap
- *  O  h_placeholders, h_toggle renamed to fauth_h_* to avoid cross-widget ID collision
+ *  O  h_placeholders, h_toggle renamed to zenlogau_h_* to avoid cross-widget ID collision
  *
  * @package Frontend_Auth
  */
@@ -49,23 +49,23 @@ defined( 'ABSPATH' ) || exit;
  * Registration functions
  * ===================================================================== */
 
-function fauth_register_elementor_category( $elements_manager ): void {
+function zenlogau_register_elementor_category( $elements_manager ): void {
     $elements_manager->add_category( 'zen-login-authentication', [
         'title' => esc_html__( 'Zen Login & Authentication', 'zen-login-authentication' ),
         'icon'  => 'eicon-lock-user',
     ] );
 }
 
-function fauth_register_elementor_widgets( $manager ): void {
+function zenlogau_register_elementor_widgets( $manager ): void {
     $widgets = [
-        'login'        => FAUTH_Elementor_Login_Widget::class,
-        'register'     => FAUTH_Elementor_Register_Widget::class,
-        'lostpassword' => FAUTH_Elementor_Lost_Password_Widget::class,
-        'resetpass'    => FAUTH_Elementor_Reset_Password_Widget::class,
-        'account'      => FAUTH_Elementor_Account_Widget::class,
+        'login'        => ZENLOGAU_Elementor_Login_Widget::class,
+        'register'     => ZENLOGAU_Elementor_Register_Widget::class,
+        'lostpassword' => ZENLOGAU_Elementor_Lost_Password_Widget::class,
+        'resetpass'    => ZENLOGAU_Elementor_Reset_Password_Widget::class,
+        'account'      => ZENLOGAU_Elementor_Account_Widget::class,
     ];
     foreach ( $widgets as $key => $class ) {
-        if ( fauth_widget_enabled( $key ) ) {
+        if ( zenlogau_widget_enabled( $key ) ) {
             $manager->register( new $class() );
         }
     }
@@ -75,7 +75,7 @@ function fauth_register_elementor_widgets( $manager ): void {
  * Abstract base
  * ===================================================================== */
 
-abstract class FAUTH_Elementor_Base_Widget extends \Elementor\Widget_Base {
+abstract class ZENLOGAU_Elementor_Base_Widget extends \Elementor\Widget_Base {
 
     public function get_categories(): array  { return [ 'zen-login-authentication' ]; }
     public function get_keywords(): array    { return [ 'login', 'auth', 'register', 'password', 'fauth' ]; }
@@ -403,7 +403,7 @@ abstract class FAUTH_Elementor_Base_Widget extends \Elementor\Widget_Base {
      * Call from any widget that renders a password field.
      */
     protected function register_password_toggle_content_controls(): void {
-        $this->add_control( 'fauth_h_toggle', [
+        $this->add_control( 'zenlogau_h_toggle', [
             'label'     => esc_html__( 'Password Toggle Button', 'zen-login-authentication' ),
             'type'      => \Elementor\Controls_Manager::HEADING,
             'separator' => 'before',
@@ -431,7 +431,7 @@ abstract class FAUTH_Elementor_Base_Widget extends \Elementor\Widget_Base {
     /* --- Shared "Sign in with Google" controls (Login / Register) --- */
 
     protected function register_google_button_controls(): void {
-        $this->add_control( 'fauth_h_google', [
+        $this->add_control( 'zenlogau_h_google', [
             'label'     => esc_html__( 'Google Sign-In', 'zen-login-authentication' ),
             'type'      => \Elementor\Controls_Manager::HEADING,
             'separator' => 'before',
@@ -513,7 +513,7 @@ abstract class FAUTH_Elementor_Base_Widget extends \Elementor\Widget_Base {
     protected function setup_google_button_overrides( array $s ): callable {
         $hide = ( 'yes' !== ( $s['show_google_button'] ?? 'yes' ) );
         if ( $hide ) {
-            add_filter( 'fauth_show_google_button', '__return_false', 99 );
+            add_filter( 'zenlogau_show_google_button', '__return_false', 99 );
         }
         $text    = trim( (string) ( $s['google_button_text'] ?? '' ) );
         $text_cb = null;
@@ -521,24 +521,24 @@ abstract class FAUTH_Elementor_Base_Widget extends \Elementor\Widget_Base {
             $text_cb = static function () use ( $text ) {
                 return $text;
             };
-            add_filter( 'fauth_google_button_text', $text_cb, 99 );
+            add_filter( 'zenlogau_google_button_text', $text_cb, 99 );
         }
         return static function () use ( $hide, $text_cb ): void {
             if ( $hide ) {
-                remove_filter( 'fauth_show_google_button', '__return_false', 99 );
+                remove_filter( 'zenlogau_show_google_button', '__return_false', 99 );
             }
             if ( null !== $text_cb ) {
-                remove_filter( 'fauth_google_button_text', $text_cb, 99 );
+                remove_filter( 'zenlogau_google_button_text', $text_cb, 99 );
             }
         };
     }
 
     /**
      * Editor-preview markup for the Google button (Backbone template fragment).
-     * Mirrors fauth_google_button_html(); shown whenever the widget toggle is on.
+     * Mirrors zenlogau_google_button_html(); shown whenever the widget toggle is on.
      */
     protected function google_button_content_template(): string {
-        $svg = function_exists( 'fauth_google_button_svg' ) ? fauth_google_button_svg() : '';
+        $svg = function_exists( 'zenlogau_google_button_svg' ) ? zenlogau_google_button_svg() : '';
         return '<# if ( "yes" === settings.show_google_button ) { #>'
             . '<div class="fauth-sso"><div class="fauth-sso-divider"><span>' . esc_html__( 'or', 'zen-login-authentication' ) . '</span></div>'
             . '<a class="fauth-google-btn" href="#" onclick="return false;">' . $svg
@@ -732,7 +732,7 @@ abstract class FAUTH_Elementor_Base_Widget extends \Elementor\Widget_Base {
         // the URL parameter represents their actual intended destination and must
         // take priority over whatever the editor default is.
         $url_redirect = isset( $_GET['redirect_to'] ) && is_string( $_GET['redirect_to'] ) // phpcs:ignore WordPress.Security.NonceVerification
-            ? fauth_validate_redirect( wp_unslash( $_GET['redirect_to'] ) ) // phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput
+            ? zenlogau_validate_redirect( wp_unslash( $_GET['redirect_to'] ) ) // phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput
             : '';
 
         if ( '' !== $url_redirect ) {
@@ -746,7 +746,7 @@ abstract class FAUTH_Elementor_Base_Widget extends \Elementor\Widget_Base {
     }
 
     protected function maybe_print_script_data(): void {
-        fauth_maybe_add_inline_script();
+        zenlogau_maybe_add_inline_script();
     }
 
     protected function render_form_title( array $s ): void {
@@ -788,9 +788,9 @@ abstract class FAUTH_Elementor_Base_Widget extends \Elementor\Widget_Base {
     }
 
     /**
-     * Apply custom text overrides from Elementor settings to a FAUTH_Form.
+     * Apply custom text overrides from Elementor settings to a ZENLOGAU_Form.
      *
-     * @param FAUTH_Form $form  The form object.
+     * @param ZENLOGAU_Form $form  The form object.
      * @param array     $map   Setting key => [ field_name, field_property ].
      * @param array     $s     Elementor settings.
      */
@@ -816,17 +816,17 @@ abstract class FAUTH_Elementor_Base_Widget extends \Elementor\Widget_Base {
     /**
      * Make the form self-post to the current page URL.
      *
-     * Without this, the form's action URL is the canonical FAUTH page URL
+     * Without this, the form's action URL is the canonical ZENLOGAU page URL
      * (e.g. /lost-password/). If that page doesn't exist or the rewrite
      * rules haven't been flushed, the AJAX POST goes to a 404 URL. The
      * handler still processes it (template_redirect fires on 404s too),
      * but jQuery fails to parse the non-JSON 404 response.
      *
      * Self-posting to the current page is safe because the handler checks
-     * $_POST['fauth_action'], not the URL.
+     * $_POST['zenlogau_action'], not the URL.
      */
     protected function make_form_self_post( string $form_name ): void {
-        $form = fauth()->get_form( $form_name );
+        $form = zenlogau()->get_form( $form_name );
         if ( ! $form ) {
             return;
         }
@@ -845,7 +845,7 @@ abstract class FAUTH_Elementor_Base_Widget extends \Elementor\Widget_Base {
  * 1. LOGIN
  * ===================================================================== */
 
-class FAUTH_Elementor_Login_Widget extends FAUTH_Elementor_Base_Widget {
+class ZENLOGAU_Elementor_Login_Widget extends ZENLOGAU_Elementor_Base_Widget {
 
     public function get_name(): string  { return 'fauth-login'; }
     public function get_title(): string { return esc_html__( 'Login Form', 'zen-login-authentication' ); }
@@ -867,7 +867,7 @@ class FAUTH_Elementor_Login_Widget extends FAUTH_Elementor_Base_Widget {
         $this->add_control( 'button_text', [ 'label' => esc_html__( 'Button text', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Log In', 'zen-login-authentication' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
 
         // --- Field Placeholders ---
-        $this->add_control( 'fauth_h_placeholders', [ 'label' => esc_html__( 'Field Placeholders', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
+        $this->add_control( 'zenlogau_h_placeholders', [ 'label' => esc_html__( 'Field Placeholders', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
         $this->add_control( 'placeholder_username', [ 'label' => esc_html__( 'Username placeholder', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'e.g. your@email.com', 'zen-login-authentication' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
         $this->add_control( 'placeholder_password', [ 'label' => esc_html__( 'Password placeholder', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'e.g. ••••••••', 'zen-login-authentication' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
 
@@ -922,7 +922,7 @@ class FAUTH_Elementor_Login_Widget extends FAUTH_Elementor_Base_Widget {
      * Render the login form with all text/URL overrides applied.
      */
     private function render_login_form( array $s ): void {
-        $form = fauth()->get_form( 'login' );
+        $form = zenlogau()->get_form( 'login' );
         if ( ! $form ) { return; }
 
         $this->make_form_self_post( 'login' );
@@ -951,8 +951,8 @@ class FAUTH_Elementor_Login_Widget extends FAUTH_Elementor_Base_Widget {
         if ( '' !== $link_reg_text || '' !== $link_reg_url || '' !== $link_lp_text || '' !== $link_lp_url ) {
             // Fix #7 — detect each link explicitly; never rely on negation of the other.
             $link_callback = function ( $links ) use ( $link_reg_text, $link_reg_url, $link_lp_text, $link_lp_url ) {
-                $register_url  = fauth_get_action_url( 'register' );
-                $lostpw_url    = fauth_get_action_url( 'lostpassword' );
+                $register_url  = zenlogau_get_action_url( 'register' );
+                $lostpw_url    = zenlogau_get_action_url( 'lostpassword' );
                 $new_links = [];
                 foreach ( $links as $link ) {
                     $is_register = ( $link['url'] === $register_url );
@@ -970,7 +970,7 @@ class FAUTH_Elementor_Login_Widget extends FAUTH_Elementor_Base_Widget {
                 }
                 return $new_links;
             };
-            add_filter( 'fauth_form_links_login', $link_callback, 99 );
+            add_filter( 'zenlogau_form_links_login', $link_callback, 99 );
         } else {
             $link_callback = null;
         }
@@ -979,7 +979,7 @@ class FAUTH_Elementor_Login_Widget extends FAUTH_Elementor_Base_Widget {
 
         $this->open_form_wrap();
         $this->render_form_title( $s );
-        echo fauth_render_form( 'login', $this->build_render_args( $s ) ); // phpcs:ignore
+        echo zenlogau_render_form( 'login', $this->build_render_args( $s ) ); // phpcs:ignore
         $this->close_form_wrap();
 
         $google_cleanup();
@@ -998,12 +998,12 @@ class FAUTH_Elementor_Login_Widget extends FAUTH_Elementor_Base_Widget {
          * the Elementor preview iframe.
          *
          * Fix: store the callback reference, then remove_filter() immediately
-         * after fauth_render_form() returns. The filter is now request-scoped
+         * after zenlogau_render_form() returns. The filter is now request-scoped
          * (added → used → removed within one render() call) and never leaks
          * across multiple editor refreshes.
          */
         if ( null !== $link_callback ) {
-            remove_filter( 'fauth_form_links_login', $link_callback, 99 );
+            remove_filter( 'zenlogau_form_links_login', $link_callback, 99 );
         }
     }
 
@@ -1030,7 +1030,7 @@ class FAUTH_Elementor_Login_Widget extends FAUTH_Elementor_Base_Widget {
  * 2. REGISTER
  * ===================================================================== */
 
-class FAUTH_Elementor_Register_Widget extends FAUTH_Elementor_Base_Widget {
+class ZENLOGAU_Elementor_Register_Widget extends ZENLOGAU_Elementor_Base_Widget {
 
     public function get_name(): string  { return 'fauth-register'; }
     public function get_title(): string { return esc_html__( 'Registration Form', 'zen-login-authentication' ); }
@@ -1050,7 +1050,7 @@ class FAUTH_Elementor_Register_Widget extends FAUTH_Elementor_Base_Widget {
         $this->add_control( 'button_text', [ 'label' => esc_html__( 'Button text', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Register', 'zen-login-authentication' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
 
         // --- Field Placeholders ---
-        $this->add_control( 'fauth_h_placeholders', [ 'label' => esc_html__( 'Field Placeholders', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
+        $this->add_control( 'zenlogau_h_placeholders', [ 'label' => esc_html__( 'Field Placeholders', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
         $this->add_control( 'placeholder_username', [ 'label' => esc_html__( 'Username placeholder', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'e.g. johndoe', 'zen-login-authentication' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
         $this->add_control( 'placeholder_email', [ 'label' => esc_html__( 'Email placeholder', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'e.g. your@email.com', 'zen-login-authentication' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
         $this->add_control( 'placeholder_password', [ 'label' => esc_html__( 'Password placeholder', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'e.g. ••••••••', 'zen-login-authentication' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
@@ -1078,7 +1078,7 @@ class FAUTH_Elementor_Register_Widget extends FAUTH_Elementor_Base_Widget {
         if ( is_user_logged_in() ) { return; }
 
         $link_callback = null; // Fix #4 — initialise before conditional to avoid undefined variable
-        $form = fauth()->get_form( 'register' );
+        $form = zenlogau()->get_form( 'register' );
         if ( $form ) {
             $this->make_form_self_post( 'register' );
             $this->apply_text_overrides( $form, [
@@ -1112,7 +1112,7 @@ class FAUTH_Elementor_Register_Widget extends FAUTH_Elementor_Base_Widget {
                     }
                     return $links;
                 };
-                add_filter( 'fauth_form_links_register', $link_callback, 99 );
+                add_filter( 'zenlogau_form_links_register', $link_callback, 99 );
             } else {
                 $link_callback = null;
             }
@@ -1120,12 +1120,12 @@ class FAUTH_Elementor_Register_Widget extends FAUTH_Elementor_Base_Widget {
         $google_cleanup = $this->setup_google_button_overrides( $s );
         $this->open_form_wrap();
         $this->render_form_title( $s );
-        echo fauth_render_form( 'register', $this->build_render_args( $s ) ); // phpcs:ignore
+        echo zenlogau_render_form( 'register', $this->build_render_args( $s ) ); // phpcs:ignore
         $this->close_form_wrap();
         $google_cleanup();
         // Remove filter immediately after render — see Login widget for full explanation.
         if ( ! empty( $link_callback ) ) {
-            remove_filter( 'fauth_form_links_register', $link_callback, 99 );
+            remove_filter( 'zenlogau_form_links_register', $link_callback, 99 );
         }
     }
 
@@ -1150,7 +1150,7 @@ class FAUTH_Elementor_Register_Widget extends FAUTH_Elementor_Base_Widget {
  * 3. LOST PASSWORD
  * ===================================================================== */
 
-class FAUTH_Elementor_Lost_Password_Widget extends FAUTH_Elementor_Base_Widget {
+class ZENLOGAU_Elementor_Lost_Password_Widget extends ZENLOGAU_Elementor_Base_Widget {
 
     public function get_name(): string  { return 'fauth-lost-password'; }
     public function get_title(): string { return esc_html__( 'Lost Password Form', 'zen-login-authentication' ); }
@@ -1167,7 +1167,7 @@ class FAUTH_Elementor_Lost_Password_Widget extends FAUTH_Elementor_Base_Widget {
         $this->add_control( 'button_text', [ 'label' => esc_html__( 'Button text', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Get New Password', 'zen-login-authentication' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
 
         // --- Field Placeholders ---
-        $this->add_control( 'fauth_h_placeholders', [ 'label' => esc_html__( 'Field Placeholders', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
+        $this->add_control( 'zenlogau_h_placeholders', [ 'label' => esc_html__( 'Field Placeholders', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
         $this->add_control( 'placeholder_user_login', [ 'label' => esc_html__( 'Username / Email placeholder', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'e.g. your@email.com', 'zen-login-authentication' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
 
         $this->add_control( 'h_links', [ 'label' => esc_html__( 'Action Links', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
@@ -1183,7 +1183,7 @@ class FAUTH_Elementor_Lost_Password_Widget extends FAUTH_Elementor_Base_Widget {
         if ( is_user_logged_in() ) { return; }
         $s = $this->get_settings_for_display();
         $link_callback = null; // Fix #4 — initialise before conditional
-        $form = fauth()->get_form( 'lostpassword' );
+        $form = zenlogau()->get_form( 'lostpassword' );
         if ( $form ) {
             $this->make_form_self_post( 'lostpassword' );
             $this->apply_text_overrides( $form, [
@@ -1203,18 +1203,18 @@ class FAUTH_Elementor_Lost_Password_Widget extends FAUTH_Elementor_Base_Widget {
                     }
                     return $links;
                 };
-                add_filter( 'fauth_form_links_lostpassword', $link_callback, 99 );
+                add_filter( 'zenlogau_form_links_lostpassword', $link_callback, 99 );
             } else {
                 $link_callback = null;
             }
         }
         $this->open_form_wrap();
         $this->render_form_title( $s );
-        echo fauth_render_form( 'lostpassword', $this->build_render_args( $s ) ); // phpcs:ignore
+        echo zenlogau_render_form( 'lostpassword', $this->build_render_args( $s ) ); // phpcs:ignore
         $this->close_form_wrap();
         // Remove filter immediately after render — see Login widget for full explanation.
         if ( ! empty( $link_callback ) ) {
-            remove_filter( 'fauth_form_links_lostpassword', $link_callback, 99 );
+            remove_filter( 'zenlogau_form_links_lostpassword', $link_callback, 99 );
         }
     }
 
@@ -1234,7 +1234,7 @@ class FAUTH_Elementor_Lost_Password_Widget extends FAUTH_Elementor_Base_Widget {
  * 4. RESET PASSWORD
  * ===================================================================== */
 
-class FAUTH_Elementor_Reset_Password_Widget extends FAUTH_Elementor_Base_Widget {
+class ZENLOGAU_Elementor_Reset_Password_Widget extends ZENLOGAU_Elementor_Base_Widget {
 
     // Fix #10 — This widget reads $_GET['key'] and $_GET['login'] so it must never be cached.
     protected function is_dynamic_content(): bool { return true; }
@@ -1255,7 +1255,7 @@ class FAUTH_Elementor_Reset_Password_Widget extends FAUTH_Elementor_Base_Widget 
         $this->add_control( 'button_text', [ 'label' => esc_html__( 'Button text', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Reset Password', 'zen-login-authentication' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
 
         // --- Field Placeholders ---
-        $this->add_control( 'fauth_h_placeholders', [ 'label' => esc_html__( 'Field Placeholders', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
+        $this->add_control( 'zenlogau_h_placeholders', [ 'label' => esc_html__( 'Field Placeholders', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
         $this->add_control( 'placeholder_new_pw', [ 'label' => esc_html__( 'New Password placeholder', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'e.g. ••••••••', 'zen-login-authentication' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
         $this->add_control( 'placeholder_confirm_pw', [ 'label' => esc_html__( 'Confirm Password placeholder', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'e.g. ••••••••', 'zen-login-authentication' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
 
@@ -1299,7 +1299,7 @@ class FAUTH_Elementor_Reset_Password_Widget extends FAUTH_Elementor_Base_Widget 
         $request_url_raw = $s['link_request_url'] ?? '';
         $request_url     = trim( is_array( $request_url_raw ) ? ( $request_url_raw['url'] ?? '' ) : $request_url_raw );
         if ( '' === $request_url ) {
-            $request_url = fauth_get_action_url( 'lostpassword' );
+            $request_url = zenlogau_get_action_url( 'lostpassword' );
         }
 
         if ( empty( $rp_key ) || empty( $rp_login ) ) {
@@ -1339,7 +1339,7 @@ class FAUTH_Elementor_Reset_Password_Widget extends FAUTH_Elementor_Base_Widget 
             return;
         }
 
-        $form = fauth()->get_form( 'resetpass' );
+        $form = zenlogau()->get_form( 'resetpass' );
         if ( $form ) {
             $this->make_form_self_post( 'resetpass' );
             $this->apply_text_overrides( $form, [
@@ -1358,7 +1358,7 @@ class FAUTH_Elementor_Reset_Password_Widget extends FAUTH_Elementor_Base_Widget 
         }
         $this->open_form_wrap();
         $this->render_form_title( $s );
-        echo fauth_render_form( 'resetpass', [ 'show_links' => false, 'redirect_to' => '' ] ); // phpcs:ignore
+        echo zenlogau_render_form( 'resetpass', [ 'show_links' => false, 'redirect_to' => '' ] ); // phpcs:ignore
         $this->close_form_wrap();
     }
 
@@ -1394,7 +1394,7 @@ class FAUTH_Elementor_Reset_Password_Widget extends FAUTH_Elementor_Base_Widget 
  * 5. ACCOUNT (edit profile)
  * ===================================================================== */
 
-class FAUTH_Elementor_Account_Widget extends FAUTH_Elementor_Base_Widget {
+class ZENLOGAU_Elementor_Account_Widget extends ZENLOGAU_Elementor_Base_Widget {
 
     public function get_name(): string  { return 'fauth-account'; }
     public function get_title(): string { return esc_html__( 'Account Form', 'zen-login-authentication' ); }
@@ -1428,7 +1428,7 @@ class FAUTH_Elementor_Account_Widget extends FAUTH_Elementor_Base_Widget {
         $this->add_control( 'button_text', [ 'label' => esc_html__( 'Button text', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Save Changes', 'zen-login-authentication' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
 
         // --- Field Placeholders ---
-        $this->add_control( 'fauth_h_placeholders', [ 'label' => esc_html__( 'Field Placeholders', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
+        $this->add_control( 'zenlogau_h_placeholders', [ 'label' => esc_html__( 'Field Placeholders', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
         $this->add_control( 'placeholder_first_name', [ 'label' => esc_html__( 'First Name placeholder', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'e.g. John', 'zen-login-authentication' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
         $this->add_control( 'placeholder_last_name', [ 'label' => esc_html__( 'Last Name placeholder', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'e.g. Doe', 'zen-login-authentication' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
         $this->add_control( 'placeholder_email', [ 'label' => esc_html__( 'Email placeholder', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'e.g. your@email.com', 'zen-login-authentication' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
@@ -1465,7 +1465,7 @@ class FAUTH_Elementor_Account_Widget extends FAUTH_Elementor_Base_Widget {
             return;
         }
 
-        $form = fauth()->get_form( 'account' );
+        $form = zenlogau()->get_form( 'account' );
         if ( ! $form ) {
             return;
         }
@@ -1502,7 +1502,7 @@ class FAUTH_Elementor_Account_Widget extends FAUTH_Elementor_Base_Widget {
 
         $this->open_form_wrap();
         $this->render_form_title( $s );
-        echo fauth_render_form( 'account', [ 'show_links' => 'yes' === ( $s['show_links'] ?? 'yes' ), 'redirect_to' => '' ] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- form HTML is escaped field-by-field inside FAUTH_Form::render().
+        echo zenlogau_render_form( 'account', [ 'show_links' => 'yes' === ( $s['show_links'] ?? 'yes' ), 'redirect_to' => '' ] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- form HTML is escaped field-by-field inside ZENLOGAU_Form::render().
         $this->close_form_wrap();
     }
 

@@ -12,28 +12,28 @@ defined( 'ABSPATH' ) || exit;
  *
  * HIGH FIX: Removed is_admin() guard. Forms must be registered in every
  * context including admin-ajax.php (used by Elementor editor). Without
- * this fix, fauth()->get_form('login') returns false inside the Elementor
+ * this fix, zenlogau()->get_form('login') returns false inside the Elementor
  * editor context and every widget renders empty.
  */
-function fauth_register_default_forms(): void {
-    fauth_register_login_form();
-    fauth_register_registration_form();
-    fauth_register_lost_password_form();
-    fauth_register_password_reset_form();
-    fauth_register_account_form();
+function zenlogau_register_default_forms(): void {
+    zenlogau_register_login_form();
+    zenlogau_register_registration_form();
+    zenlogau_register_lost_password_form();
+    zenlogau_register_password_reset_form();
+    zenlogau_register_account_form();
 }
 
 /* -----------------------------------------------------------------------
  * Login
  * -------------------------------------------------------------------- */
 
-function fauth_register_login_form(): void {
-    $form = new FAUTH_Form( 'login', fauth_get_action_url( 'login' ) );
+function zenlogau_register_login_form(): void {
+    $form = new ZENLOGAU_Form( 'login', zenlogau_get_action_url( 'login' ) );
 
     $form->add_field( 'log', [
         'type'     => 'text',
-        'label'    => fauth_get_username_label( 'login' ),
-        'value'    => fauth_get_request_value( 'log', 'post' ),
+        'label'    => zenlogau_get_username_label( 'login' ),
+        'value'    => zenlogau_get_request_value( 'log', 'post' ),
         'id'       => 'user_login',
         'attrs'    => [ 'autocapitalize' => 'off', 'autocomplete' => 'username' ],
         'required' => true,
@@ -68,24 +68,24 @@ function fauth_register_login_form(): void {
         'priority' => 30,
     ] );
 
-    fauth()->register_form( $form );
+    zenlogau()->register_form( $form );
 }
 
 /* -----------------------------------------------------------------------
  * Register
  * -------------------------------------------------------------------- */
 
-function fauth_register_registration_form(): void {
+function zenlogau_register_registration_form(): void {
     if ( ! get_option( 'users_can_register' ) ) {
         return;
     }
 
-    $form = new FAUTH_Form( 'register', fauth_get_action_url( 'register' ) );
+    $form = new ZENLOGAU_Form( 'register', zenlogau_get_action_url( 'register' ) );
 
     $form->add_field( 'user_login', [
         'type'        => 'text',
         'label'       => __( 'Username', 'zen-login-authentication' ),
-        'value'       => fauth_get_request_value( 'user_login', 'post' ),
+        'value'       => zenlogau_get_request_value( 'user_login', 'post' ),
         'id'          => 'user_login',
         'attrs'       => [ 'autocapitalize' => 'off', 'autocomplete' => 'username' ],
         'required'    => true,
@@ -96,14 +96,14 @@ function fauth_register_registration_form(): void {
     $form->add_field( 'user_email', [
         'type'     => 'email',
         'label'    => __( 'Email Address', 'zen-login-authentication' ),
-        'value'    => fauth_get_request_value( 'user_email', 'post' ),
+        'value'    => zenlogau_get_request_value( 'user_email', 'post' ),
         'id'       => 'user_email',
         'attrs'    => [ 'autocomplete' => 'email' ],
         'required' => true,
         'priority' => 20,
     ] );
 
-    if ( fauth_allow_user_passwords() ) {
+    if ( zenlogau_allow_user_passwords() ) {
         $form->add_field( 'user_pass1', [
             'type'     => 'password',
             'label'    => __( 'Password', 'zen-login-authentication' ),
@@ -133,20 +133,20 @@ function fauth_register_registration_form(): void {
         'priority' => 40,
     ] );
 
-    fauth()->register_form( $form );
+    zenlogau()->register_form( $form );
 }
 
 /* -----------------------------------------------------------------------
  * Lost Password
  * -------------------------------------------------------------------- */
 
-function fauth_register_lost_password_form(): void {
-    $form = new FAUTH_Form( 'lostpassword', fauth_get_action_url( 'lostpassword' ) );
+function zenlogau_register_lost_password_form(): void {
+    $form = new ZENLOGAU_Form( 'lostpassword', zenlogau_get_action_url( 'lostpassword' ) );
 
     $form->add_field( 'user_login', [
         'type'     => 'text',
         'label'    => __( 'Username or Email Address', 'zen-login-authentication' ),
-        'value'    => fauth_get_request_value( 'user_login', 'post' ),
+        'value'    => zenlogau_get_request_value( 'user_login', 'post' ),
         'id'       => 'user_login',
         'attrs'    => [ 'autocapitalize' => 'off', 'autocomplete' => 'username email' ],
         'required' => true,
@@ -164,25 +164,25 @@ function fauth_register_lost_password_form(): void {
         'priority' => 20,
     ] );
 
-    fauth()->register_form( $form );
+    zenlogau()->register_form( $form );
 }
 
 /* -----------------------------------------------------------------------
  * Reset Password
  * -------------------------------------------------------------------- */
 
-function fauth_register_password_reset_form(): void {
-    $form = new FAUTH_Form( 'resetpass', fauth_get_action_url( 'resetpass' ) );
+function zenlogau_register_password_reset_form(): void {
+    $form = new ZENLOGAU_Form( 'resetpass', zenlogau_get_action_url( 'resetpass' ) );
 
     $form->add_field( 'rp_key', [
         'type'     => 'hidden',
-        'value'    => fauth_get_request_value( 'key', 'get' ),
+        'value'    => zenlogau_get_request_value( 'key', 'get' ),
         'priority' => 5,
     ] );
 
     $form->add_field( 'rp_login', [
         'type'     => 'hidden',
-        'value'    => fauth_get_request_value( 'login', 'get' ),
+        'value'    => zenlogau_get_request_value( 'login', 'get' ),
         'priority' => 5,
     ] );
 
@@ -215,40 +215,40 @@ function fauth_register_password_reset_form(): void {
         'priority' => 30,
     ] );
 
-    fauth()->register_form( $form );
+    zenlogau()->register_form( $form );
 }
 
 /* -----------------------------------------------------------------------
  * Account (edit profile) — logged-in users only
  * -------------------------------------------------------------------- */
 
-function fauth_register_account_form(): void {
-    $form = new FAUTH_Form( 'account', fauth_get_action_url( 'account' ) );
+function zenlogau_register_account_form(): void {
+    $form = new ZENLOGAU_Form( 'account', zenlogau_get_action_url( 'account' ) );
     $user = wp_get_current_user();
 
     // Sticky values: after a failed POST re-show what the user typed; on a
     // fresh GET pre-fill from the current user's profile. Only trust POST
     // values when this request is actually an account submission — other
     // forms on the site may share field names like user_email.
-    $is_account_post = fauth_is_post_request()
-        && 'account' === sanitize_key( fauth_get_request_value( 'fauth_action', 'post' ) );
+    $is_account_post = zenlogau_is_post_request()
+        && 'account' === sanitize_key( zenlogau_get_request_value( 'zenlogau_action', 'post' ) );
 
-    $first_name = $is_account_post ? sanitize_text_field( fauth_get_request_value( 'first_name', 'post' ) ) : '';
+    $first_name = $is_account_post ? sanitize_text_field( zenlogau_get_request_value( 'first_name', 'post' ) ) : '';
     if ( '' === $first_name && $user->exists() ) {
         $first_name = $user->first_name;
     }
 
-    $last_name = $is_account_post ? sanitize_text_field( fauth_get_request_value( 'last_name', 'post' ) ) : '';
+    $last_name = $is_account_post ? sanitize_text_field( zenlogau_get_request_value( 'last_name', 'post' ) ) : '';
     if ( '' === $last_name && $user->exists() ) {
         $last_name = $user->last_name;
     }
 
-    $display_name = $is_account_post ? sanitize_text_field( fauth_get_request_value( 'display_name', 'post' ) ) : '';
+    $display_name = $is_account_post ? sanitize_text_field( zenlogau_get_request_value( 'display_name', 'post' ) ) : '';
     if ( '' === $display_name && $user->exists() ) {
         $display_name = $user->display_name;
     }
 
-    $user_email = $is_account_post ? sanitize_email( fauth_get_request_value( 'user_email', 'post' ) ) : '';
+    $user_email = $is_account_post ? sanitize_email( zenlogau_get_request_value( 'user_email', 'post' ) ) : '';
     if ( '' === $user_email && $user->exists() ) {
         $user_email = $user->user_email;
     }
@@ -289,7 +289,7 @@ function fauth_register_account_form(): void {
         'label'    => __( 'Display name publicly as', 'zen-login-authentication' ),
         'value'    => $display_name,
         'id'       => 'display_name',
-        'options'  => fauth_account_display_name_options( $user, $first_name, $last_name, $display_name ),
+        'options'  => zenlogau_account_display_name_options( $user, $first_name, $last_name, $display_name ),
         // frontend-auth.js rebuilds the option list live as the user types
         // their first/last name (mirroring wp-admin's user-profile.js); the
         // username and nickname combos are exposed for it as data attributes.
@@ -342,7 +342,7 @@ function fauth_register_account_form(): void {
         'priority' => 40,
     ] );
 
-    fauth()->register_form( $form );
+    zenlogau()->register_form( $form );
 }
 
 /**
@@ -357,7 +357,7 @@ function fauth_register_account_form(): void {
  * @param string  $current     The currently selected display name.
  * @return array<string,string>
  */
-function fauth_account_display_name_options( WP_User $user, string $first_name, string $last_name, string $current ): array {
+function zenlogau_account_display_name_options( WP_User $user, string $first_name, string $last_name, string $current ): array {
     $options = [];
     $add     = static function ( string $candidate ) use ( &$options ): void {
         $candidate = trim( $candidate );
@@ -378,34 +378,34 @@ function fauth_account_display_name_options( WP_User $user, string $first_name, 
         $add( trim( $last_name ) . ' ' . trim( $first_name ) );
     }
 
-    return (array) apply_filters( 'fauth_account_display_name_options', $options, $user );
+    return (array) apply_filters( 'zenlogau_account_display_name_options', $options, $user );
 }
 
 /* -----------------------------------------------------------------------
  * Links filters
  * -------------------------------------------------------------------- */
 
-add_filter( 'fauth_form_links_login', function ( $links ) {
+add_filter( 'zenlogau_form_links_login', function ( $links ) {
     if ( get_option( 'users_can_register' ) ) {
-        $links[] = [ 'label' => __( 'Register', 'zen-login-authentication' ), 'url' => fauth_get_action_url( 'register' ) ];
+        $links[] = [ 'label' => __( 'Register', 'zen-login-authentication' ), 'url' => zenlogau_get_action_url( 'register' ) ];
     }
-    $links[] = [ 'label' => __( 'Lost your password?', 'zen-login-authentication' ), 'url' => fauth_get_action_url( 'lostpassword' ) ];
+    $links[] = [ 'label' => __( 'Lost your password?', 'zen-login-authentication' ), 'url' => zenlogau_get_action_url( 'lostpassword' ) ];
     return $links;
 } );
 
-add_filter( 'fauth_form_links_register', function ( $links ) {
-    $links[] = [ 'label' => __( 'Log In', 'zen-login-authentication' ), 'url' => fauth_get_action_url( 'login' ) ];
+add_filter( 'zenlogau_form_links_register', function ( $links ) {
+    $links[] = [ 'label' => __( 'Log In', 'zen-login-authentication' ), 'url' => zenlogau_get_action_url( 'login' ) ];
     return $links;
 } );
 
-add_filter( 'fauth_form_links_lostpassword', function ( $links ) {
-    $links[] = [ 'label' => __( 'Log In', 'zen-login-authentication' ), 'url' => fauth_get_action_url( 'login' ) ];
+add_filter( 'zenlogau_form_links_lostpassword', function ( $links ) {
+    $links[] = [ 'label' => __( 'Log In', 'zen-login-authentication' ), 'url' => zenlogau_get_action_url( 'login' ) ];
     return $links;
 } );
 
-add_filter( 'fauth_form_links_account', function ( $links ) {
+add_filter( 'zenlogau_form_links_account', function ( $links ) {
     // wp_logout_url() is rewritten to the plugin's /logout/ URL (with nonce)
-    // by fauth_filter_logout_url(), so this stays correct on custom slugs.
+    // by zenlogau_filter_logout_url(), so this stays correct on custom slugs.
     $links[] = [ 'label' => __( 'Log Out', 'zen-login-authentication' ), 'url' => wp_logout_url() ];
     return $links;
 } );

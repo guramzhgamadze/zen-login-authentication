@@ -19,13 +19,13 @@
 
 defined( 'ABSPATH' ) || exit;
 
-const FAUTH_ENC_PREFIX = 'fauthenc:';
+const ZENLOGAU_ENC_PREFIX = 'fauthenc:';
 
 /**
  * 32-byte encryption key derived from the site's wp-config.php salts.
  * Stable for a given install, unique per site, never persisted.
  */
-function fauth_crypto_key(): string {
+function zenlogau_crypto_key(): string {
     $material = ( defined( 'AUTH_KEY' ) ? AUTH_KEY : '' )
         . ( defined( 'SECURE_AUTH_KEY' ) ? SECURE_AUTH_KEY : '' )
         . ( defined( 'AUTH_SALT' ) ? AUTH_SALT : '' );
@@ -41,15 +41,15 @@ function fauth_crypto_key(): string {
 /**
  * True if the value is in this plugin's encrypted format.
  */
-function fauth_crypto_is_encrypted( string $value ): bool {
-    return str_starts_with( $value, FAUTH_ENC_PREFIX );
+function zenlogau_crypto_is_encrypted( string $value ): bool {
+    return str_starts_with( $value, ZENLOGAU_ENC_PREFIX );
 }
 
 /**
  * Encrypt a string. Returns the "fauthenc:" envelope, or the original plaintext
  * if encryption is impossible (empty input, or OpenSSL/AES-GCM unavailable).
  */
-function fauth_crypto_encrypt( string $plaintext ): string {
+function zenlogau_crypto_encrypt( string $plaintext ): string {
     if ( '' === $plaintext ) {
         return $plaintext;
     }
@@ -60,28 +60,28 @@ function fauth_crypto_encrypt( string $plaintext ): string {
 
     $iv  = random_bytes( 12 );
     $tag = '';
-    $cipher = openssl_encrypt( $plaintext, 'aes-256-gcm', fauth_crypto_key(), OPENSSL_RAW_DATA, $iv, $tag );
+    $cipher = openssl_encrypt( $plaintext, 'aes-256-gcm', zenlogau_crypto_key(), OPENSSL_RAW_DATA, $iv, $tag );
     if ( false === $cipher ) {
         return $plaintext;
     }
 
-    return FAUTH_ENC_PREFIX . base64_encode( $iv . $tag . $cipher ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
+    return ZENLOGAU_ENC_PREFIX . base64_encode( $iv . $tag . $cipher ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
 }
 
 /**
- * Decrypt a value produced by fauth_crypto_encrypt(). A value that is not in the
+ * Decrypt a value produced by zenlogau_crypto_encrypt(). A value that is not in the
  * encrypted envelope is returned unchanged (legacy plaintext / pass-through).
  * Returns '' if an encrypted value cannot be authenticated/decrypted.
  */
-function fauth_crypto_decrypt( string $value ): string {
-    if ( ! fauth_crypto_is_encrypted( $value ) ) {
+function zenlogau_crypto_decrypt( string $value ): string {
+    if ( ! zenlogau_crypto_is_encrypted( $value ) ) {
         return $value;
     }
     if ( ! function_exists( 'openssl_decrypt' ) ) {
         return '';
     }
 
-    $raw = base64_decode( substr( $value, strlen( FAUTH_ENC_PREFIX ) ), true ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode
+    $raw = base64_decode( substr( $value, strlen( ZENLOGAU_ENC_PREFIX ) ), true ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode
     if ( false === $raw || strlen( $raw ) < 28 ) {
         return '';
     }
@@ -90,6 +90,6 @@ function fauth_crypto_decrypt( string $value ): string {
     $tag    = substr( $raw, 12, 16 );
     $cipher = substr( $raw, 28 );
 
-    $plain = openssl_decrypt( $cipher, 'aes-256-gcm', fauth_crypto_key(), OPENSSL_RAW_DATA, $iv, $tag );
+    $plain = openssl_decrypt( $cipher, 'aes-256-gcm', zenlogau_crypto_key(), OPENSSL_RAW_DATA, $iv, $tag );
     return false === $plain ? '' : $plain;
 }

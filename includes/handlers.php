@@ -12,24 +12,24 @@ defined( 'ABSPATH' ) || exit;
 /* -----------------------------------------------------------------------
  * Route POST requests (login, register, lostpassword, resetpass)
  * -------------------------------------------------------------------- */
-add_action( 'template_redirect', 'fauth_route_post_request', 0 );
+add_action( 'template_redirect', 'zenlogau_route_post_request', 0 );
 
-function fauth_route_post_request(): void {
-    if ( ! fauth_is_post_request() ) {
+function zenlogau_route_post_request(): void {
+    if ( ! zenlogau_is_post_request() ) {
         return;
     }
-    $action = sanitize_key( fauth_get_request_value( 'fauth_action', 'post' ) );
-    if ( empty( $action ) || ! fauth()->get_action( $action ) ) {
+    $action = sanitize_key( zenlogau_get_request_value( 'zenlogau_action', 'post' ) );
+    if ( empty( $action ) || ! zenlogau()->get_action( $action ) ) {
         return;
     }
-    $nonce = sanitize_key( fauth_get_request_value( "fauth_{$action}_nonce", 'post' ) );
-    if ( ! wp_verify_nonce( $nonce, "fauth_{$action}" ) ) {
+    $nonce = sanitize_key( zenlogau_get_request_value( "zenlogau_{$action}_nonce", 'post' ) );
+    if ( ! wp_verify_nonce( $nonce, "zenlogau_{$action}" ) ) {
         // An expired/invalid nonce usually means the form was served from cache or
         // pasted as static HTML (a baked-in nonce eventually expires). For AJAX
         // submissions, return a clear JSON message instead of a raw 403 page — the
         // script can only render a 403 as the unhelpful generic-error fallback.
-        if ( fauth_is_ajax_request() ) {
-            fauth_send_ajax_error( [
+        if ( zenlogau_is_ajax_request() ) {
+            zenlogau_send_ajax_error( [
                 'errors' => [ __( 'Your session has expired. Please reload the page and try again.', 'zen-login-authentication' ) ],
             ] );
         }
@@ -39,73 +39,73 @@ function fauth_route_post_request(): void {
             [ 'response' => 403 ]
         );
     }
-    do_action( "fauth_action_{$action}" );
+    do_action( "zenlogau_action_{$action}" );
 }
 
 /* -----------------------------------------------------------------------
  * Route GET requests (logout)
  * -------------------------------------------------------------------- */
-add_action( 'template_redirect', 'fauth_route_get_request', 0 );
+add_action( 'template_redirect', 'zenlogau_route_get_request', 0 );
 
-function fauth_route_get_request(): void {
-    if ( ! fauth_is_get_request() ) {
+function zenlogau_route_get_request(): void {
+    if ( ! zenlogau_is_get_request() ) {
         return;
     }
-    if ( 'logout' !== get_query_var( 'fauth_action', '' ) ) {
+    if ( 'logout' !== get_query_var( 'zenlogau_action', '' ) ) {
         return;
     }
-    fauth_handle_logout();
+    zenlogau_handle_logout();
 }
 
 /* -----------------------------------------------------------------------
  * Default action registration
  * -------------------------------------------------------------------- */
-add_action( 'init', 'fauth_register_default_actions', 0 );
+add_action( 'init', 'zenlogau_register_default_actions', 0 );
 
-function fauth_register_default_actions(): void {
+function zenlogau_register_default_actions(): void {
     static $done = false;
     if ( $done ) {
         return;
     }
     $done = true;
 
-    fauth()->register_action( 'login', [
+    zenlogau()->register_action( 'login', [
         'title'              => __( 'Log In', 'zen-login-authentication' ),
-        'slug'               => fauth_get_action_slug( 'login' ),
+        'slug'               => zenlogau_get_action_slug( 'login' ),
         'show_nav_menu_item' => ! is_user_logged_in(),
     ] );
 
-    fauth()->register_action( 'logout', [
+    zenlogau()->register_action( 'logout', [
         'title'              => __( 'Log Out', 'zen-login-authentication' ),
-        'slug'               => fauth_get_action_slug( 'logout' ),
+        'slug'               => zenlogau_get_action_slug( 'logout' ),
         'show_in_widget'     => false,
         'show_on_forms'      => false,
         'show_nav_menu_item' => is_user_logged_in(),
     ] );
 
-    fauth()->register_action( 'register', [
+    zenlogau()->register_action( 'register', [
         'title'              => __( 'Register', 'zen-login-authentication' ),
-        'slug'               => fauth_get_action_slug( 'register' ),
+        'slug'               => zenlogau_get_action_slug( 'register' ),
         'show_on_forms'      => (bool) get_option( 'users_can_register' ),
         'show_nav_menu_item' => ! is_user_logged_in(),
     ] );
 
-    fauth()->register_action( 'lostpassword', [
+    zenlogau()->register_action( 'lostpassword', [
         'title'             => __( 'Lost Password', 'zen-login-authentication' ),
-        'slug'              => fauth_get_action_slug( 'lostpassword' ),
+        'slug'              => zenlogau_get_action_slug( 'lostpassword' ),
         'show_in_nav_menus' => false,
     ] );
 
-    fauth()->register_action( 'resetpass', [
+    zenlogau()->register_action( 'resetpass', [
         'title'             => __( 'Reset Password', 'zen-login-authentication' ),
-        'slug'              => fauth_get_action_slug( 'resetpass' ),
+        'slug'              => zenlogau_get_action_slug( 'resetpass' ),
         'show_in_widget'    => false,
         'show_in_nav_menus' => false,
     ] );
 
-    fauth()->register_action( 'account', [
+    zenlogau()->register_action( 'account', [
         'title'              => __( 'My Account', 'zen-login-authentication' ),
-        'slug'               => fauth_get_action_slug( 'account' ),
+        'slug'               => zenlogau_get_action_slug( 'account' ),
         'show_on_forms'      => false,
         'show_nav_menu_item' => is_user_logged_in(),
     ] );
@@ -121,30 +121,30 @@ function fauth_register_default_actions(): void {
  *      run — exactly as wp-login.php does — so membership/LMS plugins, themes,
  *      and the login form/widget all get their say.
  *   2. Never drop a restricted subscriber into wp-admin. Enforced by
- *      fauth_subscriber_login_redirect() (hooked onto login_redirect, last),
+ *      zenlogau_subscriber_login_redirect() (hooked onto login_redirect, last),
  *      which keeps any non-admin destination but rewrites empty/admin targets
  *      to the configured Subscriber redirect. Admins/editors are unaffected.
  * -------------------------------------------------------------------- */
 
-function fauth_resolve_login_redirect( WP_User $user, string $requested = '' ): string {
-    $requested     = '' !== $requested ? fauth_validate_redirect( $requested ) : '';
-    $is_subscriber = fauth_user_is_restricted_subscriber( $user );
+function zenlogau_resolve_login_redirect( WP_User $user, string $requested = '' ): string {
+    $requested     = '' !== $requested ? zenlogau_validate_redirect( $requested ) : '';
+    $is_subscriber = zenlogau_user_is_restricted_subscriber( $user );
 
     // Pre-filter default. Honour an explicit destination the user was heading
     // to — for non-subscribers even an admin one (the "clicked Edit, bounced to
     // login" round-trip). Subscribers never default into wp-admin; they fall
     // back to the configured Subscriber redirect instead.
-    if ( '' !== $requested && ! ( $is_subscriber && fauth_redirect_is_admin( $requested ) ) ) {
+    if ( '' !== $requested && ! ( $is_subscriber && zenlogau_redirect_is_admin( $requested ) ) ) {
         $default = $requested;
     } elseif ( $is_subscriber ) {
-        $default = fauth_get_subscriber_redirect();
+        $default = zenlogau_get_subscriber_redirect();
     } else {
         $default = home_url();
     }
 
     /** This filter is documented in wp-login.php — keep other plugins working. */
     $redirect_to = (string) apply_filters( 'login_redirect', $default, $requested, $user );
-    $redirect_to = fauth_validate_redirect( $redirect_to );
+    $redirect_to = zenlogau_validate_redirect( $redirect_to );
 
     return '' !== $redirect_to ? $redirect_to : home_url();
 }
@@ -152,31 +152,31 @@ function fauth_resolve_login_redirect( WP_User $user, string $requested = '' ): 
 /* -----------------------------------------------------------------------
  * Login handler
  * -------------------------------------------------------------------- */
-add_action( 'fauth_action_login', 'fauth_handle_login' );
+add_action( 'zenlogau_action_login', 'zenlogau_handle_login' );
 
-function fauth_handle_login(): void {
-    $is_ajax = fauth_is_ajax_request();
+function zenlogau_handle_login(): void {
+    $is_ajax = zenlogau_is_ajax_request();
 
-    if ( fauth_rate_limit_is_locked( 'login' ) ) {
+    if ( zenlogau_rate_limit_is_locked( 'login' ) ) {
         $message = sprintf(
             /* translators: %d = minutes */
             __( 'Too many failed attempts. Please try again in %d minutes.', 'zen-login-authentication' ),
-            fauth_get_rate_limit_window()
+            zenlogau_get_rate_limit_window()
         );
-        $form = fauth()->get_form( 'login' );
+        $form = zenlogau()->get_form( 'login' );
         if ( $form ) {
             $form->add_error( 'too_many_attempts', $message );
         }
         if ( $is_ajax ) {
-            fauth_send_ajax_error( [ 'errors' => [ wp_strip_all_tags( $message ) ] ] );
+            zenlogau_send_ajax_error( [ 'errors' => [ wp_strip_all_tags( $message ) ] ] );
         }
         return;
     }
 
-    // phpcs:disable WordPress.Security.NonceVerification.Missing -- the nonce is verified in fauth_route_post_request() before any handler is dispatched.
+    // phpcs:disable WordPress.Security.NonceVerification.Missing -- the nonce is verified in zenlogau_route_post_request() before any handler is dispatched.
     $credentials = [
-        'user_login'    => sanitize_user( fauth_get_request_value( 'log', 'post' ) ),
-        'user_password' => fauth_get_request_value( 'pwd', 'post' ),
+        'user_login'    => sanitize_user( zenlogau_get_request_value( 'log', 'post' ) ),
+        'user_password' => zenlogau_get_request_value( 'pwd', 'post' ),
         'remember'      => isset( $_POST['rememberme'] ) && is_string( $_POST['rememberme'] )
                            && 'forever' === sanitize_key( wp_unslash( $_POST['rememberme'] ) ),
     ];
@@ -185,10 +185,10 @@ function fauth_handle_login(): void {
     $user = wp_signon( $credentials, is_ssl() );
 
     if ( is_wp_error( $user ) ) {
-        fauth_rate_limit_bump( 'login' );
+        zenlogau_rate_limit_bump( 'login' );
 
         $messages = [];
-        $form     = fauth()->get_form( 'login' );
+        $form     = zenlogau()->get_form( 'login' );
 
         foreach ( $user->get_error_codes() as $code ) {
             $raw = $user->get_error_message( $code );
@@ -216,21 +216,21 @@ function fauth_handle_login(): void {
         }
 
         if ( $is_ajax ) {
-            fauth_send_ajax_error( [ 'errors' => $messages ] );
+            zenlogau_send_ajax_error( [ 'errors' => $messages ] );
         }
 
-        do_action( 'fauth_login_failed', $credentials['user_login'] );
+        do_action( 'zenlogau_login_failed', $credentials['user_login'] );
         return;
     }
 
-    fauth_rate_limit_clear( 'login' );
+    zenlogau_rate_limit_clear( 'login' );
 
-    $redirect_to = fauth_resolve_login_redirect( $user, (string) fauth_get_request_value( 'redirect_to' ) );
+    $redirect_to = zenlogau_resolve_login_redirect( $user, (string) zenlogau_get_request_value( 'redirect_to' ) );
 
-    do_action( 'fauth_login_success', $user );
+    do_action( 'zenlogau_login_success', $user );
 
     if ( $is_ajax ) {
-        fauth_send_ajax_success( [ 'redirect' => $redirect_to ] );
+        zenlogau_send_ajax_success( [ 'redirect' => $redirect_to ] );
     }
 
     wp_safe_redirect( $redirect_to );
@@ -240,20 +240,20 @@ function fauth_handle_login(): void {
 /* -----------------------------------------------------------------------
  * Logout handler
  * -------------------------------------------------------------------- */
-function fauth_handle_logout(): void {
+function zenlogau_handle_logout(): void {
     if ( ! is_user_logged_in() ) {
-        wp_safe_redirect( fauth_get_action_url( 'login' ) );
+        wp_safe_redirect( zenlogau_get_action_url( 'login' ) );
         exit;
     }
     check_admin_referer( 'log-out' );
     wp_logout();
 
-    $redirect_to = fauth_get_request_value( 'redirect_to' );
+    $redirect_to = zenlogau_get_request_value( 'redirect_to' );
     $redirect_to = $redirect_to
-        ? fauth_validate_redirect( $redirect_to )
-        : apply_filters( 'fauth_logout_redirect', home_url() );
+        ? zenlogau_validate_redirect( $redirect_to )
+        : apply_filters( 'zenlogau_logout_redirect', home_url() );
 
-    do_action( 'fauth_logout_success' );
+    do_action( 'zenlogau_logout_success' );
     wp_safe_redirect( $redirect_to );
     exit;
 }
@@ -261,47 +261,47 @@ function fauth_handle_logout(): void {
 /* -----------------------------------------------------------------------
  * Registration handler
  * -------------------------------------------------------------------- */
-add_action( 'fauth_action_register', 'fauth_handle_register' );
+add_action( 'zenlogau_action_register', 'zenlogau_handle_register' );
 
-function fauth_handle_register(): void {
-    $is_ajax = fauth_is_ajax_request();
+function zenlogau_handle_register(): void {
+    $is_ajax = zenlogau_is_ajax_request();
 
     if ( ! get_option( 'users_can_register' ) ) {
-        wp_safe_redirect( fauth_get_action_url( 'login' ) );
+        wp_safe_redirect( zenlogau_get_action_url( 'login' ) );
         exit;
     }
 
-    if ( fauth_honeypot_is_spam() ) {
+    if ( zenlogau_honeypot_is_spam() ) {
         if ( $is_ajax ) {
-            fauth_send_ajax_success( [
+            zenlogau_send_ajax_success( [
                 'message' => __( 'Registration complete. Please check your email.', 'zen-login-authentication' ),
             ] );
         }
-        wp_safe_redirect( add_query_arg( 'registered', '1', fauth_get_action_url( 'login' ) ) );
+        wp_safe_redirect( add_query_arg( 'registered', '1', zenlogau_get_action_url( 'login' ) ) );
         exit;
     }
 
-    if ( fauth_rate_limit_is_locked( 'register' ) ) {
+    if ( zenlogau_rate_limit_is_locked( 'register' ) ) {
         $message = __( 'Too many registration attempts. Please wait before trying again.', 'zen-login-authentication' );
-        $form    = fauth()->get_form( 'register' );
+        $form    = zenlogau()->get_form( 'register' );
         if ( $form ) {
             $form->add_error( 'too_many_attempts', $message );
         }
         if ( $is_ajax ) {
-            fauth_send_ajax_error( [ 'errors' => [ wp_strip_all_tags( $message ) ] ] );
+            zenlogau_send_ajax_error( [ 'errors' => [ wp_strip_all_tags( $message ) ] ] );
         }
         return;
     }
 
-    $user_login   = sanitize_user( fauth_get_request_value( 'user_login', 'post' ) );
-    $user_email   = sanitize_email( fauth_get_request_value( 'user_email', 'post' ) );
+    $user_login   = sanitize_user( zenlogau_get_request_value( 'user_login', 'post' ) );
+    $user_email   = sanitize_email( zenlogau_get_request_value( 'user_email', 'post' ) );
     $registration = register_new_user( $user_login, $user_email );
 
     if ( is_wp_error( $registration ) ) {
-        fauth_rate_limit_bump( 'register' );
+        zenlogau_rate_limit_bump( 'register' );
 
         $messages = [];
-        $form     = fauth()->get_form( 'register' );
+        $form     = zenlogau()->get_form( 'register' );
 
         foreach ( $registration->get_error_codes() as $code ) {
             $msg        = $registration->get_error_message( $code );
@@ -312,7 +312,7 @@ function fauth_handle_register(): void {
         }
 
         if ( $is_ajax ) {
-            fauth_send_ajax_error( [ 'errors' => $messages ] );
+            zenlogau_send_ajax_error( [ 'errors' => $messages ] );
         }
         return;
     }
@@ -322,85 +322,85 @@ function fauth_handle_register(): void {
     // Hide the front-end admin toolbar by default for users who register here.
     // This only sets the initial preference (stored as user meta) — the user can
     // re-enable "Show Toolbar when viewing site" from their profile at any time.
-    if ( apply_filters( 'fauth_hide_admin_bar_on_register', true, $new_user_id ) ) {
+    if ( apply_filters( 'zenlogau_hide_admin_bar_on_register', true, $new_user_id ) ) {
         update_user_meta( $new_user_id, 'show_admin_bar_front', 'false' );
     }
 
-    if ( fauth_allow_user_passwords() ) {
-        $pass1 = fauth_get_request_value( 'user_pass1', 'post' );
+    if ( zenlogau_allow_user_passwords() ) {
+        $pass1 = zenlogau_get_request_value( 'user_pass1', 'post' );
         wp_set_password( $pass1, $new_user_id );
         update_user_option( $new_user_id, 'default_password_nag', false, true );
-        fauth_send_new_user_notifications( $new_user_id, 'admin' );
+        zenlogau_send_new_user_notifications( $new_user_id, 'admin' );
     }
 
-    fauth_rate_limit_clear( 'register' );
-    do_action( 'fauth_registration_success', $new_user_id );
+    zenlogau_rate_limit_clear( 'register' );
+    do_action( 'zenlogau_registration_success', $new_user_id );
 
-    if ( fauth_allow_auto_login() ) {
+    if ( zenlogau_allow_auto_login() ) {
         wp_set_auth_cookie( $new_user_id );
         $new_user    = get_user_by( 'id', $new_user_id );
         $redirect_to = $new_user instanceof WP_User
-            ? fauth_resolve_login_redirect( $new_user, (string) fauth_get_request_value( 'redirect_to' ) )
+            ? zenlogau_resolve_login_redirect( $new_user, (string) zenlogau_get_request_value( 'redirect_to' ) )
             : home_url();
         if ( $is_ajax ) {
-            fauth_send_ajax_success( [ 'redirect' => $redirect_to ] );
+            zenlogau_send_ajax_success( [ 'redirect' => $redirect_to ] );
         }
         wp_safe_redirect( $redirect_to );
         exit;
     }
 
     if ( $is_ajax ) {
-        fauth_send_ajax_success( [
+        zenlogau_send_ajax_success( [
             'message' => __( 'Registration complete. Please check your email for login instructions.', 'zen-login-authentication' ),
         ] );
     }
 
-    wp_safe_redirect( add_query_arg( 'registered', '1', fauth_get_action_url( 'login' ) ) );
+    wp_safe_redirect( add_query_arg( 'registered', '1', zenlogau_get_action_url( 'login' ) ) );
     exit;
 }
 
 /* -----------------------------------------------------------------------
  * Lost Password handler
  * -------------------------------------------------------------------- */
-add_action( 'fauth_action_lostpassword', 'fauth_handle_lostpassword' );
+add_action( 'zenlogau_action_lostpassword', 'zenlogau_handle_lostpassword' );
 
-function fauth_handle_lostpassword(): void {
-    $is_ajax = fauth_is_ajax_request();
+function zenlogau_handle_lostpassword(): void {
+    $is_ajax = zenlogau_is_ajax_request();
 
-    if ( fauth_rate_limit_is_locked( 'lostpassword' ) ) {
+    if ( zenlogau_rate_limit_is_locked( 'lostpassword' ) ) {
         $message = __( 'Too many attempts. Please wait a few minutes before trying again.', 'zen-login-authentication' );
-        $form    = fauth()->get_form( 'lostpassword' );
+        $form    = zenlogau()->get_form( 'lostpassword' );
         if ( $form ) {
             $form->add_error( 'too_many_attempts', $message );
         }
         if ( $is_ajax ) {
-            fauth_send_ajax_error( [ 'errors' => [ wp_strip_all_tags( $message ) ] ] );
+            zenlogau_send_ajax_error( [ 'errors' => [ wp_strip_all_tags( $message ) ] ] );
         }
         return;
     }
 
     // FIX (v1.4.14): Honeypot check was missing from this handler.
-    if ( fauth_honeypot_is_spam() ) {
+    if ( zenlogau_honeypot_is_spam() ) {
         if ( $is_ajax ) {
-            fauth_send_ajax_success( [
+            zenlogau_send_ajax_success( [
                 'message' => __( 'Check your email for a link to reset your password.', 'zen-login-authentication' ),
             ] );
         }
-        wp_safe_redirect( add_query_arg( 'checkemail', 'confirm', fauth_get_action_url( 'lostpassword' ) ) );
+        wp_safe_redirect( add_query_arg( 'checkemail', 'confirm', zenlogau_get_action_url( 'lostpassword' ) ) );
         exit;
     }
 
     $result = retrieve_password(
-        sanitize_text_field( fauth_get_request_value( 'user_login', 'post' ) )
+        sanitize_text_field( zenlogau_get_request_value( 'user_login', 'post' ) )
     );
 
-    $count_all = (bool) get_option( 'fauth_lostpassword_count_all', false );
+    $count_all = (bool) get_option( 'zenlogau_lostpassword_count_all', false );
 
     if ( is_wp_error( $result ) ) {
-        fauth_rate_limit_bump( 'lostpassword' );
+        zenlogau_rate_limit_bump( 'lostpassword' );
 
         $messages = [];
-        $form     = fauth()->get_form( 'lostpassword' );
+        $form     = zenlogau()->get_form( 'lostpassword' );
 
         foreach ( $result->get_error_codes() as $code ) {
             $msg        = $result->get_error_message( $code );
@@ -411,51 +411,51 @@ function fauth_handle_lostpassword(): void {
         }
 
         if ( $is_ajax ) {
-            fauth_send_ajax_error( [ 'errors' => $messages ] );
+            zenlogau_send_ajax_error( [ 'errors' => $messages ] );
         }
         return;
     }
 
     if ( $count_all ) {
-        fauth_rate_limit_bump( 'lostpassword' );
+        zenlogau_rate_limit_bump( 'lostpassword' );
     } else {
-        fauth_rate_limit_clear( 'lostpassword' );
+        zenlogau_rate_limit_clear( 'lostpassword' );
     }
 
     if ( $is_ajax ) {
-        fauth_send_ajax_success( [
+        zenlogau_send_ajax_success( [
             'message' => __( 'Check your email for a link to reset your password.', 'zen-login-authentication' ),
         ] );
     }
 
-    wp_safe_redirect( add_query_arg( 'checkemail', 'confirm', fauth_get_action_url( 'lostpassword' ) ) );
+    wp_safe_redirect( add_query_arg( 'checkemail', 'confirm', zenlogau_get_action_url( 'lostpassword' ) ) );
     exit;
 }
 
 /* -----------------------------------------------------------------------
  * Reset Password handler
  * -------------------------------------------------------------------- */
-add_action( 'fauth_action_resetpass', 'fauth_handle_resetpass' );
+add_action( 'zenlogau_action_resetpass', 'zenlogau_handle_resetpass' );
 
-function fauth_handle_resetpass(): void {
-    $is_ajax  = fauth_is_ajax_request();
-    $rp_key   = sanitize_text_field( fauth_get_request_value( 'rp_key',   'post' ) );
-    $rp_login = sanitize_text_field( fauth_get_request_value( 'rp_login', 'post' ) );
-    $pass1    = fauth_get_request_value( 'pass1', 'post' );
-    $pass2    = fauth_get_request_value( 'pass2', 'post' );
-    $form     = fauth()->get_form( 'resetpass' );
+function zenlogau_handle_resetpass(): void {
+    $is_ajax  = zenlogau_is_ajax_request();
+    $rp_key   = sanitize_text_field( zenlogau_get_request_value( 'rp_key',   'post' ) );
+    $rp_login = sanitize_text_field( zenlogau_get_request_value( 'rp_login', 'post' ) );
+    $pass1    = zenlogau_get_request_value( 'pass1', 'post' );
+    $pass2    = zenlogau_get_request_value( 'pass2', 'post' );
+    $form     = zenlogau()->get_form( 'resetpass' );
 
-    if ( fauth_rate_limit_is_locked( 'resetpass' ) ) {
+    if ( zenlogau_rate_limit_is_locked( 'resetpass' ) ) {
         $message = sprintf(
             /* translators: %d = minutes */
             __( 'Too many attempts. Please try again in %d minutes.', 'zen-login-authentication' ),
-            fauth_get_rate_limit_window()
+            zenlogau_get_rate_limit_window()
         );
         if ( $form ) {
             $form->add_error( 'too_many_attempts', $message );
         }
         if ( $is_ajax ) {
-            fauth_send_ajax_error( [ 'errors' => [ wp_strip_all_tags( $message ) ] ] );
+            zenlogau_send_ajax_error( [ 'errors' => [ wp_strip_all_tags( $message ) ] ] );
         }
         return;
     }
@@ -463,13 +463,13 @@ function fauth_handle_resetpass(): void {
     $user = check_password_reset_key( $rp_key, $rp_login );
 
     if ( is_wp_error( $user ) ) {
-        fauth_rate_limit_bump( 'resetpass' );
+        zenlogau_rate_limit_bump( 'resetpass' );
         $message = __( 'This password reset link has expired or is invalid. Please request a new one.', 'zen-login-authentication' );
         if ( $form ) {
             $form->add_error( 'invalid_key', $message );
         }
         if ( $is_ajax ) {
-            fauth_send_ajax_error( [ 'errors' => [ wp_strip_all_tags( $message ) ] ] );
+            zenlogau_send_ajax_error( [ 'errors' => [ wp_strip_all_tags( $message ) ] ] );
         }
         return;
     }
@@ -480,7 +480,7 @@ function fauth_handle_resetpass(): void {
             $form->add_error( 'password_mismatch', $message );
         }
         if ( $is_ajax ) {
-            fauth_send_ajax_error( [ 'errors' => [ wp_strip_all_tags( $message ) ] ] );
+            zenlogau_send_ajax_error( [ 'errors' => [ wp_strip_all_tags( $message ) ] ] );
         }
         return;
     }
@@ -491,19 +491,19 @@ function fauth_handle_resetpass(): void {
             $form->add_error( 'password_too_short', $message );
         }
         if ( $is_ajax ) {
-            fauth_send_ajax_error( [ 'errors' => [ wp_strip_all_tags( $message ) ] ] );
+            zenlogau_send_ajax_error( [ 'errors' => [ wp_strip_all_tags( $message ) ] ] );
         }
         return;
     }
 
-    fauth_rate_limit_clear( 'resetpass' );
+    zenlogau_rate_limit_clear( 'resetpass' );
     reset_password( $user, $pass1 );
-    do_action( 'fauth_password_reset', $user );
+    do_action( 'zenlogau_password_reset', $user );
 
-    $redirect = add_query_arg( 'password', 'changed', fauth_get_action_url( 'login' ) );
+    $redirect = add_query_arg( 'password', 'changed', zenlogau_get_action_url( 'login' ) );
 
     if ( $is_ajax ) {
-        fauth_send_ajax_success( [ 'redirect' => $redirect ] );
+        zenlogau_send_ajax_success( [ 'redirect' => $redirect ] );
     }
 
     wp_safe_redirect( $redirect );
@@ -513,33 +513,33 @@ function fauth_handle_resetpass(): void {
 /* -----------------------------------------------------------------------
  * Account (edit profile) handler
  * -------------------------------------------------------------------- */
-add_action( 'fauth_action_account', 'fauth_handle_account' );
+add_action( 'zenlogau_action_account', 'zenlogau_handle_account' );
 
-function fauth_handle_account(): void {
-    $is_ajax = fauth_is_ajax_request();
+function zenlogau_handle_account(): void {
+    $is_ajax = zenlogau_is_ajax_request();
 
     // The POST router verifies the nonce but not the login state — the same
     // router serves the public login/register forms. Profile updates are for
     // the logged-in user only; their own session is the identity being edited.
     if ( ! is_user_logged_in() ) {
         if ( $is_ajax ) {
-            fauth_send_ajax_error( [
+            zenlogau_send_ajax_error( [
                 'errors' => [ __( 'Your session has expired. Please log in and try again.', 'zen-login-authentication' ) ],
             ] );
         }
-        wp_safe_redirect( fauth_get_action_url( 'login' ) );
+        wp_safe_redirect( zenlogau_get_action_url( 'login' ) );
         exit;
     }
 
     $user = wp_get_current_user();
-    $form = fauth()->get_form( 'account' );
+    $form = zenlogau()->get_form( 'account' );
 
-    $first_name   = sanitize_text_field( fauth_get_request_value( 'first_name', 'post' ) );
-    $last_name    = sanitize_text_field( fauth_get_request_value( 'last_name', 'post' ) );
-    $display_name = sanitize_text_field( fauth_get_request_value( 'display_name', 'post' ) );
-    $user_email   = sanitize_email( fauth_get_request_value( 'user_email', 'post' ) );
-    $pass1        = fauth_get_request_value( 'pass1', 'post' );
-    $pass2        = fauth_get_request_value( 'pass2', 'post' );
+    $first_name   = sanitize_text_field( zenlogau_get_request_value( 'first_name', 'post' ) );
+    $last_name    = sanitize_text_field( zenlogau_get_request_value( 'last_name', 'post' ) );
+    $display_name = sanitize_text_field( zenlogau_get_request_value( 'display_name', 'post' ) );
+    $user_email   = sanitize_email( zenlogau_get_request_value( 'user_email', 'post' ) );
+    $pass1        = zenlogau_get_request_value( 'pass1', 'post' );
+    $pass2        = zenlogau_get_request_value( 'pass2', 'post' );
 
     $errors = new WP_Error();
 
@@ -567,7 +567,7 @@ function fauth_handle_account(): void {
         }
     }
 
-    $errors = apply_filters( 'fauth_account_update_errors', $errors, $user );
+    $errors = apply_filters( 'zenlogau_account_update_errors', $errors, $user );
 
     if ( $errors->has_errors() ) {
         $messages = [];
@@ -579,7 +579,7 @@ function fauth_handle_account(): void {
             }
         }
         if ( $is_ajax ) {
-            fauth_send_ajax_error( [ 'errors' => $messages ] );
+            zenlogau_send_ajax_error( [ 'errors' => $messages ] );
         }
         return;
     }
@@ -613,23 +613,23 @@ function fauth_handle_account(): void {
             }
         }
         if ( $is_ajax ) {
-            fauth_send_ajax_error( [ 'errors' => $messages ] );
+            zenlogau_send_ajax_error( [ 'errors' => $messages ] );
         }
         return;
     }
 
-    do_action( 'fauth_account_updated', $user->ID, $change_password );
+    do_action( 'zenlogau_account_updated', $user->ID, $change_password );
 
     // PRG: redirect back to the page that hosted the form (the form self-posts
     // to it) so a refresh cannot resubmit, and so the re-rendered fields show
     // the freshly saved values instead of the stale pre-update ones.
-    $redirect = fauth_validate_redirect( add_query_arg( 'fauth_updated', '1', remove_query_arg( 'fauth_updated' ) ) );
+    $redirect = zenlogau_validate_redirect( add_query_arg( 'zenlogau_updated', '1', remove_query_arg( 'zenlogau_updated' ) ) );
     if ( '' === $redirect ) {
-        $redirect = add_query_arg( 'fauth_updated', '1', fauth_get_action_url( 'account' ) );
+        $redirect = add_query_arg( 'zenlogau_updated', '1', zenlogau_get_action_url( 'account' ) );
     }
 
     if ( $is_ajax ) {
-        fauth_send_ajax_success( [ 'redirect' => $redirect ] );
+        zenlogau_send_ajax_success( [ 'redirect' => $redirect ] );
     }
 
     wp_safe_redirect( $redirect );
@@ -638,19 +638,19 @@ function fauth_handle_account(): void {
 
 /**
  * Show the "saved" notice after the post-update redirect.
- * Runs after fauth_register_default_forms() (init priority 1).
+ * Runs after zenlogau_register_default_forms() (init priority 1).
  */
-add_action( 'init', 'fauth_account_maybe_show_updated_notice', 20 );
+add_action( 'init', 'zenlogau_account_maybe_show_updated_notice', 20 );
 
-function fauth_account_maybe_show_updated_notice(): void {
+function zenlogau_account_maybe_show_updated_notice(): void {
     if ( ! is_user_logged_in() ) {
         return;
     }
-    $updated = isset( $_GET['fauth_updated'] ) && is_string( $_GET['fauth_updated'] ) ? sanitize_key( wp_unslash( $_GET['fauth_updated'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only display flag set by our own post-update redirect; shows a notice, changes no state.
+    $updated = isset( $_GET['zenlogau_updated'] ) && is_string( $_GET['zenlogau_updated'] ) ? sanitize_key( wp_unslash( $_GET['zenlogau_updated'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only display flag set by our own post-update redirect; shows a notice, changes no state.
     if ( '1' !== $updated ) {
         return;
     }
-    $form = fauth()->get_form( 'account' );
+    $form = zenlogau()->get_form( 'account' );
     if ( $form ) {
         $form->add_message( 'account_updated', __( 'Your profile has been updated.', 'zen-login-authentication' ) );
     }
@@ -659,14 +659,14 @@ function fauth_account_maybe_show_updated_notice(): void {
 /* -----------------------------------------------------------------------
  * Server-side registration password validation
  * -------------------------------------------------------------------- */
-add_filter( 'registration_errors', 'fauth_validate_registration_password', 10, 3 );
+add_filter( 'registration_errors', 'zenlogau_validate_registration_password', 10, 3 );
 
-function fauth_validate_registration_password( WP_Error $errors, $sanitized_user_login, $user_email ): WP_Error {
-    if ( ! fauth_allow_user_passwords() ) {
+function zenlogau_validate_registration_password( WP_Error $errors, $sanitized_user_login, $user_email ): WP_Error {
+    if ( ! zenlogau_allow_user_passwords() ) {
         return $errors;
     }
-    $pass1 = fauth_get_request_value( 'user_pass1', 'post' );
-    $pass2 = fauth_get_request_value( 'user_pass2', 'post' );
+    $pass1 = zenlogau_get_request_value( 'user_pass1', 'post' );
+    $pass2 = zenlogau_get_request_value( 'user_pass2', 'post' );
 
     if ( empty( $pass1 ) || empty( $pass2 ) ) {
         $errors->add( 'empty_password', __( 'Please enter a password.', 'zen-login-authentication' ) );
@@ -682,19 +682,19 @@ function fauth_validate_registration_password( WP_Error $errors, $sanitized_user
 /* -----------------------------------------------------------------------
  * Enforce login type (email-only or username-only)
  * -------------------------------------------------------------------- */
-add_filter( 'authenticate', 'fauth_enforce_login_type', 20, 3 );
+add_filter( 'authenticate', 'zenlogau_enforce_login_type', 20, 3 );
 
-function fauth_enforce_login_type( $user, $username, $password ) {
+function zenlogau_enforce_login_type( $user, $username, $password ) {
     if ( $user instanceof WP_User || is_wp_error( $user ) ) {
         return $user;
     }
-    if ( fauth_is_email_login_type() && ! is_email( $username ) ) {
+    if ( zenlogau_is_email_login_type() && ! is_email( $username ) ) {
         return new WP_Error(
             'invalid_email',
             __( 'Please log in with your email address.', 'zen-login-authentication' )
         );
     }
-    if ( fauth_is_username_login_type() && is_email( $username ) ) {
+    if ( zenlogau_is_username_login_type() && is_email( $username ) ) {
         return new WP_Error(
             'invalid_username',
             __( 'Please log in with your username, not your email address.', 'zen-login-authentication' )
@@ -707,25 +707,25 @@ function fauth_enforce_login_type( $user, $username, $password ) {
  * New user notification helpers
  * -------------------------------------------------------------------- */
 
-function fauth_send_new_user_notifications( int $user_id, string $notify = 'both' ): void {
-    $notify = apply_filters( 'fauth_new_user_notification', $notify, $user_id );
+function zenlogau_send_new_user_notifications( int $user_id, string $notify = 'both' ): void {
+    $notify = apply_filters( 'zenlogau_new_user_notification', $notify, $user_id );
     if ( 'none' === $notify ) {
         return;
     }
     wp_new_user_notification( $user_id, null, $notify );
 }
 
-add_filter( 'wp_send_new_user_notification_to_user', 'fauth_maybe_suppress_user_notification', 10, 2 );
+add_filter( 'wp_send_new_user_notification_to_user', 'zenlogau_maybe_suppress_user_notification', 10, 2 );
 
-function fauth_maybe_suppress_user_notification( bool $send, WP_User $user ): bool {
-    if ( ! fauth_is_post_request() ) {
+function zenlogau_maybe_suppress_user_notification( bool $send, WP_User $user ): bool {
+    if ( ! zenlogau_is_post_request() ) {
         return $send;
     }
-    $action = sanitize_key( fauth_get_request_value( 'fauth_action', 'post' ) );
+    $action = sanitize_key( zenlogau_get_request_value( 'zenlogau_action', 'post' ) );
     if ( 'register' !== $action ) {
         return $send;
     }
-    if ( fauth_allow_user_passwords() ) {
+    if ( zenlogau_allow_user_passwords() ) {
         return false;
     }
     return $send;
@@ -738,17 +738,17 @@ function fauth_maybe_suppress_user_notification( bool $send, WP_User $user ): bo
  * wp_send_new_user_notification_to_admin was introduced in WP 6.1.
  * Source: developer.wordpress.org/reference/hooks/wp_send_new_user_notification_to_admin/
  */
-add_filter( 'wp_send_new_user_notification_to_admin', 'fauth_maybe_suppress_admin_notification', 10, 2 );
+add_filter( 'wp_send_new_user_notification_to_admin', 'zenlogau_maybe_suppress_admin_notification', 10, 2 );
 
-function fauth_maybe_suppress_admin_notification( bool $send, WP_User $user ): bool {
-    if ( ! fauth_is_post_request() ) {
+function zenlogau_maybe_suppress_admin_notification( bool $send, WP_User $user ): bool {
+    if ( ! zenlogau_is_post_request() ) {
         return $send;
     }
-    $action = sanitize_key( fauth_get_request_value( 'fauth_action', 'post' ) );
+    $action = sanitize_key( zenlogau_get_request_value( 'zenlogau_action', 'post' ) );
     if ( 'register' !== $action ) {
         return $send;
     }
-    if ( fauth_allow_user_passwords() ) {
+    if ( zenlogau_allow_user_passwords() ) {
         return false;
     }
     return $send;

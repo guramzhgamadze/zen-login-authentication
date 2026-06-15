@@ -7,9 +7,9 @@
 
 defined( 'ABSPATH' ) || exit;
 
-final class FAUTH {
+final class ZENLOGAU {
 
-    /** @var FAUTH */
+    /** @var ZENLOGAU */
     private static $instance;
 
     /** Registered action slugs => metadata */
@@ -26,7 +26,7 @@ final class FAUTH {
     }
 
     private function __construct() {
-        do_action( 'fauth_init', $this );
+        do_action( 'zenlogau_init', $this );
     }
 
     /* -----------------------------------------------------------------------
@@ -54,7 +54,7 @@ final class FAUTH {
             'show_nav_menu_item' => true,
         ];
         $this->actions[ $name ] = wp_parse_args( $args, $defaults );
-        do_action( 'fauth_registered_action', $name, $this->actions[ $name ] );
+        do_action( 'zenlogau_registered_action', $name, $this->actions[ $name ] );
     }
 
     public function unregister_action( string $name ): void {
@@ -73,9 +73,9 @@ final class FAUTH {
      * Forms registry
      * -------------------------------------------------------------------- */
 
-    public function register_form( FAUTH_Form $form ): FAUTH_Form {
+    public function register_form( ZENLOGAU_Form $form ): ZENLOGAU_Form {
         $this->forms[ $form->get_name() ] = $form;
-        do_action( 'fauth_registered_form', $form->get_name(), $form );
+        do_action( 'zenlogau_registered_form', $form->get_name(), $form );
         return $form;
     }
 
@@ -83,7 +83,7 @@ final class FAUTH {
         unset( $this->forms[ $name ] );
     }
 
-    public function get_form( string $name ): FAUTH_Form|false {
+    public function get_form( string $name ): ZENLOGAU_Form|false {
         return $this->forms[ $name ] ?? false;
     }
 
@@ -93,6 +93,6 @@ final class FAUTH {
 }
 
 /** Global accessor */
-function fauth(): FAUTH {
-    return FAUTH::instance();
+function zenlogau(): ZENLOGAU {
+    return ZENLOGAU::instance();
 }

@@ -10,7 +10,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-class FAUTH_Form {
+class ZENLOGAU_Form {
 
     /** @var string  Unique name, e.g. 'login' */
     private string $name;
@@ -159,7 +159,7 @@ class FAUTH_Form {
 
         ob_start();
 
-        do_action( "fauth_before_form_{$this->name}", $this );
+        do_action( "zenlogau_before_form_{$this->name}", $this );
 
         echo '<div class="fauth fauth-form fauth-form-' . esc_attr( $this->name ) . '">';
 
@@ -190,9 +190,9 @@ class FAUTH_Form {
             'action' => $this->action_url,
             'class'  => 'fauth-inner-form',
             'id'     => 'fauth-form-' . $this->name,
-        ], (array) apply_filters( "fauth_form_attributes_{$this->name}", [] ) );
+        ], (array) apply_filters( "zenlogau_form_attributes_{$this->name}", [] ) );
 
-        if ( fauth_use_ajax() ) {
+        if ( zenlogau_use_ajax() ) {
             $form_attrs['data-ajax'] = '1';
         }
 
@@ -208,10 +208,10 @@ class FAUTH_Form {
         echo ' novalidate>';
 
         // Hidden nonce
-        wp_nonce_field( "fauth_{$this->name}", "fauth_{$this->name}_nonce", false );
+        wp_nonce_field( "zenlogau_{$this->name}", "zenlogau_{$this->name}_nonce", false );
 
         // Hidden action field
-        echo '<input type="hidden" name="fauth_action" value="' . esc_attr( $this->name ) . '">';
+        echo '<input type="hidden" name="zenlogau_action" value="' . esc_attr( $this->name ) . '">';
 
         // Redirect_to
         if ( ! empty( $args['redirect_to'] ) ) {
@@ -219,7 +219,7 @@ class FAUTH_Form {
         }
 
         // Honeypot
-        echo fauth_honeypot_field_html(); // phpcs:ignore
+        echo zenlogau_honeypot_field_html(); // phpcs:ignore
 
         // ----- Fields
         foreach ( $this->sorted_fields() as $field_name => $field ) {
@@ -235,7 +235,7 @@ class FAUTH_Form {
 
         echo '</div>';
 
-        do_action( "fauth_after_form_{$this->name}", $this );
+        do_action( "zenlogau_after_form_{$this->name}", $this );
 
         return ob_get_clean();
     }
@@ -260,12 +260,12 @@ class FAUTH_Form {
         }
 
         if ( 'action' === $type ) {
-            // Fire the FAUTH-namespaced hook for plugin extensions.
-            do_action( "fauth_{$this->name}_form" );
+            // Fire the ZENLOGAU-namespaced hook for plugin extensions.
+            do_action( "zenlogau_{$this->name}_form" );
             // BUG-9 fix: also fire the standard WordPress hooks that 3rd-party
             // plugins (2FA, CAPTCHA, social login) hook into. Without these,
             // any plugin that hooks 'login_form', 'register_form', etc. silently
-            // fails to render its fields inside FAUTH forms.
+            // fails to render its fields inside ZENLOGAU forms.
             $wp_hooks = [
                 'login'        => 'login_form',
                 'register'     => 'register_form',
@@ -381,7 +381,7 @@ class FAUTH_Form {
      * Render the "action links" below the form (e.g. Register | Lost password).
      */
     private function render_links(): void {
-        $links = apply_filters( "fauth_form_links_{$this->name}", [] );
+        $links = apply_filters( "zenlogau_form_links_{$this->name}", [] );
         if ( empty( $links ) ) {
             return;
         }

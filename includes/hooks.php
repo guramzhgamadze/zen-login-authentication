@@ -10,43 +10,43 @@ defined( 'ABSPATH' ) || exit;
 /* -----------------------------------------------------------------------
  * Init
  * -------------------------------------------------------------------- */
-add_action( 'init', 'fauth_register_default_forms', 1 );
-add_action( 'init', 'fauth_add_rewrite_tags' );
-add_action( 'init', 'fauth_add_rewrite_rules' );
+add_action( 'init', 'zenlogau_register_default_forms', 1 );
+add_action( 'init', 'zenlogau_add_rewrite_tags' );
+add_action( 'init', 'zenlogau_add_rewrite_rules' );
 
 /* -----------------------------------------------------------------------
  * Classic sidebar widgets
  * -------------------------------------------------------------------- */
-add_action( 'widgets_init', 'fauth_register_widgets' );
+add_action( 'widgets_init', 'zenlogau_register_widgets' );
 
 /* -----------------------------------------------------------------------
  * Elementor assets — register only (not enqueue); Elementor pulls them
  * via get_script_depends() / get_style_depends() on each widget.
  * -------------------------------------------------------------------- */
-add_action( 'wp_enqueue_scripts', 'fauth_register_assets', 5 );
+add_action( 'wp_enqueue_scripts', 'zenlogau_register_assets', 5 );
 
 /* -----------------------------------------------------------------------
  * Frontend assets enqueue for non-Elementor / virtual-page contexts
  * -------------------------------------------------------------------- */
-add_action( 'wp_enqueue_scripts', 'fauth_enqueue_assets', 10 );
-add_action( 'wp',                 'fauth_remove_unneeded_head_items' );
+add_action( 'wp_enqueue_scripts', 'zenlogau_enqueue_assets', 10 );
+add_action( 'wp',                 'zenlogau_remove_unneeded_head_items' );
 
 /* -----------------------------------------------------------------------
  * Redirect logged-in users away from login/register
  * -------------------------------------------------------------------- */
-add_action( 'template_redirect', 'fauth_maybe_redirect_logged_in_user', 1 );
+add_action( 'template_redirect', 'zenlogau_maybe_redirect_logged_in_user', 1 );
 
 /* -----------------------------------------------------------------------
  * Redirect guests away from the account page (logged-in users only)
  * -------------------------------------------------------------------- */
-add_action( 'template_redirect', 'fauth_maybe_redirect_guest_from_account', 1 );
+add_action( 'template_redirect', 'zenlogau_maybe_redirect_guest_from_account', 1 );
 
 /* -----------------------------------------------------------------------
  * Subscriber containment — applies to ALL login paths (front-end form,
  * wp-login.php, third-party flows) and blocks wp-admin for subscribers.
  * -------------------------------------------------------------------- */
-add_filter( 'login_redirect', 'fauth_subscriber_login_redirect', 9999, 3 );
-add_action( 'admin_init',     'fauth_block_subscriber_admin' );
+add_filter( 'login_redirect', 'zenlogau_subscriber_login_redirect', 9999, 3 );
+add_action( 'admin_init',     'zenlogau_block_subscriber_admin' );
 
 /* -----------------------------------------------------------------------
  * Cache exclusion — auth pages must never be served from cache.
@@ -57,48 +57,48 @@ add_action( 'admin_init',     'fauth_block_subscriber_admin' );
  * being served. We now tell every major caching plugin to skip these
  * URLs and we send no-store headers as a universal fallback.
  * -------------------------------------------------------------------- */
-add_action( 'template_redirect', 'fauth_exclude_from_cache', 0 );
+add_action( 'template_redirect', 'zenlogau_exclude_from_cache', 0 );
 
 /* -----------------------------------------------------------------------
  * URL rewrites
  * -------------------------------------------------------------------- */
-add_filter( 'site_url',         'fauth_filter_site_url',         10, 3 );
-add_filter( 'network_site_url', 'fauth_filter_site_url',         10, 3 );
-add_filter( 'login_url',        'fauth_filter_login_url',        10, 3 );
-add_filter( 'logout_url',       'fauth_filter_logout_url',       10, 2 );
-add_filter( 'lostpassword_url', 'fauth_filter_lostpassword_url', 10, 2 );
+add_filter( 'site_url',         'zenlogau_filter_site_url',         10, 3 );
+add_filter( 'network_site_url', 'zenlogau_filter_site_url',         10, 3 );
+add_filter( 'login_url',        'zenlogau_filter_login_url',        10, 3 );
+add_filter( 'logout_url',       'zenlogau_filter_logout_url',       10, 2 );
+add_filter( 'lostpassword_url', 'zenlogau_filter_lostpassword_url', 10, 2 );
 
 /* -----------------------------------------------------------------------
  * Virtual page support (for non-Elementor / plain-permalink installs)
  * These are no-ops when real pages exist with the same slug.
  * -------------------------------------------------------------------- */
-add_filter( 'the_posts',          'fauth_the_posts',      10, 2 );
-add_filter( 'the_content',        'fauth_maybe_inject_form', 20  );
-add_filter( 'page_template',      'fauth_page_template',  10    );
-add_filter( 'body_class',         'fauth_body_class',     10    );
-add_filter( 'get_edit_post_link', 'fauth_no_edit_link',   10, 2 );
-add_filter( 'comments_array',     'fauth_no_comments',    10    );
+add_filter( 'the_posts',          'zenlogau_the_posts',      10, 2 );
+add_filter( 'the_content',        'zenlogau_maybe_inject_form', 20  );
+add_filter( 'page_template',      'zenlogau_page_template',  10    );
+add_filter( 'body_class',         'zenlogau_body_class',     10    );
+add_filter( 'get_edit_post_link', 'zenlogau_no_edit_link',   10, 2 );
+add_filter( 'comments_array',     'zenlogau_no_comments',    10    );
 
 /* -----------------------------------------------------------------------
  * Handler functions
  * -------------------------------------------------------------------- */
 
-function fauth_add_rewrite_tags(): void {
-    add_rewrite_tag( '%fauth_action%', '([^/]+)' );
+function zenlogau_add_rewrite_tags(): void {
+    add_rewrite_tag( '%zenlogau_action%', '([^/]+)' );
 }
 
-function fauth_add_rewrite_rules(): void {
-    if ( ! fauth_use_permalinks() ) {
+function zenlogau_add_rewrite_rules(): void {
+    if ( ! zenlogau_use_permalinks() ) {
         return;
     }
-    foreach ( fauth()->get_actions() as $name => $action ) {
+    foreach ( zenlogau()->get_actions() as $name => $action ) {
         // Only add rewrite rules for actions that don't already have a real page.
         // If the user has a real page at /login/, WordPress's own routing handles it.
-        if ( fauth_get_page_id( $name ) ) {
+        if ( zenlogau_get_page_id( $name ) ) {
             continue;
         }
-        $slug = fauth_get_action_slug( $name );
-        add_rewrite_rule( $slug . '/?$', 'index.php?fauth_action=' . $name, 'top' );
+        $slug = zenlogau_get_action_slug( $name );
+        add_rewrite_rule( $slug . '/?$', 'index.php?zenlogau_action=' . $name, 'top' );
     }
 }
 
@@ -107,39 +107,39 @@ function fauth_add_rewrite_rules(): void {
  * Elementor widgets declare dependencies via get_script_depends() / get_style_depends(),
  * which requires the handles to be registered before Elementor calls wp_enqueue_script().
  */
-function fauth_register_assets(): void {
+function zenlogau_register_assets(): void {
     $suffix = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
 
     wp_register_style(
         'zen-login-authentication',
-        FAUTH_URL . "assets/styles/frontend-auth{$suffix}.css",
+        ZENLOGAU_URL . "assets/styles/frontend-auth{$suffix}.css",
         [],
-        FAUTH_VERSION
+        ZENLOGAU_VERSION
     );
 
     // Script registration: no strategy:'defer' here because Elementor widgets
     // may need the script and Elementor's own scripts are not deferred.
-    // We enqueue with defer only on non-Elementor pages (see fauth_enqueue_assets).
+    // We enqueue with defer only on non-Elementor pages (see zenlogau_enqueue_assets).
     wp_register_script(
         'zen-login-authentication',
-        FAUTH_URL . "assets/scripts/frontend-auth{$suffix}.js",
+        ZENLOGAU_URL . "assets/scripts/frontend-auth{$suffix}.js",
         [ 'jquery' ],
-        FAUTH_VERSION,
+        ZENLOGAU_VERSION,
         [ 'in_footer' => true ]
     );
 }
 
 /**
- * Enqueue assets on non-Elementor FAUTH pages (virtual rewrite pages).
+ * Enqueue assets on non-Elementor ZENLOGAU pages (virtual rewrite pages).
  * On Elementor pages, Elementor pulls assets via widget dependency declarations.
  */
-function fauth_enqueue_assets(): void {
+function zenlogau_enqueue_assets(): void {
     // Never enqueue inside the Elementor editor/preview/REST context.
-    if ( fauth_is_elementor_context() ) {
+    if ( zenlogau_is_elementor_context() ) {
         return;
     }
 
-    if ( ! fauth_is_fauth_page() ) {
+    if ( ! zenlogau_is_zenlogau_page() ) {
         return;
     }
 
@@ -150,28 +150,28 @@ function fauth_enqueue_assets(): void {
      * BUG FIX (v1.4.3): const fauthConfig declared twice — SyntaxError
      *
      * Previously this function contained a copy of the inline-script block
-     * that also lives in fauth_maybe_add_inline_script(). On a real WordPress
+     * that also lives in zenlogau_maybe_add_inline_script(). On a real WordPress
      * page built with Elementor widgets (not a virtual rewrite page):
      *
-     *   1. fauth_enqueue_assets() runs on wp_enqueue_scripts (priority 10).
-     *      fauth_is_elementor_context() returns FALSE on the public frontend
+     *   1. zenlogau_enqueue_assets() runs on wp_enqueue_scripts (priority 10).
+     *      zenlogau_is_elementor_context() returns FALSE on the public frontend
      *      (it only returns true in the editor, preview, AJAX, or REST
-     *      contexts). fauth_is_fauth_page() returns TRUE. So the old code
+     *      contexts). zenlogau_is_zenlogau_page() returns TRUE. So the old code
      *      called wp_add_inline_script() and output "const fauthConfig".
      *
-     *   2. Elementor then calls Widget_Base::render() for each FAUTH widget.
-     *      render() calls fauth_maybe_add_inline_script(), whose static $done
+     *   2. Elementor then calls Widget_Base::render() for each ZENLOGAU widget.
+     *      render() calls zenlogau_maybe_add_inline_script(), whose static $done
      *      flag was never set by step 1, so it called wp_add_inline_script()
      *      again — producing a second "const fauthConfig" declaration.
      *
      *   Result: browser throws "Identifier 'fauthConfig' has already been
      *   declared" and the entire frontend-auth.js file fails to execute.
      *
-     * Fix: delegate to fauth_maybe_add_inline_script() here. Its static $done
+     * Fix: delegate to zenlogau_maybe_add_inline_script() here. Its static $done
      * flag is the single source of truth. Whichever path fires first sets the
      * flag; the other path becomes a no-op. No double-declaration is possible.
      */
-    fauth_maybe_add_inline_script();
+    zenlogau_maybe_add_inline_script();
 
     do_action( 'login_enqueue_scripts' );
 }
@@ -181,16 +181,16 @@ function fauth_enqueue_assets(): void {
  * Outputs the fauthConfig config object via wp_add_inline_script on the
  * registered handle so it always precedes the script regardless of load order.
  */
-function fauth_maybe_add_inline_script(): void {
+function zenlogau_maybe_add_inline_script(): void {
     static $done = false;
     if ( $done ) {
         return;
     }
     $done = true;
 
-    $script_data = wp_json_encode( apply_filters( 'fauth_script_data', [
-        'useAjax' => fauth_use_ajax(),
-        'action'  => fauth_get_current_action(),
+    $script_data = wp_json_encode( apply_filters( 'zenlogau_script_data', [
+        'useAjax' => zenlogau_use_ajax(),
+        'action'  => zenlogau_get_current_action(),
         'i18n'    => [
             'genericError'       => __( 'An error occurred. Please try again.', 'zen-login-authentication' ),
             'show'               => __( 'Show', 'zen-login-authentication' ),
@@ -211,12 +211,12 @@ function fauth_maybe_add_inline_script(): void {
     }
 }
 
-function fauth_remove_unneeded_head_items(): void {
-    if ( ! fauth_is_fauth_page() ) {
+function zenlogau_remove_unneeded_head_items(): void {
+    if ( ! zenlogau_is_zenlogau_page() ) {
         return;
     }
     // Only strip these on virtual pages — real pages have real content.
-    if ( get_query_var( 'fauth_action', '' ) ) {
+    if ( get_query_var( 'zenlogau_action', '' ) ) {
         remove_action( 'wp_head', 'feed_links',                      2  );
         remove_action( 'wp_head', 'feed_links_extra',                3  );
         remove_action( 'wp_head', 'rsd_link',                        10 );
@@ -226,14 +226,14 @@ function fauth_remove_unneeded_head_items(): void {
     }
 }
 
-function fauth_maybe_redirect_logged_in_user(): void {
-    if ( fauth_is_elementor_context() ) {
+function zenlogau_maybe_redirect_logged_in_user(): void {
+    if ( zenlogau_is_elementor_context() ) {
         return;
     }
     if ( ! is_user_logged_in() ) {
         return;
     }
-    $action = fauth_get_current_action();
+    $action = zenlogau_get_current_action();
     if ( ! in_array( $action, [ 'login', 'register' ], true ) ) {
         return;
     }
@@ -254,17 +254,17 @@ function fauth_maybe_redirect_logged_in_user(): void {
 
     // 1. Honour an explicit redirect_to if present.
     $redirect_to = isset( $_GET['redirect_to'] ) && is_string( $_GET['redirect_to'] ) // phpcs:ignore WordPress.Security.NonceVerification
-        ? fauth_validate_redirect( wp_unslash( $_GET['redirect_to'] ) ) // phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput
+        ? zenlogau_validate_redirect( wp_unslash( $_GET['redirect_to'] ) ) // phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput
         : '';
 
     $user              = wp_get_current_user();
-    $is_subscriber     = fauth_user_is_restricted_subscriber( $user );
-    $subscriber_default = fauth_get_subscriber_redirect();
+    $is_subscriber     = zenlogau_user_is_restricted_subscriber( $user );
+    $subscriber_default = zenlogau_get_subscriber_redirect();
 
     if ( $is_subscriber ) {
         // Subscribers always go to the configured Subscriber redirect (never
         // wp-admin, and overriding any redirect_to in the URL/form).
-        $redirect_to = (string) apply_filters( 'fauth_subscriber_login_redirect_to', $subscriber_default, $redirect_to, $user );
+        $redirect_to = (string) apply_filters( 'zenlogau_subscriber_login_redirect_to', $subscriber_default, $redirect_to, $user );
     } elseif ( empty( $redirect_to ) ) {
         // Privileged users: honour redirect_to if present, otherwise home_url().
         // Do NOT default to admin_url() — if they landed on the login page without
@@ -272,7 +272,7 @@ function fauth_maybe_redirect_logged_in_user(): void {
         $redirect_to = home_url();
     }
 
-    $redirect = apply_filters( 'fauth_logged_in_redirect', $redirect_to );
+    $redirect = apply_filters( 'zenlogau_logged_in_redirect', $redirect_to );
     wp_safe_redirect( $redirect );
     exit;
 }
@@ -282,20 +282,20 @@ function fauth_maybe_redirect_logged_in_user(): void {
  * for logged-in users. Guests are sent to the login page with redirect_to
  * pointing back here, so after signing in they land on their account page.
  */
-function fauth_maybe_redirect_guest_from_account(): void {
-    if ( fauth_is_elementor_context() ) {
+function zenlogau_maybe_redirect_guest_from_account(): void {
+    if ( zenlogau_is_elementor_context() ) {
         return;
     }
     if ( is_user_logged_in() ) {
         return;
     }
-    if ( 'account' !== fauth_get_current_action() ) {
+    if ( 'account' !== zenlogau_get_current_action() ) {
         return;
     }
     $login_url = add_query_arg(
         'redirect_to',
-        rawurlencode( fauth_get_action_url( 'account' ) ),
-        fauth_get_action_url( 'login' )
+        rawurlencode( zenlogau_get_action_url( 'account' ) ),
+        zenlogau_get_action_url( 'login' )
     );
     wp_safe_redirect( $login_url );
     exit;
@@ -323,19 +323,19 @@ function fauth_maybe_redirect_guest_from_account(): void {
  * @param mixed  $user                  WP_User on success, WP_Error otherwise.
  * @return string
  */
-function fauth_subscriber_login_redirect( $redirect_to, $requested_redirect_to, $user ): string {
-    if ( ! fauth_user_is_restricted_subscriber( $user ) ) {
+function zenlogau_subscriber_login_redirect( $redirect_to, $requested_redirect_to, $user ): string {
+    if ( ! zenlogau_user_is_restricted_subscriber( $user ) ) {
         return (string) $redirect_to;
     }
     $redirect_to = (string) $redirect_to;
     // Respect any non-admin destination already chosen; only fall back to the
     // Subscriber redirect when there is nothing valid, or it would drop the
-    // subscriber into wp-admin (which fauth_block_subscriber_admin() would then
+    // subscriber into wp-admin (which zenlogau_block_subscriber_admin() would then
     // bounce anyway — this just avoids the round-trip and the admin flash).
-    if ( '' === $redirect_to || fauth_redirect_is_admin( $redirect_to ) ) {
-        $redirect_to = fauth_get_subscriber_redirect();
+    if ( '' === $redirect_to || zenlogau_redirect_is_admin( $redirect_to ) ) {
+        $redirect_to = zenlogau_get_subscriber_redirect();
     }
-    return (string) apply_filters( 'fauth_subscriber_login_redirect_to', $redirect_to, (string) $requested_redirect_to, $user );
+    return (string) apply_filters( 'zenlogau_subscriber_login_redirect_to', $redirect_to, (string) $requested_redirect_to, $user );
 }
 
 /**
@@ -343,7 +343,7 @@ function fauth_subscriber_login_redirect( $redirect_to, $requested_redirect_to, 
  * user is redirected to the Subscriber redirect destination (the site home page
  * by default). admin-ajax.php is exempt so front-end AJAX keeps working.
  */
-function fauth_block_subscriber_admin(): void {
+function zenlogau_block_subscriber_admin(): void {
     if ( wp_doing_ajax() ) {
         return; // never break admin-ajax.php
     }
@@ -363,10 +363,10 @@ function fauth_block_subscriber_admin(): void {
     if ( ! is_user_logged_in() ) {
         return;
     }
-    if ( ! fauth_user_is_restricted_subscriber( wp_get_current_user() ) ) {
+    if ( ! zenlogau_user_is_restricted_subscriber( wp_get_current_user() ) ) {
         return;
     }
-    wp_safe_redirect( fauth_get_subscriber_redirect() );
+    wp_safe_redirect( zenlogau_get_subscriber_redirect() );
     exit;
 }
 
@@ -375,16 +375,16 @@ function fauth_block_subscriber_admin(): void {
  * On Elementor sites with real pages this is a no-op.
  * -------------------------------------------------------------------- */
 
-function fauth_the_posts( array $posts, WP_Query $wp_query ): array {
+function zenlogau_the_posts( array $posts, WP_Query $wp_query ): array {
     if ( ! $wp_query->is_main_query() ) {
         return $posts;
     }
-    $action = get_query_var( 'fauth_action', '' );
-    if ( empty( $action ) || ! fauth()->get_action( $action ) ) {
+    $action = get_query_var( 'zenlogau_action', '' );
+    if ( empty( $action ) || ! zenlogau()->get_action( $action ) ) {
         return $posts;
     }
     // If a real page exists for this action, don't inject — real page wins.
-    if ( fauth_get_page_id( $action ) ) {
+    if ( zenlogau_get_page_id( $action ) ) {
         return $posts;
     }
 
@@ -398,34 +398,34 @@ function fauth_the_posts( array $posts, WP_Query $wp_query ): array {
         'post_modified_gmt' => current_time( 'mysql', true ),
         'post_type'         => 'page',
         'post_content'      => '',
-        'post_title'        => fauth()->get_action( $action )['title'] ?? ucfirst( $action ),
+        'post_title'        => zenlogau()->get_action( $action )['title'] ?? ucfirst( $action ),
         'post_excerpt'      => '',
-        'post_name'         => fauth_get_action_slug( $action ),
+        'post_name'         => zenlogau_get_action_slug( $action ),
         'ping_status'       => 'closed',
         'comment_status'    => 'closed',
         'filter'            => 'raw',
-        'guid'              => fauth_get_action_url( $action ),
+        'guid'              => zenlogau_get_action_url( $action ),
     ] );
 
     return [ $post ];
 }
 
 /**
- * Auto-render the auth form inside virtual pages and empty real FAUTH pages.
+ * Auto-render the auth form inside virtual pages and empty real ZENLOGAU pages.
  *
- * FIX (v1.4.15): Virtual pages injected by fauth_the_posts() have empty post_content.
+ * FIX (v1.4.15): Virtual pages injected by zenlogau_the_posts() have empty post_content.
  * Without this filter, the theme renders a blank page — the user never sees a login form.
  * This filter injects the appropriate form HTML into the_content so that:
  *
  *   1. Virtual pages (non-Elementor sites) display the form automatically.
- *   2. Real FAUTH pages that haven't had an Elementor widget added yet still work.
+ *   2. Real ZENLOGAU pages that haven't had an Elementor widget added yet still work.
  *   3. Real pages that DO have content (Elementor widgets, shortcodes, manual HTML)
  *      are left untouched — we only inject when content is empty.
  *
  * Priority 20 runs after Elementor's own the_content filter (priority 9) and
  * WordPress core's wpautop/shortcode filters (priority 10-11).
  */
-function fauth_maybe_inject_form( string $content ): string {
+function zenlogau_maybe_inject_form( string $content ): string {
     if ( ! in_the_loop() || ! is_main_query() ) {
         return $content;
     }
@@ -433,7 +433,7 @@ function fauth_maybe_inject_form( string $content ): string {
     // owns this page — do not duplicate the form.
     //
     // BUG FIX (v1.4.16): Elementor outputs empty wrapper divs even for pages with no
-    // widgets (e.g. a freshly-created FAUTH page before the Login widget is added):
+    // widgets (e.g. a freshly-created ZENLOGAU page before the Login widget is added):
     //   <div class="elementor elementor-123">...</div>
     // This non-empty string caused the form to never be injected, leaving a blank page.
     //
@@ -446,7 +446,7 @@ function fauth_maybe_inject_form( string $content ): string {
     if ( '' !== trim( wp_strip_all_tags( $content ) ) ) {
         return $content;
     }
-    $action = fauth_get_current_action();
+    $action = zenlogau_get_current_action();
     if ( ! $action ) {
         return $content;
     }
@@ -475,25 +475,25 @@ function fauth_maybe_inject_form( string $content ): string {
                 . '<ul class="fauth-errors" role="alert">'
                 . '<li class="fauth-error">' . esc_html__( 'This password reset link is invalid or has expired. Please request a new one.', 'zen-login-authentication' ) . '</li>'
                 . '</ul>'
-                . '<p class="fauth-links"><a href="' . esc_url( fauth_get_action_url( 'lostpassword' ) ) . '">'
+                . '<p class="fauth-links"><a href="' . esc_url( zenlogau_get_action_url( 'lostpassword' ) ) . '">'
                 . esc_html__( 'Request a new password reset link', 'zen-login-authentication' ) . '</a></p>'
                 . '</div>';
         }
     }
 
-    return fauth_render_form( $action, [
+    return zenlogau_render_form( $action, [
         // FIX (v1.4.16): Pass redirect_to from the current URL into the form so it is
         // written as a hidden field. Without this, the handler receives no redirect_to
         // on POST and falls back to home_url() — even when the user arrived via e.g.
         // /log-in/?redirect_to=/dashboard/.
         'redirect_to' => isset( $_GET['redirect_to'] ) && is_string( $_GET['redirect_to'] ) // phpcs:ignore WordPress.Security.NonceVerification
-            ? fauth_validate_redirect( wp_unslash( $_GET['redirect_to'] ) ) // phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput
+            ? zenlogau_validate_redirect( wp_unslash( $_GET['redirect_to'] ) ) // phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput
             : '',
     ] );
 }
 
-function fauth_page_template( string $template ): string {
-    if ( ! get_query_var( 'fauth_action', '' ) ) {
+function zenlogau_page_template( string $template ): string {
+    if ( ! get_query_var( 'zenlogau_action', '' ) ) {
         return $template;
     }
     if ( function_exists( 'wp_is_block_theme' ) && wp_is_block_theme() ) {
@@ -502,7 +502,7 @@ function fauth_page_template( string $template ): string {
     if ( ABSPATH . WPINC . '/template-canvas.php' === $template ) {
         return $template;
     }
-    $action     = get_query_var( 'fauth_action', '' );
+    $action     = get_query_var( 'zenlogau_action', '' );
     $candidates = [
         "frontend-auth-{$action}.php",
         "fauth-{$action}.php",
@@ -514,10 +514,10 @@ function fauth_page_template( string $template ): string {
     return $found ?: $template;
 }
 
-function fauth_body_class( array $classes ): array {
-    if ( fauth_is_fauth_page() ) {
+function zenlogau_body_class( array $classes ): array {
+    if ( zenlogau_is_zenlogau_page() ) {
         $classes[] = 'fauth-page';
-        $action    = fauth_get_current_action();
+        $action    = zenlogau_get_current_action();
         if ( $action ) {
             $classes[] = 'fauth-action-' . sanitize_html_class( $action );
         }
@@ -525,12 +525,12 @@ function fauth_body_class( array $classes ): array {
     return $classes;
 }
 
-function fauth_no_edit_link( $link, $post_id ) {
-    return ( get_query_var( 'fauth_action', '' ) && -1 === (int) $post_id ) ? '' : $link;
+function zenlogau_no_edit_link( $link, $post_id ) {
+    return ( get_query_var( 'zenlogau_action', '' ) && -1 === (int) $post_id ) ? '' : $link;
 }
 
-function fauth_no_comments( array $comments ): array {
-    return get_query_var( 'fauth_action', '' ) ? [] : $comments;
+function zenlogau_no_comments( array $comments ): array {
+    return get_query_var( 'zenlogau_action', '' ) ? [] : $comments;
 }
 
 /* -----------------------------------------------------------------------
@@ -538,20 +538,20 @@ function fauth_no_comments( array $comments ): array {
  *
  * Third-party plugins that use wp_login_url() as part of an OAuth or
  * other authentication flow (e.g. WordPress MCP Bridge) need the native
- * /wp-login.php URL, not the FAUTH frontend /log-in/ page, because they
+ * /wp-login.php URL, not the ZENLOGAU frontend /log-in/ page, because they
  * control the redirect_to value themselves and expect WordPress core's
  * login handler to be at the other end.
  *
  * Usage — from another plugin:
  *
- *   // Tell FAUTH not to intercept login_url() in this REST request context.
- *   add_filter( 'fauth_login_url_exempt', '__return_true' );
+ *   // Tell ZENLOGAU not to intercept login_url() in this REST request context.
+ *   add_filter( 'zenlogau_login_url_exempt', '__return_true' );
  *   $login = wp_login_url( $return );
- *   remove_filter( 'fauth_login_url_exempt', '__return_true' );
+ *   remove_filter( 'zenlogau_login_url_exempt', '__return_true' );
  *
- * Or permanently opt out of FAUTH's login_url rewriting for a specific
+ * Or permanently opt out of ZENLOGAU's login_url rewriting for a specific
  * callback by inspecting the $redirect parameter inside a higher-priority
- * filter on 'fauth_login_url_exempt'.
+ * filter on 'zenlogau_login_url_exempt'.
  *
  * The filter also fires automatically when the current request is a
  * non-Elementor REST API call that includes an OAuth redirect_uri
@@ -560,22 +560,22 @@ function fauth_no_comments( array $comments ): array {
  * -------------------------------------------------------------------- */
 
 /**
- * Return true when FAUTH's login_url filter should stand aside.
+ * Return true when ZENLOGAU's login_url filter should stand aside.
  *
  * Checks in order:
- *  1. 'fauth_login_url_exempt' filter — other plugins can hook here.
- *  2. REST_REQUEST in a non-Elementor, non-FAUTH REST context that
+ *  1. 'zenlogau_login_url_exempt' filter — other plugins can hook here.
+ *  2. REST_REQUEST in a non-Elementor, non-ZENLOGAU REST context that
  *     carries an OAuth redirect_uri parameter (MCP bridge, WP OAuth
  *     Server, etc.).
  *  3. The redirect parameter itself already contains a REST API URL for
- *     this site (e.g. /wp-json/mcp/v1/oauth/authorize?...) — FAUTH's
+ *     this site (e.g. /wp-json/mcp/v1/oauth/authorize?...) — ZENLOGAU's
  *     page would not know how to handle it.
  *
  * @param string $redirect  The redirect_to value passed to wp_login_url().
  */
-function fauth_is_login_url_exempt( string $redirect ): bool {
+function zenlogau_is_login_url_exempt( string $redirect ): bool {
     // 1. Explicit opt-out from another plugin.
-    if ( apply_filters( 'fauth_login_url_exempt', false, $redirect ) ) {
+    if ( apply_filters( 'zenlogau_login_url_exempt', false, $redirect ) ) {
         return true;
     }
 
@@ -586,9 +586,9 @@ function fauth_is_login_url_exempt( string $redirect ): bool {
 
     // 3. BUG FIX (v1.4.16): The current request IS a REST request for a non-Elementor
     //    route (e.g. /wp-json/mcp/v1/...). In this context, any wp-login.php reference
-    //    that fauth_filter_site_url() intercepts should go to the native login handler,
+    //    that zenlogau_filter_site_url() intercepts should go to the native login handler,
     //    because the MCP bridge and other OAuth plugins control the redirect themselves.
-    //    fauth_is_elementor_context() already exempts Elementor REST routes; this covers
+    //    zenlogau_is_elementor_context() already exempts Elementor REST routes; this covers
     //    all other REST routes (MCP, WooCommerce, custom plugins, etc.).
     if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
         $route = $GLOBALS['wp']->query_vars['rest_route'] ?? '';
@@ -605,23 +605,23 @@ function fauth_is_login_url_exempt( string $redirect ): bool {
  * URL filters
  * -------------------------------------------------------------------- */
 
-function fauth_filter_login_url( string $login_url, string $redirect, bool $force_reauth ): string {
-    if ( fauth_is_elementor_context() ) {
+function zenlogau_filter_login_url( string $login_url, string $redirect, bool $force_reauth ): string {
+    if ( zenlogau_is_elementor_context() ) {
         return $login_url;
     }
     // Exempt OAuth flows and other REST-based auth handlers (e.g. MCP Bridge).
-    // See fauth_is_login_url_exempt() for the full decision tree.
-    if ( fauth_is_login_url_exempt( $redirect ) ) {
+    // See zenlogau_is_login_url_exempt() for the full decision tree.
+    if ( zenlogau_is_login_url_exempt( $redirect ) ) {
         return $login_url;
     }
     global $pagenow;
     if ( 'wp-login.php' === $pagenow || is_customize_preview() ) {
         return $login_url;
     }
-    if ( ! fauth()->get_action( 'login' ) ) {
+    if ( ! zenlogau()->get_action( 'login' ) ) {
         return $login_url;
     }
-    $url = fauth_get_action_url( 'login' );
+    $url = zenlogau_get_action_url( 'login' );
     if ( ! empty( $redirect ) ) {
         $url = add_query_arg( 'redirect_to', rawurlencode( $redirect ), $url );
     }
@@ -631,9 +631,9 @@ function fauth_filter_login_url( string $login_url, string $redirect, bool $forc
     return $url;
 }
 
-function fauth_filter_site_url( string $url, string $path, $scheme ): string {
+function zenlogau_filter_site_url( string $url, string $path, $scheme ): string {
     global $pagenow;
-    if ( fauth_is_elementor_context() ) {
+    if ( zenlogau_is_elementor_context() ) {
         return $url;
     }
     if ( 'wp-login.php' === $pagenow || is_customize_preview() ) {
@@ -656,16 +656,16 @@ function fauth_filter_site_url( string $url, string $path, $scheme ): string {
         return $url;
     }
 
-    // BUG FIX (v1.4.16): Apply the same MCP/REST exemption that fauth_filter_login_url()
+    // BUG FIX (v1.4.16): Apply the same MCP/REST exemption that zenlogau_filter_login_url()
     // already had. The MCP Bridge plugin (and other OAuth handlers) call site_url('wp-login.php')
-    // directly — NOT wp_login_url() — so the exemption in fauth_filter_login_url() never fired.
-    // Result: MCP OAuth redirects pointed to the FAUTH /login/ page instead of /wp-login.php,
+    // directly — NOT wp_login_url() — so the exemption in zenlogau_filter_login_url() never fired.
+    // Result: MCP OAuth redirects pointed to the ZENLOGAU /login/ page instead of /wp-login.php,
     // breaking the authorization flow.
     //
-    // Build a synthetic redirect from the full URL so fauth_is_login_url_exempt() can
+    // Build a synthetic redirect from the full URL so zenlogau_is_login_url_exempt() can
     // inspect whether the destination is a REST endpoint on this site.
     $synthetic_redirect = $url;
-    if ( fauth_is_login_url_exempt( $synthetic_redirect ) ) {
+    if ( zenlogau_is_login_url_exempt( $synthetic_redirect ) ) {
         return $url;
     }
     $action_from_query = $query['action'] ?? '';
@@ -681,34 +681,34 @@ function fauth_filter_site_url( string $url, string $path, $scheme ): string {
     } elseif ( 'rp' === $action ) {
         $action = 'resetpass';
     }
-    if ( ! fauth()->get_action( $action ) ) {
+    if ( ! zenlogau()->get_action( $action ) ) {
         return $url;
     }
     unset( $query['action'] );
-    $new_url = fauth_get_action_url( $action, 'network_site_url' === current_filter() );
+    $new_url = zenlogau_get_action_url( $action, 'network_site_url' === current_filter() );
     return add_query_arg( $query, $new_url );
 }
 
-function fauth_filter_logout_url( string $url, string $redirect ): string {
-    if ( ! fauth()->get_action( 'logout' ) ) {
+function zenlogau_filter_logout_url( string $url, string $redirect ): string {
+    if ( ! zenlogau()->get_action( 'logout' ) ) {
         return $url;
     }
-    $url = fauth_get_action_url( 'logout' );
+    $url = zenlogau_get_action_url( 'logout' );
     if ( ! empty( $redirect ) ) {
         $url = add_query_arg( 'redirect_to', rawurlencode( $redirect ), $url );
     }
     return wp_nonce_url( $url, 'log-out' );
 }
 
-function fauth_filter_lostpassword_url( string $url, string $redirect ): string {
+function zenlogau_filter_lostpassword_url( string $url, string $redirect ): string {
     global $pagenow;
     if ( 'wp-login.php' === $pagenow ) {
         return $url;
     }
-    if ( ! fauth()->get_action( 'lostpassword' ) ) {
+    if ( ! zenlogau()->get_action( 'lostpassword' ) ) {
         return $url;
     }
-    $url = fauth_get_action_url( 'lostpassword' );
+    $url = zenlogau_get_action_url( 'lostpassword' );
     if ( ! empty( $redirect ) ) {
         $url = add_query_arg( 'redirect_to', rawurlencode( $redirect ), $url );
     }
@@ -727,8 +727,8 @@ function fauth_filter_lostpassword_url( string $url, string $redirect ): string 
  * template, so caching plugins that hook template_redirect at priority 1
  * (e.g. LiteSpeed Cache, WP Rocket) see our opt-out first.
  */
-function fauth_exclude_from_cache(): void {
-    if ( ! fauth_is_fauth_page() ) {
+function zenlogau_exclude_from_cache(): void {
+    if ( ! zenlogau_is_zenlogau_page() ) {
         return;
     }
 
@@ -778,19 +778,19 @@ function fauth_exclude_from_cache(): void {
     // (different plugin from Super Page Cache — both check DONOTCACHEPAGE)
 
     // ── Kinsta / Cloudflare / generic object cache bypass ────────────────
-    do_action( 'fauth_exclude_from_cache' ); // allow third-party hooks
+    do_action( 'zenlogau_exclude_from_cache' ); // allow third-party hooks
 }
 
 /**
- * Purge cached versions of all FAUTH pages from LiteSpeed Cache and
+ * Purge cached versions of all ZENLOGAU pages from LiteSpeed Cache and
  * Super Page Cache when the plugin version changes (e.g. after update).
  *
- * Called from fauth_maybe_upgrade() via the 'fauth_after_upgrade' action.
+ * Called from zenlogau_maybe_upgrade() via the 'zenlogau_after_upgrade' action.
  */
-function fauth_purge_auth_page_cache(): void {
+function zenlogau_purge_auth_page_cache(): void {
     $urls = [];
-    foreach ( array_keys( fauth_get_page_actions() ) as $action ) {
-        $urls[] = fauth_get_action_url( $action );
+    foreach ( array_keys( zenlogau_get_page_actions() ) as $action ) {
+        $urls[] = zenlogau_get_action_url( $action );
     }
 
     // LiteSpeed Cache — purge by URL
@@ -803,7 +803,7 @@ function fauth_purge_auth_page_cache(): void {
         super_cache_purge_all();
     }
     // WP Super Cache needs no explicit purge here: every auth-page request sets
-    // DONOTCACHEPAGE (see fauth_exclude_from_cache), which WP Super Cache honours,
+    // DONOTCACHEPAGE (see zenlogau_exclude_from_cache), which WP Super Cache honours,
     // so those pages are never cached in the first place.
 
     // WP Rocket

@@ -11,37 +11,37 @@ defined( 'ABSPATH' ) || exit;
  * General option accessors
  * -------------------------------------------------------------------- */
 
-function fauth_use_permalinks(): bool {
+function zenlogau_use_permalinks(): bool {
     global $wp_rewrite;
     if ( ! $wp_rewrite instanceof WP_Rewrite ) {
         $wp_rewrite = new WP_Rewrite();
     }
     $wp_has_permalinks = $wp_rewrite->using_permalinks();
-    $option            = (bool) get_option( 'fauth_use_permalinks', true );
-    return (bool) apply_filters( 'fauth_use_permalinks', $wp_has_permalinks && $option );
+    $option            = (bool) get_option( 'zenlogau_use_permalinks', true );
+    return (bool) apply_filters( 'zenlogau_use_permalinks', $wp_has_permalinks && $option );
 }
 
-function fauth_use_ajax(): bool {
-    return (bool) apply_filters( 'fauth_use_ajax', get_option( 'fauth_use_ajax', false ) );
+function zenlogau_use_ajax(): bool {
+    return (bool) apply_filters( 'zenlogau_use_ajax', get_option( 'zenlogau_use_ajax', false ) );
 }
 
-function fauth_get_login_type(): string {
-    return (string) apply_filters( 'fauth_get_login_type', get_option( 'fauth_login_type', 'default' ) );
+function zenlogau_get_login_type(): string {
+    return (string) apply_filters( 'zenlogau_get_login_type', get_option( 'zenlogau_login_type', 'default' ) );
 }
 
-function fauth_is_email_login_type(): bool    { return 'email'    === fauth_get_login_type(); }
-function fauth_is_username_login_type(): bool { return 'username' === fauth_get_login_type(); }
+function zenlogau_is_email_login_type(): bool    { return 'email'    === zenlogau_get_login_type(); }
+function zenlogau_is_username_login_type(): bool { return 'username' === zenlogau_get_login_type(); }
 
-function fauth_allow_user_passwords(): bool {
-    return (bool) apply_filters( 'fauth_allow_user_passwords', get_option( 'fauth_user_passwords', false ) );
+function zenlogau_allow_user_passwords(): bool {
+    return (bool) apply_filters( 'zenlogau_allow_user_passwords', get_option( 'zenlogau_user_passwords', false ) );
 }
 
-function fauth_allow_auto_login(): bool {
-    return (bool) apply_filters( 'fauth_allow_auto_login', get_option( 'fauth_auto_login', false ) );
+function zenlogau_allow_auto_login(): bool {
+    return (bool) apply_filters( 'zenlogau_allow_auto_login', get_option( 'zenlogau_auto_login', false ) );
 }
 
-function fauth_use_honeypot(): bool {
-    return (bool) apply_filters( 'fauth_use_honeypot', get_option( 'fauth_honeypot', true ) );
+function zenlogau_use_honeypot(): bool {
+    return (bool) apply_filters( 'zenlogau_use_honeypot', get_option( 'zenlogau_honeypot', true ) );
 }
 
 /**
@@ -52,17 +52,17 @@ function fauth_use_honeypot(): bool {
  *
  * @param string $widget One of: login, register, lostpassword, resetpass, account.
  */
-function fauth_widget_enabled( string $widget ): bool {
-    $enabled = (bool) get_option( "fauth_widget_enabled_{$widget}", true );
-    return (bool) apply_filters( 'fauth_widget_enabled', $enabled, $widget );
+function zenlogau_widget_enabled( string $widget ): bool {
+    $enabled = (bool) get_option( "zenlogau_widget_enabled_{$widget}", true );
+    return (bool) apply_filters( 'zenlogau_widget_enabled', $enabled, $widget );
 }
 
-function fauth_get_rate_limit(): int {
-    return (int) apply_filters( 'fauth_rate_limit', get_option( 'fauth_rate_limit', 10 ) );
+function zenlogau_get_rate_limit(): int {
+    return (int) apply_filters( 'zenlogau_rate_limit', get_option( 'zenlogau_rate_limit', 10 ) );
 }
 
-function fauth_get_rate_limit_window(): int {
-    return (int) apply_filters( 'fauth_rate_limit_window', get_option( 'fauth_rate_limit_window', 15 ) );
+function zenlogau_get_rate_limit_window(): int {
+    return (int) apply_filters( 'zenlogau_rate_limit_window', get_option( 'zenlogau_rate_limit_window', 15 ) );
 }
 
 /**
@@ -70,17 +70,17 @@ function fauth_get_rate_limit_window(): int {
  * should land after logging in.
  *
  * Configurable via Settings → Zen Login & Authentication → "Subscriber redirect". The stored
- * value (option fauth_subscriber_redirect) may be:
+ * value (option zenlogau_subscriber_redirect) may be:
  *   - empty       → the site home page (default)
  *   - a slug/path → resolved against home_url(), e.g. "dashboard" → https://site/dashboard/
  *   - a full URL  → used as-is (still passed through wp_safe_redirect() at the call
  *                   site, so only same-host destinations are honoured)
  *
- * The legacy 'fauth_subscriber_redirect' filter still works and wraps the resolved
+ * The legacy 'zenlogau_subscriber_redirect' filter still works and wraps the resolved
  * default, so any code already overriding it keeps functioning.
  */
-function fauth_get_subscriber_redirect(): string {
-    $value = trim( (string) get_option( 'fauth_subscriber_redirect', '' ) );
+function zenlogau_get_subscriber_redirect(): string {
+    $value = trim( (string) get_option( 'zenlogau_subscriber_redirect', '' ) );
 
     if ( '' === $value ) {
         $default = home_url();
@@ -91,7 +91,7 @@ function fauth_get_subscriber_redirect(): string {
         $default = home_url( user_trailingslashit( '/' . ltrim( $value, '/' ) ) );
     }
 
-    return (string) apply_filters( 'fauth_subscriber_redirect', $default );
+    return (string) apply_filters( 'zenlogau_subscriber_redirect', $default );
 }
 
 /**
@@ -103,7 +103,7 @@ function fauth_get_subscriber_redirect(): string {
  *
  * @param mixed $user A WP_User (anything else returns false).
  */
-function fauth_user_is_restricted_subscriber( $user ): bool {
+function zenlogau_user_is_restricted_subscriber( $user ): bool {
     if ( ! ( $user instanceof WP_User ) || ! $user->exists() ) {
         return false;
     }
@@ -111,7 +111,7 @@ function fauth_user_is_restricted_subscriber( $user ): bool {
         && ! user_can( $user, 'edit_posts' )
         && ! user_can( $user, 'manage_options' );
 
-    return (bool) apply_filters( 'fauth_is_restricted_subscriber', $restricted, $user );
+    return (bool) apply_filters( 'zenlogau_is_restricted_subscriber', $restricted, $user );
 }
 
 /**
@@ -124,7 +124,7 @@ function fauth_user_is_restricted_subscriber( $user ): bool {
  *
  * @param string $url A URL or path.
  */
-function fauth_redirect_is_admin( string $url ): bool {
+function zenlogau_redirect_is_admin( string $url ): bool {
     if ( '' === $url ) {
         return false;
     }
@@ -142,7 +142,7 @@ function fauth_redirect_is_admin( string $url ): bool {
  * Slug helpers
  * -------------------------------------------------------------------- */
 
-function fauth_get_action_slug_default( string $action ): string {
+function zenlogau_get_action_slug_default( string $action ): string {
     $defaults = [
         'login'        => 'login',
         'logout'       => 'logout',
@@ -187,7 +187,7 @@ function fauth_get_action_slug_default( string $action ): string {
  *
  * @return int  A valid existing user ID, or 0 if no users exist (edge case).
  */
-function fauth_get_page_author_id(): int {
+function zenlogau_get_page_author_id(): int {
     // During manual activation the site admin is logged in — use their ID.
     $current = (int) get_current_user_id();
     if ( $current > 0 && user_can( $current, 'manage_options' ) ) {
@@ -212,8 +212,8 @@ function fauth_get_page_author_id(): int {
  *
  * @return array<string,string>  action => page title
  */
-function fauth_get_page_actions(): array {
-    return apply_filters( 'fauth_page_actions', [
+function zenlogau_get_page_actions(): array {
+    return apply_filters( 'zenlogau_page_actions', [
         'login'        => __( 'Login',         'zen-login-authentication' ),
         'register'     => __( 'Register',       'zen-login-authentication' ),
         'lostpassword' => __( 'Lost Password',  'zen-login-authentication' ),
@@ -226,13 +226,13 @@ function fauth_get_page_actions(): array {
  * Create real WP pages for each auth action, or adopt existing pages with matching slugs.
  * Called on plugin activation. Safe to call multiple times (idempotent).
  */
-function fauth_create_action_pages(): void {
-    foreach ( fauth_get_page_actions() as $action => $title ) {
-        $opt  = "fauth_page_id_{$action}";
+function zenlogau_create_action_pages(): void {
+    foreach ( zenlogau_get_page_actions() as $action => $title ) {
+        $opt  = "zenlogau_page_id_{$action}";
         // Use the user's configured slug (from settings), falling back to default.
-        $slug = function_exists( 'fauth_get_action_slug' )
-            ? fauth_get_action_slug( $action )
-            : fauth_get_action_slug_default( $action );
+        $slug = function_exists( 'zenlogau_get_action_slug' )
+            ? zenlogau_get_action_slug( $action )
+            : zenlogau_get_action_slug_default( $action );
 
         // Check if we already have a stored page ID that still exists and is published.
         $stored_id = (int) get_option( $opt, 0 );
@@ -264,12 +264,12 @@ function fauth_create_action_pages(): void {
             'post_status'  => 'publish',
             'post_type'    => 'page',
             'post_content' => '',
-            'post_author'  => fauth_get_page_author_id(),
+            'post_author'  => zenlogau_get_page_author_id(),
         ], true );
 
         if ( $page_id instanceof WP_Error ) {
             if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-                error_log( 'FAUTH: failed to create page for action ' . $action . ': ' . $page_id->get_error_message() ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- WP_DEBUG-gated diagnostic.
+                error_log( 'ZENLOGAU: failed to create page for action ' . $action . ': ' . $page_id->get_error_message() ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- WP_DEBUG-gated diagnostic.
             }
             continue;
         }
@@ -277,7 +277,7 @@ function fauth_create_action_pages(): void {
         // FIX: Mark this page as auto-created by the plugin so the uninstaller
         // and the "Delete Auto-Created Pages" button know it is safe to delete.
         // Pages adopted from existing user content do NOT get this flag.
-        update_post_meta( (int) $page_id, '_fauth_auto_created', '1' );
+        update_post_meta( (int) $page_id, '_zenlogau_auto_created', '1' );
 
         update_option( $opt, (int) $page_id );
     }
@@ -296,26 +296,26 @@ function fauth_create_action_pages(): void {
  * longer exists, clear the stale option and return 0 so the rewrite/virtual-page
  * fallback can take over.
  */
-function fauth_get_page_id( string $action ): int {
-    $id = (int) get_option( "fauth_page_id_{$action}", 0 );
+function zenlogau_get_page_id( string $action ): int {
+    $id = (int) get_option( "zenlogau_page_id_{$action}", 0 );
     if ( ! $id ) {
         return 0;
     }
     $post = get_post( $id );
     if ( ! $post instanceof WP_Post || 'publish' !== $post->post_status ) {
         // Stale option — clear it so callers don't keep trusting this dead ID.
-        delete_option( "fauth_page_id_{$action}" );
+        delete_option( "zenlogau_page_id_{$action}" );
         return 0;
     }
     return $id;
 }
 
 /**
- * Return true if the current page is one of the FAUTH action pages.
+ * Return true if the current page is one of the ZENLOGAU action pages.
  */
-function fauth_is_fauth_page(): bool {
+function zenlogau_is_zenlogau_page(): bool {
     // Virtual pages (rewrite-rule mode, no Elementor).
-    if ( get_query_var( 'fauth_action', false ) ) {
+    if ( get_query_var( 'zenlogau_action', false ) ) {
         return true;
     }
     // Real page mode (Elementor sites).
@@ -323,8 +323,8 @@ function fauth_is_fauth_page(): bool {
     if ( ! $page_id ) {
         return false;
     }
-    foreach ( array_keys( fauth_get_page_actions() ) as $action ) {
-        if ( fauth_get_page_id( $action ) === $page_id ) {
+    foreach ( array_keys( zenlogau_get_page_actions() ) as $action ) {
+        if ( zenlogau_get_page_id( $action ) === $page_id ) {
             return true;
         }
     }
@@ -332,11 +332,11 @@ function fauth_is_fauth_page(): bool {
 }
 
 /**
- * Return the current FAUTH action name, or empty string.
+ * Return the current ZENLOGAU action name, or empty string.
  * Works for both virtual (query var) and real (page ID lookup) pages.
  */
-function fauth_get_current_action(): string {
-    $from_qv = get_query_var( 'fauth_action', '' );
+function zenlogau_get_current_action(): string {
+    $from_qv = get_query_var( 'zenlogau_action', '' );
     if ( $from_qv ) {
         return sanitize_key( $from_qv );
     }
@@ -344,8 +344,8 @@ function fauth_get_current_action(): string {
     if ( ! $page_id ) {
         return '';
     }
-    foreach ( array_keys( fauth_get_page_actions() ) as $action ) {
-        if ( fauth_get_page_id( $action ) === $page_id ) {
+    foreach ( array_keys( zenlogau_get_page_actions() ) as $action ) {
+        if ( zenlogau_get_page_id( $action ) === $page_id ) {
             return $action;
         }
     }
@@ -357,6 +357,6 @@ function fauth_get_current_action(): string {
  * INFO fix: use flush_rewrite_rules(false) for reliable immediate flush.
  * -------------------------------------------------------------------- */
 
-function fauth_flush_rewrite_rules(): void {
+function zenlogau_flush_rewrite_rules(): void {
     flush_rewrite_rules( false );
 }

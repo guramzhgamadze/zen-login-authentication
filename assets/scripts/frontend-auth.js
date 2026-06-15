@@ -61,7 +61,7 @@
         jQuery.ajax( {
             url:         form.getAttribute( 'action' ) || window.location.href,
             method:      'POST',
-            data:        jQuery( form ).serialize() + '&fauth_ajax=1',
+            data:        jQuery( form ).serialize() + '&zenlogau_ajax=1',
             dataType:    'json',
         } )
         .done( response => {

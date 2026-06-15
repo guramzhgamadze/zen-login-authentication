@@ -11,7 +11,7 @@ defined( 'ABSPATH' ) || exit;
  * Request helpers
  * -------------------------------------------------------------------- */
 
-function fauth_get_request_value( string $key, string $type = 'any' ) {
+function zenlogau_get_request_value( string $key, string $type = 'any' ) {
     $type = strtoupper( $type );
     // phpcs:disable WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput -- central raw-input accessor: nonce verification and per-field sanitization happen at every call site, which knows the field's type.
     if ( 'POST' === $type ) {
@@ -37,23 +37,23 @@ function fauth_get_request_value( string $key, string $type = 'any' ) {
     return wp_unslash( $value );
 }
 
-function fauth_is_post_request(): bool {
+function zenlogau_is_post_request(): bool {
     return 'POST' === strtoupper( sanitize_text_field( wp_unslash( $_SERVER['REQUEST_METHOD'] ?? '' ) ) );
 }
 
-function fauth_is_get_request(): bool {
+function zenlogau_is_get_request(): bool {
     return 'GET' === strtoupper( sanitize_text_field( wp_unslash( $_SERVER['REQUEST_METHOD'] ?? '' ) ) );
 }
 
-function fauth_is_ajax_request(): bool {
-    return (bool) fauth_get_request_value( 'fauth_ajax' );
+function zenlogau_is_ajax_request(): bool {
+    return (bool) zenlogau_get_request_value( 'zenlogau_ajax' );
 }
 
 /* -----------------------------------------------------------------------
  * Redirect helpers
  * -------------------------------------------------------------------- */
 
-function fauth_validate_redirect( string $url ): string {
+function zenlogau_validate_redirect( string $url ): string {
     return wp_validate_redirect(
         wp_sanitize_redirect( $url ),
         apply_filters( 'wp_safe_redirect_fallback', admin_url(), 302 )
@@ -67,14 +67,14 @@ function fauth_validate_redirect( string $url ): string {
 /**
  * Build the URL for a given action.
  *
- * ALWAYS uses the slug from the user's settings (fauth_slug_*).
+ * ALWAYS uses the slug from the user's settings (zenlogau_slug_*).
  * Never uses get_permalink() on stored page IDs — that creates an
  * unsolvable desync between "what the user configured in settings"
  * and "what the auto-created page's actual post_name is."
  */
-function fauth_get_action_url( string $action, bool $network = false ): string {
-    if ( fauth_use_permalinks() ) {
-        $slug = fauth_get_action_slug( $action );
+function zenlogau_get_action_url( string $action, bool $network = false ): string {
+    if ( zenlogau_use_permalinks() ) {
+        $slug = zenlogau_get_action_slug( $action );
         $base = $network ? network_home_url( '/' ) : home_url( '/' );
         $url  = trailingslashit( $base . $slug );
     } else {
@@ -82,48 +82,48 @@ function fauth_get_action_url( string $action, bool $network = false ): string {
         $url      = rtrim( $raw_base, '/' ) . '/wp-login.php';
         $url      = add_query_arg( 'action', $action, $url );
     }
-    return (string) apply_filters( 'fauth_action_url', $url, $action );
+    return (string) apply_filters( 'zenlogau_action_url', $url, $action );
 }
 
-function fauth_get_action_slug( string $action ): string {
-    $default = fauth_get_action_slug_default( $action );
-    $slug    = get_option( "fauth_slug_{$action}", $default );
-    return (string) apply_filters( "fauth_action_slug_{$action}", sanitize_title( $slug ) );
+function zenlogau_get_action_slug( string $action ): string {
+    $default = zenlogau_get_action_slug_default( $action );
+    $slug    = get_option( "zenlogau_slug_{$action}", $default );
+    return (string) apply_filters( "zenlogau_action_slug_{$action}", sanitize_title( $slug ) );
 }
 
 /* -----------------------------------------------------------------------
  * Misc
  * -------------------------------------------------------------------- */
 
-function fauth_get_username_label( string $context = 'login' ): string {
+function zenlogau_get_username_label( string $context = 'login' ): string {
     if ( 'register' === $context ) {
         $label = __( 'Username', 'zen-login-authentication' );
-    } elseif ( fauth_is_username_login_type() ) {
+    } elseif ( zenlogau_is_username_login_type() ) {
         $label = __( 'Username', 'zen-login-authentication' );
-    } elseif ( fauth_is_email_login_type() ) {
+    } elseif ( zenlogau_is_email_login_type() ) {
         $label = __( 'Email Address', 'zen-login-authentication' );
     } else {
         $label = __( 'Username or Email Address', 'zen-login-authentication' );
     }
-    return (string) apply_filters( 'fauth_username_label', $label, $context );
+    return (string) apply_filters( 'zenlogau_username_label', $label, $context );
 }
 
-function fauth_honeypot_field_name( string $hour = '' ): string {
+function zenlogau_honeypot_field_name( string $hour = '' ): string {
     if ( '' === $hour ) {
         $hour = gmdate( 'YmdH' );
     }
     return 'hp_' . substr( md5( wp_salt( 'auth' ) . $hour ), 0, 8 );
 }
 
-function fauth_honeypot_is_spam(): bool {
-    if ( ! fauth_use_honeypot() ) {
+function zenlogau_honeypot_is_spam(): bool {
+    if ( ! zenlogau_use_honeypot() ) {
         return false;
     }
     $current_hour  = gmdate( 'YmdH' );
     $previous_hour = gmdate( 'YmdH', time() - HOUR_IN_SECONDS );
 
-    $field_current  = fauth_honeypot_field_name( $current_hour );
-    $field_previous = fauth_honeypot_field_name( $previous_hour );
+    $field_current  = zenlogau_honeypot_field_name( $current_hour );
+    $field_previous = zenlogau_honeypot_field_name( $previous_hour );
 
     $value_current  = wp_unslash( $_POST[ $field_current ]  ?? '' ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput, WordPress.Security.NonceVerification.Missing -- anti-bot trap field, checked for emptiness only and intentionally evaluated before (alongside) nonce verification.
     $value_previous = wp_unslash( $_POST[ $field_previous ] ?? '' ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput, WordPress.Security.NonceVerification.Missing -- anti-bot trap field, checked for emptiness only and intentionally evaluated before (alongside) nonce verification.
@@ -131,33 +131,33 @@ function fauth_honeypot_is_spam(): bool {
     return ! empty( $value_current ) || ! empty( $value_previous );
 }
 
-function fauth_honeypot_field_html(): string {
-    if ( ! fauth_use_honeypot() ) {
+function zenlogau_honeypot_field_html(): string {
+    if ( ! zenlogau_use_honeypot() ) {
         return '';
     }
-    $field = esc_attr( fauth_honeypot_field_name() );
+    $field = esc_attr( zenlogau_honeypot_field_name() );
     return '<div class="fauth-hp" style="display:none!important" aria-hidden="true">'
         . '<label for="' . $field . '">' . esc_html__( 'Leave this empty', 'zen-login-authentication' ) . '</label>'
         . '<input type="text" id="' . $field . '" name="' . $field . '" value="" autocomplete="off" tabindex="-1">'
         . '</div>';
 }
 
-function fauth_send_ajax_success( $data = null ): void {
+function zenlogau_send_ajax_success( $data = null ): void {
     // Explicit 200 is critical: if the form posts to a virtual/404 URL,
     // WordPress sets status_header(404) before template_redirect fires.
     // wp_send_json_success() with null $status_code does NOT override it,
     // so jQuery sees a 404 JSON response and fires .fail() instead of .done().
-    wp_send_json_success( apply_filters( 'fauth_ajax_success_data', $data ), 200 );
+    wp_send_json_success( apply_filters( 'zenlogau_ajax_success_data', $data ), 200 );
 }
 
-function fauth_send_ajax_error( $data = null ): void {
+function zenlogau_send_ajax_error( $data = null ): void {
     // FIX: Use HTTP 200 instead of 400 so jQuery's .done() fires instead of
     // .fail(). The success/error distinction is carried by response.success
     // (false) and response.data.errors — not the HTTP status code.
     // With 400, jQuery's dataType:'json' routes the response to .fail() and
     // the real error messages from PHP are never shown to the user — instead
     // the generic fallback string "An error occurred. Please try again." fires.
-    wp_send_json_error( apply_filters( 'fauth_ajax_error_data', $data ), 200 );
+    wp_send_json_error( apply_filters( 'zenlogau_ajax_error_data', $data ), 200 );
 }
 
 /* -----------------------------------------------------------------------
@@ -165,7 +165,7 @@ function fauth_send_ajax_error( $data = null ): void {
  * MEDIUM fix: added REST_REQUEST check for Elementor REST API calls.
  * -------------------------------------------------------------------- */
 
-function fauth_is_elementor_context(): bool {
+function zenlogau_is_elementor_context(): bool {
     if ( ! defined( 'ELEMENTOR_VERSION' ) ) {
         return false;
     }

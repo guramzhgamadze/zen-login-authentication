@@ -48,23 +48,23 @@
 }
 
 /* ----- Dashboard "Login Activity" widget ----- */
-#fauth_activity_widget .fauth-dash-stats { display:flex; gap:10px; margin:0 0 16px; }
-#fauth_activity_widget .fauth-dash-stat { flex:1; text-align:center; background:#f6f7f7; border:1px solid #e0e0e0; border-radius:10px; padding:12px 6px; }
-#fauth_activity_widget .fauth-dash-stat .num { display:block; font-size:1.5rem; font-weight:700; line-height:1.2; }
-#fauth_activity_widget .fauth-dash-stat .lbl { display:block; font-size:0.72rem; color:#646970; text-transform:uppercase; letter-spacing:.02em; margin-top:2px; }
-#fauth_activity_widget .fauth-dash-stat.ok   .num { color:#00794f; }
-#fauth_activity_widget .fauth-dash-stat.fail .num { color:#b32d2e; }
-#fauth_activity_widget .fauth-dash-stat.lock .num { color:#9a6700; }
-#fauth_activity_widget h4 { margin:14px 0 6px; font-size:0.82rem; text-transform:uppercase; letter-spacing:.02em; color:#1d2327; }
-#fauth_activity_widget table.fauth-dash-table { width:100%; border-collapse:collapse; }
-#fauth_activity_widget table.fauth-dash-table td { padding:5px 0; border-bottom:1px solid #f0f0f1; font-size:0.86rem; }
-#fauth_activity_widget table.fauth-dash-table tr:last-child td { border-bottom:none; }
-#fauth_activity_widget table.fauth-dash-table td.cnt { text-align:right; font-weight:600; color:#646970; white-space:nowrap; }
-#fauth_activity_widget .fauth-dash-cols { display:flex; gap:22px; flex-wrap:wrap; }
-#fauth_activity_widget .fauth-dash-cols > div { flex:1; min-width:180px; }
-#fauth_activity_widget .fauth-dash-empty { color:#646970; font-style:italic; font-size:0.85rem; }
-#fauth_activity_widget .fauth-pill { display:inline-block; font-size:0.7rem; font-weight:600; padding:1px 7px; border-radius:10px; }
-#fauth_activity_widget .fauth-pill.ok   { background:#edf7f1; color:#00794f; }
-#fauth_activity_widget .fauth-pill.fail { background:#fcefef; color:#b32d2e; }
-#fauth_activity_widget .fauth-pill.lock { background:#fdf6e7; color:#9a6700; }
-#fauth_activity_widget .fauth-dash-foot { margin:14px 0 0; font-size:0.8rem; }
+#zenlogau_activity_widget .fauth-dash-stats { display:flex; gap:10px; margin:0 0 16px; }
+#zenlogau_activity_widget .fauth-dash-stat { flex:1; text-align:center; background:#f6f7f7; border:1px solid #e0e0e0; border-radius:10px; padding:12px 6px; }
+#zenlogau_activity_widget .fauth-dash-stat .num { display:block; font-size:1.5rem; font-weight:700; line-height:1.2; }
+#zenlogau_activity_widget .fauth-dash-stat .lbl { display:block; font-size:0.72rem; color:#646970; text-transform:uppercase; letter-spacing:.02em; margin-top:2px; }
+#zenlogau_activity_widget .fauth-dash-stat.ok   .num { color:#00794f; }
+#zenlogau_activity_widget .fauth-dash-stat.fail .num { color:#b32d2e; }
+#zenlogau_activity_widget .fauth-dash-stat.lock .num { color:#9a6700; }
+#zenlogau_activity_widget h4 { margin:14px 0 6px; font-size:0.82rem; text-transform:uppercase; letter-spacing:.02em; color:#1d2327; }
+#zenlogau_activity_widget table.fauth-dash-table { width:100%; border-collapse:collapse; }
+#zenlogau_activity_widget table.fauth-dash-table td { padding:5px 0; border-bottom:1px solid #f0f0f1; font-size:0.86rem; }
+#zenlogau_activity_widget table.fauth-dash-table tr:last-child td { border-bottom:none; }
+#zenlogau_activity_widget table.fauth-dash-table td.cnt { text-align:right; font-weight:600; color:#646970; white-space:nowrap; }
+#zenlogau_activity_widget .fauth-dash-cols { display:flex; gap:22px; flex-wrap:wrap; }
+#zenlogau_activity_widget .fauth-dash-cols > div { flex:1; min-width:180px; }
+#zenlogau_activity_widget .fauth-dash-empty { color:#646970; font-style:italic; font-size:0.85rem; }
+#zenlogau_activity_widget .fauth-pill { display:inline-block; font-size:0.7rem; font-weight:600; padding:1px 7px; border-radius:10px; }
+#zenlogau_activity_widget .fauth-pill.ok   { background:#edf7f1; color:#00794f; }
+#zenlogau_activity_widget .fauth-pill.fail { background:#fcefef; color:#b32d2e; }
+#zenlogau_activity_widget .fauth-pill.lock { background:#fdf6e7; color:#9a6700; }
+#zenlogau_activity_widget .fauth-dash-foot { margin:14px 0 0; font-size:0.8rem; }

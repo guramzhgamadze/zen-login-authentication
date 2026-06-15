@@ -4,7 +4,7 @@ Tags: login, registration, authentication, elementor, frontend
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 1.7.2
+Stable tag: 1.8.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -95,7 +95,7 @@ Enable **User-chosen passwords** under **Settings &rarr; Zen Login & Authenticat
 = I'm behind Cloudflare. How do I get the real visitor IP for rate limiting? =
 
 By default the plugin uses `REMOTE_ADDR` only, because forwarded headers are spoofable. If your origin firewall is locked to Cloudflare's IP ranges, opt the header back in:
-`add_filter( 'fauth_rate_limit_ip_headers', fn() => [ 'HTTP_CF_CONNECTING_IP', 'REMOTE_ADDR' ] );`
+`add_filter( 'zenlogau_rate_limit_ip_headers', fn() => [ 'HTTP_CF_CONNECTING_IP', 'REMOTE_ADDR' ] );`
 
 = How do I set up Sign in with Google? =
 
@@ -130,6 +130,9 @@ Only pages the plugin created that you never edited (no content, no Elementor da
 
 == Changelog ==
 
+= 1.8.0 =
+* Internal: the plugin's PHP/option prefix is now `zenlogau` (functions, classes, constants, options, transients, user/post meta, and the activity table). A one-time migration moves existing data automatically on update, so your settings, Google credentials, pages, and activity log carry over.
+
 = 1.7.2 =
 * Removed a read of WP Super Cache's `$file_prefix` global during cache purge; auth pages already set `DONOTCACHEPAGE`, which WP Super Cache honours, so no explicit purge is needed.
 
@@ -155,7 +158,7 @@ Only pages the plugin created that you never edited (no content, no Elementor da
 * Fixed: `<select>` fields no longer clip their text on themes that set a fixed height on selects (e.g. Astra); the dropdown now uses the plugin's own styling with a consistent chevron.
 
 = 1.5.0 =
-* Security: the Google Client Secret is **encrypted at rest** (AES-256-GCM, keyed from your wp-config.php salts — a database dump alone cannot leak it) and is never re-displayed in the admin once saved. Both credentials can alternatively be defined as `FAUTH_GOOGLE_CLIENT_ID` / `FAUTH_GOOGLE_CLIENT_SECRET` constants in wp-config.php to keep them out of the database entirely. If you rotate your WordPress salts, re-enter the secret.
+* Security: the Google Client Secret is **encrypted at rest** (AES-256-GCM, keyed from your wp-config.php salts — a database dump alone cannot leak it) and is never re-displayed in the admin once saved. Both credentials can alternatively be defined as `ZENLOGAU_GOOGLE_CLIENT_ID` / `ZENLOGAU_GOOGLE_CLIENT_SECRET` constants in wp-config.php to keep them out of the database entirely. If you rotate your WordPress salts, re-enter the secret.
 * Fixed: required-field asterisks were invisible — the honeypot's catch-all CSS rule (`.fauth [aria-hidden="true"]`) also hid the decorative asterisk spans. The rule is now scoped to the honeypot element only.
 * New: **Sign in with Google** (optional). A server-side OpenID Connect flow — no Google JavaScript on your pages and no third-party libraries. Configure a Client ID/Secret under Settings → Zen Login & Authentication → Sign in with Google; a "Continue with Google" button then appears on the login and registration forms (toggleable per Elementor widget, with its own style section). First-time Google users can be auto-created (toggleable); existing accounts are linked by verified email. Google logins respect the Subscriber redirect, wp-admin blocking, rate limiting, and the hidden-toolbar default for new sign-ups. CSRF protection via a single-use state token bound to the browser; only verified Google emails are accepted.
 
@@ -174,7 +177,7 @@ Only pages the plugin created that you never edited (no content, no Elementor da
 * Tested up to WordPress 7.0.
 
 = 1.4.19 =
-* Security: rate-limit IP detection now uses `REMOTE_ADDR` by default, closing a header-spoofing bypass. Cloudflare sites can opt the real-client header back in via the `fauth_rate_limit_ip_headers` filter.
+* Security: rate-limit IP detection now uses `REMOTE_ADDR` by default, closing a header-spoofing bypass. Cloudflare sites can opt the real-client header back in via the `zenlogau_rate_limit_ip_headers` filter.
 * Fixed data loss on uninstall: only empty, unedited, plugin-created pages are removed; adopted and edited pages are always kept.
 * Activation now adopts an existing page at each slug or creates one (idempotent, no duplicate pages).
 * New: configurable **Subscriber redirect** setting (page slug or URL; empty = site home), replacing a hardcoded path.
@@ -195,6 +198,9 @@ Only pages the plugin created that you never edited (no content, no Elementor da
 Older versions: see the project's CHANGELOG / README on the plugin homepage.
 
 == Upgrade Notice ==
+
+= 1.8.0 =
+Internal prefix changed to zenlogau. Existing settings, credentials, pages, and the activity log migrate automatically on update — no action needed.
 
 = 1.7.2 =
 Minor cleanup: dropped a read of WP Super Cache's global during cache purge (auth pages are already excluded via DONOTCACHEPAGE).

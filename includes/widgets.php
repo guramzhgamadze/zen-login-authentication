@@ -5,10 +5,10 @@
  * All frontend auth forms exposed as classic WP_Widget instances.
  *
  * Available widgets:
- *  - FAUTH_Login_Widget          — login form
- *  - FAUTH_Register_Widget       — registration form
- *  - FAUTH_Lost_Password_Widget  — lost-password form
- *  - FAUTH_Reset_Password_Widget — password reset form (reads rp_key/rp_login from URL)
+ *  - ZENLOGAU_Login_Widget          — login form
+ *  - ZENLOGAU_Register_Widget       — registration form
+ *  - ZENLOGAU_Lost_Password_Widget  — lost-password form
+ *  - ZENLOGAU_Reset_Password_Widget — password reset form (reads rp_key/rp_login from URL)
  *
  * Audit fixes applied:
  *  [F1]  render_title_field() hardcoded 'Login' fallback for every subclass.
@@ -35,16 +35,16 @@ defined( 'ABSPATH' ) || exit;
  * [F7] Pass instances, not string class names (WP 4.9+ preferred pattern).
  * -------------------------------------------------------------------- */
 
-function fauth_register_widgets(): void {
+function zenlogau_register_widgets(): void {
     $widgets = [
-        'login'        => FAUTH_Login_Widget::class,
-        'register'     => FAUTH_Register_Widget::class,
-        'lostpassword' => FAUTH_Lost_Password_Widget::class,
-        'resetpass'    => FAUTH_Reset_Password_Widget::class,
-        'account'      => FAUTH_Account_Widget::class,
+        'login'        => ZENLOGAU_Login_Widget::class,
+        'register'     => ZENLOGAU_Register_Widget::class,
+        'lostpassword' => ZENLOGAU_Lost_Password_Widget::class,
+        'resetpass'    => ZENLOGAU_Reset_Password_Widget::class,
+        'account'      => ZENLOGAU_Account_Widget::class,
     ];
     foreach ( $widgets as $key => $class ) {
-        if ( fauth_widget_enabled( $key ) ) {
+        if ( zenlogau_widget_enabled( $key ) ) {
             register_widget( new $class() );
         }
     }
@@ -57,12 +57,12 @@ function fauth_register_widgets(): void {
 /**
  * Render a named auth form, returning its HTML string.
  */
-function fauth_render_form( string $form_name, array $render_args = [] ): string {
-    $form = fauth()->get_form( $form_name );
+function zenlogau_render_form( string $form_name, array $render_args = [] ): string {
+    $form = zenlogau()->get_form( $form_name );
     if ( ! $form ) {
         return '';
     }
-    return (string) apply_filters( 'fauth_widget_form_output', $form->render( $render_args ), $form_name, $render_args );
+    return (string) apply_filters( 'zenlogau_widget_form_output', $form->render( $render_args ), $form_name, $render_args );
 }
 
 
@@ -71,9 +71,9 @@ function fauth_render_form( string $form_name, array $render_args = [] ): string
  * Abstract base widget
  * -------------------------------------------------------------------- */
 
-abstract class FAUTH_Abstract_Widget extends WP_Widget {
+abstract class ZENLOGAU_Abstract_Widget extends WP_Widget {
 
-    /** @var string The FAUTH form name this widget renders (e.g. 'login') */
+    /** @var string The ZENLOGAU form name this widget renders (e.g. 'login') */
     protected string $form_name = '';
 
     /**
@@ -228,7 +228,7 @@ abstract class FAUTH_Abstract_Widget extends WP_Widget {
     }
 
     /**
-     * Build render args array for fauth_render_form().
+     * Build render args array for zenlogau_render_form().
      *
      * [F4] redirect_to was already sanitized on save via sanitize_url().
      *      At output time the correct function is esc_url() (HTML attribute escaping),
@@ -246,17 +246,17 @@ abstract class FAUTH_Abstract_Widget extends WP_Widget {
  * 1. Login Widget
  * -------------------------------------------------------------------- */
 
-class FAUTH_Login_Widget extends FAUTH_Abstract_Widget {
+class ZENLOGAU_Login_Widget extends ZENLOGAU_Abstract_Widget {
 
     protected string $form_name = 'login';
 
     public function __construct() {
         $this->init_widget(
-            'fauth_login_widget',
+            'zenlogau_login_widget',
             __( 'Zen Login & Authentication: Login', 'zen-login-authentication' ),
             [
                 'description' => __( 'Displays the login form. Shows a welcome panel when the user is logged in.', 'zen-login-authentication' ),
-                'classname'   => 'widget_fauth widget_fauth_login',
+                'classname'   => 'widget_fauth widget_zenlogau_login',
             ]
         );
     }
@@ -271,7 +271,7 @@ class FAUTH_Login_Widget extends FAUTH_Abstract_Widget {
         if ( is_user_logged_in() ) {
             return; // Logged-in state handled by external dashboard plugins.
         }
-        echo fauth_render_form( 'login', $this->build_render_args( $instance ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+        echo zenlogau_render_form( 'login', $this->build_render_args( $instance ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
     }
 
     public function form( $instance ): void {
@@ -293,17 +293,17 @@ class FAUTH_Login_Widget extends FAUTH_Abstract_Widget {
  * 2. Register Widget
  * -------------------------------------------------------------------- */
 
-class FAUTH_Register_Widget extends FAUTH_Abstract_Widget {
+class ZENLOGAU_Register_Widget extends ZENLOGAU_Abstract_Widget {
 
     protected string $form_name = 'register';
 
     public function __construct() {
         $this->init_widget(
-            'fauth_register_widget',
+            'zenlogau_register_widget',
             __( 'Zen Login & Authentication: Register', 'zen-login-authentication' ),
             [
                 'description' => __( 'Displays the user registration form.', 'zen-login-authentication' ),
-                'classname'   => 'widget_fauth widget_fauth_register',
+                'classname'   => 'widget_fauth widget_zenlogau_register',
             ]
         );
     }
@@ -344,7 +344,7 @@ class FAUTH_Register_Widget extends FAUTH_Abstract_Widget {
         if ( is_user_logged_in() ) {
             return;
         }
-        echo fauth_render_form( 'register', $this->build_render_args( $instance ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+        echo zenlogau_render_form( 'register', $this->build_render_args( $instance ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
     }
 
     public function form( $instance ): void {
@@ -359,17 +359,17 @@ class FAUTH_Register_Widget extends FAUTH_Abstract_Widget {
  * 3. Lost Password Widget
  * -------------------------------------------------------------------- */
 
-class FAUTH_Lost_Password_Widget extends FAUTH_Abstract_Widget {
+class ZENLOGAU_Lost_Password_Widget extends ZENLOGAU_Abstract_Widget {
 
     protected string $form_name = 'lostpassword';
 
     public function __construct() {
         $this->init_widget(
-            'fauth_lost_password_widget',
+            'zenlogau_lost_password_widget',
             __( 'Zen Login & Authentication: Lost Password', 'zen-login-authentication' ),
             [
                 'description' => __( 'Displays the lost password / password reset form.', 'zen-login-authentication' ),
-                'classname'   => 'widget_fauth widget_fauth_lostpassword',
+                'classname'   => 'widget_fauth widget_zenlogau_lostpassword',
             ]
         );
     }
@@ -384,7 +384,7 @@ class FAUTH_Lost_Password_Widget extends FAUTH_Abstract_Widget {
         if ( is_user_logged_in() ) {
             return;
         }
-        echo fauth_render_form( 'lostpassword', $this->build_render_args( $instance ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+        echo zenlogau_render_form( 'lostpassword', $this->build_render_args( $instance ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
     }
 
     public function form( $instance ): void {
@@ -399,14 +399,14 @@ class FAUTH_Lost_Password_Widget extends FAUTH_Abstract_Widget {
  *
  * Why this needs to be a widget and not just the automatic rewrite rule:
  * When an Elementor template is applied to a page, Elementor owns the
- * page canvas entirely. The virtual "post" injected by fauth_the_posts()
+ * page canvas entirely. The virtual "post" injected by zenlogau_the_posts()
  * has no real WP page behind it, so Elementor's Theme Builder conditions
  * never match it and the template is not applied. The result is a bare
  * unstyled form with no header/footer.
  *
  * The correct solution for Elementor sites is:
  *  1. Create a real WordPress page (e.g. /reset-password/).
- *  2. Set that page's slug to match the fauth_slug_resetpass option.
+ *  2. Set that page's slug to match the zenlogau_slug_resetpass option.
  *  3. Drop this widget into any Elementor widget area on that page,
  *     OR use Elementor's Shortcode widget with [frontend-auth action="resetpass"].
  *  4. Apply any Elementor Theme Builder template to it normally.
@@ -418,17 +418,17 @@ class FAUTH_Lost_Password_Widget extends FAUTH_Abstract_Widget {
  * a broken form.
  * -------------------------------------------------------------------- */
 
-class FAUTH_Reset_Password_Widget extends FAUTH_Abstract_Widget {
+class ZENLOGAU_Reset_Password_Widget extends ZENLOGAU_Abstract_Widget {
 
     protected string $form_name = 'resetpass';
 
     public function __construct() {
         $this->init_widget(
-            'fauth_reset_password_widget',
+            'zenlogau_reset_password_widget',
             __( 'Zen Login & Authentication: Reset Password', 'zen-login-authentication' ),
             [
                 'description' => __( 'Displays the password reset form. Place on the page your reset-password email links point to.', 'zen-login-authentication' ),
-                'classname'   => 'widget_fauth widget_fauth_resetpass',
+                'classname'   => 'widget_fauth widget_zenlogau_resetpass',
             ]
         );
     }
@@ -446,8 +446,8 @@ class FAUTH_Reset_Password_Widget extends FAUTH_Abstract_Widget {
      * current request's GET params BEFORE render() is called.
      *
      * The resetpass form registered in forms.php already adds rp_key and
-     * rp_login as hidden fields sourced from fauth_get_request_value('key','get')
-     * and fauth_get_request_value('login','get'). That works correctly when the
+     * rp_login as hidden fields sourced from zenlogau_get_request_value('key','get')
+     * and zenlogau_get_request_value('login','get'). That works correctly when the
      * form is rendered on the virtual rewrite-rule page. On a real WP page with
      * an Elementor template the same request params are present, so the form
      * fields are populated automatically — nothing extra needed at render time.
@@ -480,7 +480,7 @@ class FAUTH_Reset_Password_Widget extends FAUTH_Abstract_Widget {
                 . '<ul class="fauth-errors" role="alert">'
                 . '<li class="fauth-error">' . esc_html( $invalid_text ) . '</li>'
                 . '</ul>'
-                . '<p class="fauth-links"><a href="' . esc_url( fauth_get_action_url( 'lostpassword' ) ) . '">'
+                . '<p class="fauth-links"><a href="' . esc_url( zenlogau_get_action_url( 'lostpassword' ) ) . '">'
                 . esc_html__( 'Request a new password reset link', 'zen-login-authentication' )
                 . '</a></p>'
                 . '</div>';
@@ -495,7 +495,7 @@ class FAUTH_Reset_Password_Widget extends FAUTH_Abstract_Widget {
     }
 
     protected function render_content( array $instance ): void {
-        echo fauth_render_form( 'resetpass', $this->build_render_args( $instance ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+        echo zenlogau_render_form( 'resetpass', $this->build_render_args( $instance ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
     }
 
     public function form( $instance ): void {
@@ -536,17 +536,17 @@ class FAUTH_Reset_Password_Widget extends FAUTH_Abstract_Widget {
  * any other placement an account form for a guest is meaningless.
  * -------------------------------------------------------------------- */
 
-class FAUTH_Account_Widget extends FAUTH_Abstract_Widget {
+class ZENLOGAU_Account_Widget extends ZENLOGAU_Abstract_Widget {
 
     protected string $form_name = 'account';
 
     public function __construct() {
         $this->init_widget(
-            'fauth_account_widget',
+            'zenlogau_account_widget',
             __( 'Zen Login & Authentication: Account', 'zen-login-authentication' ),
             [
                 'description' => __( 'Lets logged-in users edit their display name, email, and password from the frontend.', 'zen-login-authentication' ),
-                'classname'   => 'widget_fauth widget_fauth_account',
+                'classname'   => 'widget_fauth widget_zenlogau_account',
             ]
         );
     }
@@ -561,7 +561,7 @@ class FAUTH_Account_Widget extends FAUTH_Abstract_Widget {
         if ( ! is_user_logged_in() ) {
             return;
         }
-        echo fauth_render_form( 'account', $this->build_render_args( $instance ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+        echo zenlogau_render_form( 'account', $this->build_render_args( $instance ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
     }
 
     public function form( $instance ): void {
