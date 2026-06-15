@@ -93,3 +93,43 @@ function zenlogau_crypto_decrypt( string $value ): string {
     $plain = openssl_decrypt( $cipher, 'aes-256-gcm', zenlogau_crypto_key(), OPENSSL_RAW_DATA, $iv, $tag );
     return false === $plain ? '' : $plain;
 }
+
+/**
+ * Decrypt a Google client secret stored by the legacy "wpfa" build of this
+ * plugin (envelope marker "wpfaenc:", key salted with "wpfa-crypto|"). The
+ * AES-256-GCM format is otherwise identical to the current scheme — only the
+ * marker and the key-derivation domain-separator differ — so this lets the
+ * fauth/wpfa → zenlogau migration recover the plaintext and re-encrypt it with
+ * the current key, instead of silently losing it.
+ *
+ * Returns '' if the value isn't a legacy envelope or can't be decrypted (in
+ * which case the migration leaves it untouched and the admin re-enters it).
+ *
+ * @access private — migration aid only.
+ */
+function zenlogau_decrypt_legacy_wpfa_secret( string $value ): string {
+    $prefix = 'wpfaenc:';
+    if ( ! str_starts_with( $value, $prefix ) || ! function_exists( 'openssl_decrypt' ) ) {
+        return '';
+    }
+
+    $material = ( defined( 'AUTH_KEY' ) ? AUTH_KEY : '' )
+        . ( defined( 'SECURE_AUTH_KEY' ) ? SECURE_AUTH_KEY : '' )
+        . ( defined( 'AUTH_SALT' ) ? AUTH_SALT : '' );
+    if ( '' === $material ) {
+        $material = wp_salt( 'auth' );
+    }
+    $key = hash( 'sha256', 'wpfa-crypto|' . $material, true );
+
+    $raw = base64_decode( substr( $value, strlen( $prefix ) ), true ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode
+    if ( false === $raw || strlen( $raw ) < 28 ) {
+        return '';
+    }
+
+    $iv     = substr( $raw, 0, 12 );
+    $tag    = substr( $raw, 12, 16 );
+    $cipher = substr( $raw, 28 );
+
+    $plain = openssl_decrypt( $cipher, 'aes-256-gcm', $key, OPENSSL_RAW_DATA, $iv, $tag );
+    return false === $plain ? '' : $plain;
+}

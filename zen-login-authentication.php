@@ -243,6 +243,20 @@ function zenlogau_migrate_legacy_wpfa_prefix(): void {
         delete_option( $row->option_name );
     }
 
+    // 1b. Re-encrypt the Google client secret. The legacy "wpfa" build stored it
+    //     under a "wpfaenc:" envelope keyed with "wpfa-crypto|"; the current code
+    //     uses "fauthenc:" keyed with "fauth-crypto|", so it cannot read the old
+    //     value. Decrypt with the legacy scheme and re-encrypt with the current
+    //     one so already-linked Google users keep working without re-entering it.
+    //     On failure the value is left as-is (admin can simply re-enter it).
+    $zenlogau_secret = (string) get_option( 'zenlogau_google_client_secret', '' );
+    if ( str_starts_with( $zenlogau_secret, 'wpfaenc:' ) ) {
+        $zenlogau_secret_plain = zenlogau_decrypt_legacy_wpfa_secret( $zenlogau_secret );
+        if ( '' !== $zenlogau_secret_plain ) {
+            update_option( 'zenlogau_google_client_secret', zenlogau_crypto_encrypt( $zenlogau_secret_plain ) );
+        }
+    }
+
     // 2. Classic-widget ids inside sidebars_widgets (handled unserialized,
     //    so string lengths in the stored value stay consistent).
     $sidebars = get_option( 'sidebars_widgets' );
