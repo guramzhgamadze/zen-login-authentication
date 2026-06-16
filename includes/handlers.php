@@ -185,6 +185,19 @@ function zenlogau_handle_login(): void {
     $user = wp_signon( $credentials, is_ssl() );
 
     if ( is_wp_error( $user ) ) {
+        // Correct password, but the account has 2FA: don't treat this as a
+        // failed attempt — hand off to the themed second-factor challenge.
+        if ( in_array( 'zenlogau_2fa_required', $user->get_error_codes(), true ) ) {
+            $zenlogau_2fa_data  = $user->get_error_data( 'zenlogau_2fa_required' );
+            $zenlogau_2fa_token = is_array( $zenlogau_2fa_data ) && isset( $zenlogau_2fa_data['token'] ) ? (string) $zenlogau_2fa_data['token'] : '';
+            $zenlogau_2fa_url   = add_query_arg( 'zenlogau_2fa', $zenlogau_2fa_token, zenlogau_get_action_url( 'login' ) );
+            if ( $is_ajax ) {
+                zenlogau_send_ajax_success( [ 'redirect' => $zenlogau_2fa_url ] );
+            }
+            wp_safe_redirect( $zenlogau_2fa_url );
+            exit;
+        }
+
         zenlogau_rate_limit_bump( 'login' );
 
         $messages = [];
@@ -496,6 +509,17 @@ function zenlogau_handle_resetpass(): void {
         return;
     }
 
+    if ( zenlogau_password_is_breached( $pass1 ) ) {
+        $message = zenlogau_breached_password_error_message();
+        if ( $form ) {
+            $form->add_error( 'breached_password', $message );
+        }
+        if ( $is_ajax ) {
+            zenlogau_send_ajax_error( [ 'errors' => [ wp_strip_all_tags( $message ) ] ] );
+        }
+        return;
+    }
+
     zenlogau_rate_limit_clear( 'resetpass' );
     reset_password( $user, $pass1 );
     do_action( 'zenlogau_password_reset', $user );
@@ -564,6 +588,8 @@ function zenlogau_handle_account(): void {
             $errors->add( 'password_mismatch', __( 'Passwords do not match. Please try again.', 'zen-login-authentication' ) );
         } elseif ( strlen( $pass1 ) < 8 ) {
             $errors->add( 'password_too_short', __( 'Password must be at least 8 characters.', 'zen-login-authentication' ) );
+        } elseif ( zenlogau_password_is_breached( $pass1 ) ) {
+            $errors->add( 'breached_password', zenlogau_breached_password_error_message() );
         }
     }
 
@@ -674,6 +700,8 @@ function zenlogau_validate_registration_password( WP_Error $errors, $sanitized_u
         $errors->add( 'password_mismatch', __( 'Passwords do not match.', 'zen-login-authentication' ) );
     } elseif ( strlen( $pass1 ) < 8 ) {
         $errors->add( 'password_too_short', __( 'Password must be at least 8 characters.', 'zen-login-authentication' ) );
+    } elseif ( zenlogau_password_is_breached( $pass1 ) ) {
+        $errors->add( 'breached_password', zenlogau_breached_password_error_message() );
     }
 
     return $errors;
@@ -689,14 +717,16 @@ function zenlogau_enforce_login_type( $user, $username, $password ) {
         return $user;
     }
     if ( zenlogau_is_email_login_type() && ! is_email( $username ) ) {
+        // Distinct code (not core's invalid_email) so the generic-login-errors
+        // hardening keeps this helpful guidance instead of collapsing it.
         return new WP_Error(
-            'invalid_email',
+            'zenlogau_login_type_email',
             __( 'Please log in with your email address.', 'zen-login-authentication' )
         );
     }
     if ( zenlogau_is_username_login_type() && is_email( $username ) ) {
         return new WP_Error(
-            'invalid_username',
+            'zenlogau_login_type_username',
             __( 'Please log in with your username, not your email address.', 'zen-login-authentication' )
         );
     }

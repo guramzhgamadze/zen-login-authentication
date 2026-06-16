@@ -49,7 +49,7 @@
     --fauth-btn-hover-bg: #2563eb;
     --fauth-btn-hover-color: #ffffff;
     --fauth-btn-shadow: 0 1px 2px rgba(16, 24, 40, 0.06);
-    --fauth-btn-hover-shadow: 0 6px 18px rgba(59, 130, 246, 0.30);
+    --fauth-btn-hover-shadow: 0 4px 12px rgba(16, 24, 40, 0.12);
 
     --fauth-link-color: #2563eb;
     --fauth-link-hover-color: #1d4ed8;
@@ -531,3 +531,25 @@ select.fauth-field {
     display: none !important;
     visibility: hidden !important;
 }
+
+/* Two-Factor Authentication (v2.0.0) */
+.fauth-2fa{margin-top:24px;padding-top:20px;border-top:1px solid rgba(0,0,0,.1)}
+.fauth-2fa-title{margin:0 0 10px;font-size:1.1em}
+.fauth-2fa-status{margin:0 0 12px}
+.fauth-2fa-on{color:#1a7f37;font-weight:600}
+.fauth-2fa-off{color:#646970}
+.fauth-2fa-qr{margin:12px 0;max-width:200px}
+.fauth-2fa-qr svg{width:100%;height:auto;display:block}
+.fauth-2fa-key{margin:10px 0}
+.fauth-2fa-key code{display:inline-block;padding:8px 12px;background:rgba(0,0,0,.05);border-radius:6px;font-size:1.05em;letter-spacing:1px}
+.fauth-2fa-steps{margin:0 0 12px;padding-left:20px}
+.fauth-2fa-codes{margin:12px 0;padding:14px;background:rgba(0,0,0,.04);border-radius:8px}
+.fauth-2fa-code-list{list-style:none;margin:8px 0 0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.fauth-2fa-code-list code{font-size:1.05em;letter-spacing:1px}
+.fauth-2fa-code-actions{display:flex;flex-direction:column;gap:10px;margin-top:14px}
+.fauth-2fa .fauth-submit{margin-top:12px}
+.fauth-2fa-actions{margin-top:14px}
+.fauth-2fa-cancel{margin-top:10px}
+.fauth-link-button{display:inline-block;background:none!important;border:0!important;box-shadow:none!important;color:var(--fauth-link-color,#b32d2e);text-decoration:underline;cursor:pointer;padding:4px 2px;font:inherit;line-height:1.4}
+.fauth-link-button:hover,.fauth-link-button:focus{transform:none;outline:none;text-decoration:none;color:var(--fauth-link-hover-color,#8a2222)}
+.fauth-button-secondary{opacity:.92}

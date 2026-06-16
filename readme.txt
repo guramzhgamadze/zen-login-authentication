@@ -4,7 +4,7 @@ Tags: login, registration, authentication, elementor, frontend
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 1.8.0
+Stable tag: 2.0.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -14,7 +14,7 @@ Frontend login, registration, and password recovery for WordPress and Elementor,
 
 Zen Login & Authentication replaces the default `wp-login.php` experience with clean, accessible, theme-integrated forms that live on your actual site. It works out of the box on any WordPress theme and ships with first-class Elementor support: five drag-and-drop widgets that fit any page-builder layout, with full Theme Builder compatibility.
 
-The plugin works with no configuration and adds no tracking or "phone home" behaviour. The only external service it ever contacts is Google — and only during a sign-in, when the optional "Sign in with Google" feature is enabled.
+The plugin works with no configuration and adds no tracking or "phone home" behaviour. Every feature that contacts an external service is opt-in — Google sign-in, breached-password checking (Have I Been Pwned), and Cloudflare Turnstile — so out of the box the plugin makes no external calls at all. See **External services** below.
 
 = What it does =
 
@@ -23,6 +23,7 @@ The plugin works with no configuration and adds no tracking or "phone home" beha
 * **Lost Password / Reset Password** with the full WordPress email flow.
 * **Account page** — logged-in users edit their first/last name, public display name, email, and password from the frontend, without ever seeing wp-admin. Guests visiting the account page are sent to the login form and return after signing in.
 * **Sign in with Google** (optional) — a server-side OpenID Connect flow with no Google JavaScript on your pages. New accounts can be auto-created (toggleable) and existing accounts are linked by verified email.
+* **Two-factor authentication** (optional, opt-in per user) — app-based TOTP with local QR enrollment and one-time recovery codes, managed from the Account page. Once a user turns it on, a second-factor step is required at login.
 * **URL rewriting** so every site-wide `wp-login.php` link is transparently redirected to your frontend pages.
 * **Multisite support** — network-activated, per-site settings, signup/activation flow handled.
 * **Smart redirects** — `?redirect_to=` is honoured everywhere. Subscribers are kept out of wp-admin and sent to a destination you set in **Settings &rarr; Zen Login & Authentication &rarr; Subscriber redirect** (a page slug or URL; empty = site home). Privileged users always land where they intended.
@@ -36,14 +37,21 @@ The plugin works with no configuration and adds no tracking or "phone home" beha
 * **Honeypot spam protection** — rotating hidden field (hourly key rotation via HMAC) catches bots; trapped submissions get a fake success response.
 * **Spoof-resistant IP detection** — rate-limit keys use the real socket address (`REMOTE_ADDR`) by default; forwarded headers are opt-in via a filter for sites genuinely behind Cloudflare.
 * **No password pre-population**, bcrypt-compatible (`wp_set_password()` / `wp_signon()`), and an 8-character minimum on new passwords.
+* **Username-enumeration hardening** (on by default) — blocks `?author=N` author scans and the REST `/wp/v2/users` listing for logged-out visitors, and collapses login errors to one neutral message so a valid username is never confirmed. Author archives at `/author/name/` and logged-in editors are unaffected.
+* **Breached-password blocking** (optional) — reject passwords found in the Have I Been Pwned corpus at registration, reset, and account update, using k-anonymity: only the first 5 characters of the password's SHA-1 hash are sent, never the password. Fails open if the service is unreachable.
+* **Cloudflare Turnstile** (optional) — a privacy-friendly bot challenge on the login, registration, and lost-password forms, on the plugin's forms and wp-login.php alike.
+* **XML-RPC lockdown** (optional) — disable XML-RPC to close the `system.multicall` brute-force amplifier and pingback abuse.
+* **Two-factor authentication (TOTP)** — opt-in per user; the shared secret is stored encrypted, recovery codes are hashed and single-use, and the login challenge sets no auth cookie until the second factor verifies.
 
 = External services =
 
-This plugin contacts an external service **only** when the optional "Sign in with Google" feature is enabled, and only during a Google sign-in:
+This plugin contacts an external service **only** when you enable one of the optional features below. Out of the box it makes no external calls.
 
-* **Google OAuth / OpenID Connect** (accounts.google.com and oauth2.googleapis.com). When a user clicks "Continue with Google", they are redirected to Google's consent screen, and the plugin's server then exchanges the one-time authorization code for an ID token. The data involved: the OAuth client credentials you configured, the single-use authorization code, and — returned by Google — the user's verified email address, name, and Google account ID, which are used solely to log the user in or create their account on your site. No other data is sent to Google, and nothing is sent at any other time. This service is provided by Google LLC: [Terms of Service](https://policies.google.com/terms), [Privacy Policy](https://policies.google.com/privacy).
+* **Google OAuth / OpenID Connect** (accounts.google.com and oauth2.googleapis.com). When a user clicks "Continue with Google", they are redirected to Google's consent screen, and the plugin's server then exchanges the one-time authorization code for an ID token. The data involved: the OAuth client credentials you configured, the single-use authorization code, and — returned by Google — the user's verified email address, name, and Google account ID, which are used solely to log the user in or create their account on your site. This service is provided by Google LLC: [Terms of Service](https://policies.google.com/terms), [Privacy Policy](https://policies.google.com/privacy).
+* **Have I Been Pwned — Pwned Passwords** (api.pwnedpasswords.com). Enabled only when "Block breached passwords" is turned on. When a user sets or changes a password (registration, password reset, or account update), the plugin sends the **first 5 characters of the password's SHA-1 hash** to the range API and checks the returned list locally. The password itself, the full hash, and any user identity are never transmitted (k-anonymity model), and the request is cached. This service is provided by Have I Been Pwned: [Terms of Use](https://haveibeenpwned.com/API/v3#License), [Privacy Policy](https://haveibeenpwned.com/Privacy), [Pwned Passwords](https://haveibeenpwned.com/Passwords).
+* **Cloudflare Turnstile** (challenges.cloudflare.com). Enabled only when Turnstile is configured. The challenge script is loaded on the protected forms, and on submission the resulting challenge token and the visitor's IP address are sent to Cloudflare's siteverify endpoint to confirm the visitor is not a bot. This service is provided by Cloudflare, Inc.: [Terms of Service](https://www.cloudflare.com/website-terms/), [Privacy Policy](https://www.cloudflare.com/privacypolicy/).
 
-If the feature is disabled (the default), the plugin makes no external calls whatsoever.
+If none of these features are enabled (the default), the plugin makes no external calls whatsoever.
 
 = Elementor integration =
 
@@ -130,6 +138,18 @@ Only pages the plugin created that you never edited (no content, no Elementor da
 
 == Changelog ==
 
+= 2.0.0 =
+* New: **Two-factor authentication (TOTP)**. Opt-in per user, managed entirely from the Account page: scan a QR code (or enter the setup key) in any authenticator app, confirm a code to turn it on, and save one-time recovery codes. After the password, a second-factor step is required — enforced across the plugin's forms, AJAX submissions, and wp-login.php (REST/XML-RPC application passwords and Google sign-in are unaffected). The shared secret is stored encrypted at rest and recovery codes are stored hashed and single-use; the login challenge sets no auth cookie until the second factor verifies.
+* The enrollment QR is rendered locally by the bundled qrcode-generator library (Kazuhiko Arase, MIT) — no external request is made.
+
+= 1.9.0 =
+* New: **Security Hardening** panel. Username-enumeration protection — blocks `?author=N` author scans and the REST `/wp/v2/users` listing for logged-out visitors, and makes login errors generic so a valid username is never confirmed — is **on by default**. Optional XML-RPC lockdown closes the `system.multicall` brute-force amplifier and pingback abuse.
+* New: **Breached-password blocking** (optional). Rejects passwords found in the Have I Been Pwned corpus at registration, password reset, and account update, using the k-anonymity range API — only the first 5 characters of the password's SHA-1 hash leave the site, never the password — and failing open if the service is unreachable.
+* New: **Cloudflare Turnstile** bot protection (optional) on the login, registration, and lost-password forms — both the plugin's forms and wp-login.php — with server-side token verification. The secret key is stored encrypted at rest.
+
+= 1.8.1 =
+* Housekeeping: removed the one-time pre-release prefix-migration routine (it had served its purpose; all known installs are already on the current `zenlogau` prefix). No change to normal installs or updates.
+
 = 1.8.0 =
 * Internal: the plugin's PHP/option prefix is now `zenlogau` (functions, classes, constants, options, transients, user/post meta, and the activity table). A one-time migration moves existing data automatically on update, so your settings, Google credentials, pages, and activity log carry over.
 
@@ -198,6 +218,15 @@ Only pages the plugin created that you never edited (no content, no Elementor da
 Older versions: see the project's CHANGELOG / README on the plugin homepage.
 
 == Upgrade Notice ==
+
+= 2.0.0 =
+Adds opt-in two-factor authentication (TOTP) managed from the Account page, with QR enrollment and recovery codes. Existing logins are unaffected until a user turns it on for their own account.
+
+= 1.9.0 =
+Adds optional Cloudflare Turnstile bot protection and breached-password blocking, plus username-enumeration hardening that is ON by default (?author=N scans and the guest REST users listing are blocked, and login errors become generic). Review the new Security settings if you depend on author archives by numeric ID or on XML-RPC.
+
+= 1.8.1 =
+Internal housekeeping only — removed obsolete one-time migration code. No action needed.
 
 = 1.8.0 =
 Internal prefix changed to zenlogau. Existing settings, credentials, pages, and the activity log migrate automatically on update — no action needed.

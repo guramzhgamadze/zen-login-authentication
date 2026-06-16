@@ -31,6 +31,17 @@ $zenlogau_options = [
     'zenlogau_activity_log_enabled',
     'zenlogau_activity_retention_days',
     'zenlogau_activity_db_version',
+    'zenlogau_harden_enum',
+    'zenlogau_generic_login_errors',
+    'zenlogau_block_breached',
+    'zenlogau_disable_xmlrpc',
+    'zenlogau_turnstile_enabled',
+    'zenlogau_turnstile_site_key',
+    'zenlogau_turnstile_secret_key',
+    'zenlogau_turnstile_login',
+    'zenlogau_turnstile_register',
+    'zenlogau_turnstile_lostpassword',
+    'zenlogau_2fa_feature',
     'zenlogau_slug_login',
     'zenlogau_slug_logout',
     'zenlogau_slug_register',
@@ -120,6 +131,11 @@ function zenlogau_uninstall_site( array $options, array $page_actions ): void {
     // Google account links (v1.5.0). delete_all = true removes the meta for
     // every user; harmless to repeat per-site on multisite (users are global).
     delete_metadata( 'user', 0, 'zenlogau_google_sub', '', true );
+
+    // Two-factor authentication per-user data (v2.0.0).
+    foreach ( [ 'zenlogau_2fa_secret', 'zenlogau_2fa_pending_secret', 'zenlogau_2fa_enabled', 'zenlogau_2fa_recovery' ] as $zenlogau_2fa_meta ) {
+        delete_metadata( 'user', 0, $zenlogau_2fa_meta, '', true );
+    }
 
     // Legacy pre-release "wpfa" prefix leftovers, for installs that never ran
     // the wpfa -> fauth migration before being uninstalled.

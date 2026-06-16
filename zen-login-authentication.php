@@ -3,7 +3,7 @@
  * Plugin Name:       Zen Login & Authentication
  * Plugin URI:        https://github.com/guramzhgamadze/zen-login-authentication
  * Description:       Secure, accessible frontend login, registration, and password recovery forms — with rate limiting, honeypot protection, AJAX support, and native Elementor widgets.
- * Version:           1.8.0
+ * Version:           2.0.0
  * Requires at least: 6.5
  * Requires PHP:      8.0
  * Author:            Guram Zhgamadze
@@ -68,7 +68,7 @@ if ( version_compare( get_bloginfo( 'version' ), '6.5', '<' ) ) {
     return;
 }
 
-define( 'ZENLOGAU_VERSION', '1.8.0' );
+define( 'ZENLOGAU_VERSION', '2.0.0' );
 define( 'ZENLOGAU_PATH',    plugin_dir_path( __FILE__ ) );
 define( 'ZENLOGAU_URL',     plugin_dir_url( __FILE__ ) );
 
@@ -87,6 +87,11 @@ define( 'ZENLOGAU_URL',     plugin_dir_url( __FILE__ ) );
 require ZENLOGAU_PATH . 'includes/options.php';
 require ZENLOGAU_PATH . 'includes/helpers.php';
 require ZENLOGAU_PATH . 'includes/rate-limit.php';
+require ZENLOGAU_PATH . 'includes/security-hardening.php';
+require ZENLOGAU_PATH . 'includes/breached-password.php';
+require ZENLOGAU_PATH . 'includes/turnstile.php';
+require ZENLOGAU_PATH . 'includes/totp.php';
+require ZENLOGAU_PATH . 'includes/two-factor.php';
 require ZENLOGAU_PATH . 'includes/activity-log.php';
 require ZENLOGAU_PATH . 'includes/class-fauth.php';
 require ZENLOGAU_PATH . 'includes/class-fauth-form.php';
@@ -121,19 +126,6 @@ function zenlogau_maybe_upgrade(): void {
     if ( ZENLOGAU_VERSION === $stored ) {
         return;
     }
-
-    // One-time migration from the pre-release "wpfa" internal prefix (the
-    // plugin was renamed for its WordPress.org release). Self-guarded: no-op
-    // unless the legacy wpfa_version option exists. The default seeding below
-    // is add-if-missing, so migrated values are never overwritten, and this
-    // version-mismatch path already flushes rewrites and purges page caches.
-    zenlogau_migrate_legacy_wpfa_prefix();
-
-    // One-time migration from the previous "fauth" internal prefix to "zenlogau"
-    // (made distinctive during the WordPress.org review). Self-guarded; no-op
-    // unless the legacy fauth_version option exists. Runs before seeding so the
-    // add-if-missing defaults below never shadow a migrated value.
-    zenlogau_migrate_from_fauth();
 
     // Seed default options if missing (first install via FTP, not activation hook).
     if ( '' === $stored ) {
@@ -196,218 +188,6 @@ function zenlogau_maybe_upgrade(): void {
     // Purge cached 404s for auth pages from LiteSpeed Cache, Super Page Cache, etc.
     // Must run after init so zenlogau_get_action_url() can build correct URLs.
     add_action( 'init', 'zenlogau_purge_auth_page_cache', 100 );
-}
-
-/**
- * One-time migration from the pre-release "wpfa" internal prefix to "fauth"
- * (the plugin was renamed for its WordPress.org release; no public version
- * ever shipped with the old prefix). Renames every stored artifact in place:
- *
- *  - options:          wpfa_*             -> zenlogau_*
- *  - widget instances: widget_wpfa_*      -> widget_zenlogau_* (+ sidebar ids)
- *  - page meta:        _wpfa_auto_created -> _zenlogau_auto_created
- *  - user meta:        wpfa_google_sub    -> zenlogau_google_sub
- *  - Elementor data:   "widgetType":"wpfa-*" -> "fauth-*" (+ CSS cache purge)
- *  - transients:       deleted (they regenerate; rate-limit windows reset)
- *
- * Guarded by the presence of the legacy wpfa_version option, so it runs at
- * most once per site and is a no-op on every fresh install.
- *
- * @access private — called only from zenlogau_maybe_upgrade().
- */
-function zenlogau_migrate_legacy_wpfa_prefix(): void {
-    global $wpdb;
-
-    if ( false === get_option( 'wpfa_version', false ) ) {
-        return; // nothing to migrate
-    }
-
-    // phpcs:disable WordPress.DB.DirectDatabaseQuery -- one-time schema-level
-    // rename of this plugin's own rows; no API exists for renaming option/meta
-    // keys, and caches are flushed at the end of the migration.
-
-    // 1. Options: wpfa_* -> zenlogau_* and widget_wpfa_* -> widget_zenlogau_*.
-    //    Row by row via add_option() so a pre-existing zenlogau_* row (unique
-    //    key) can never abort the rename half-way.
-    $rows = $wpdb->get_results(
-        "SELECT option_name, option_value FROM {$wpdb->options}
-         WHERE option_name LIKE 'wpfa\\_%' OR option_name LIKE 'widget\\_wpfa\\_%'"
-    );
-    foreach ( $rows as $row ) {
-        $new = ( 0 === strpos( $row->option_name, 'widget_' ) )
-            ? 'widget_zenlogau_' . substr( $row->option_name, strlen( 'widget_wpfa_' ) )
-            : 'zenlogau_' . substr( $row->option_name, strlen( 'wpfa_' ) );
-        if ( null === get_option( $new, null ) ) {
-            add_option( $new, maybe_unserialize( $row->option_value ), '', false );
-        }
-        delete_option( $row->option_name );
-    }
-
-    // 1b. Re-encrypt the Google client secret. The legacy "wpfa" build stored it
-    //     under a "wpfaenc:" envelope keyed with "wpfa-crypto|"; the current code
-    //     uses "fauthenc:" keyed with "fauth-crypto|", so it cannot read the old
-    //     value. Decrypt with the legacy scheme and re-encrypt with the current
-    //     one so already-linked Google users keep working without re-entering it.
-    //     On failure the value is left as-is (admin can simply re-enter it).
-    $zenlogau_secret = (string) get_option( 'zenlogau_google_client_secret', '' );
-    if ( str_starts_with( $zenlogau_secret, 'wpfaenc:' ) ) {
-        $zenlogau_secret_plain = zenlogau_decrypt_legacy_wpfa_secret( $zenlogau_secret );
-        if ( '' !== $zenlogau_secret_plain ) {
-            update_option( 'zenlogau_google_client_secret', zenlogau_crypto_encrypt( $zenlogau_secret_plain ) );
-        }
-    }
-
-    // 2. Classic-widget ids inside sidebars_widgets (handled unserialized,
-    //    so string lengths in the stored value stay consistent).
-    $sidebars = get_option( 'sidebars_widgets' );
-    if ( is_array( $sidebars ) ) {
-        $migrated = [];
-        foreach ( $sidebars as $sidebar => $widgets ) {
-            if ( is_array( $widgets ) ) {
-                foreach ( $widgets as $i => $id ) {
-                    if ( is_string( $id ) && 0 === strpos( $id, 'wpfa_' ) ) {
-                        $widgets[ $i ] = 'zenlogau_' . substr( $id, strlen( 'wpfa_' ) );
-                    }
-                }
-            }
-            $migrated[ $sidebar ] = $widgets;
-        }
-        if ( $migrated !== $sidebars ) {
-            update_option( 'sidebars_widgets', $migrated );
-        }
-    }
-
-    // 3. Meta keys.
-    $wpdb->query( "UPDATE {$wpdb->postmeta} SET meta_key = '_zenlogau_auto_created' WHERE meta_key = '_wpfa_auto_created'" );
-    $wpdb->query( "UPDATE {$wpdb->usermeta} SET meta_key = 'zenlogau_google_sub' WHERE meta_key = 'wpfa_google_sub'" );
-
-    // 4. Elementor widget types stored in _elementor_data (exact JSON tokens
-    //    only — no blanket replace on user content).
-    foreach ( [ 'login', 'register', 'lost-password', 'reset-password' ] as $widget ) {
-        $wpdb->query( $wpdb->prepare(
-            "UPDATE {$wpdb->postmeta} SET meta_value = REPLACE( meta_value, %s, %s )
-             WHERE meta_key = '_elementor_data' AND meta_value LIKE %s",
-            '"widgetType":"wpfa-' . $widget . '"',
-            '"widgetType":"fauth-' . $widget . '"',
-            '%' . $wpdb->esc_like( '"widgetType":"wpfa-' . $widget . '"' ) . '%'
-        ) );
-    }
-    // Make Elementor regenerate its CSS files with the new selectors.
-    if ( class_exists( '\Elementor\Plugin' ) && isset( \Elementor\Plugin::$instance->files_manager ) ) {
-        \Elementor\Plugin::$instance->files_manager->clear_cache();
-    }
-
-    // 5. Stale transients (rate-limit windows + OAuth state) — they regenerate.
-    $wpdb->query(
-        "DELETE FROM {$wpdb->options}
-         WHERE option_name LIKE '\\_transient\\_wpfa\\_%'
-            OR option_name LIKE '\\_transient\\_timeout\\_wpfa\\_%'"
-    );
-
-    // Old per-user dismissals or caches under the legacy prefix, if any.
-    wp_cache_flush();
-    // phpcs:enable WordPress.DB.DirectDatabaseQuery
-}
-
-/**
- * One-time migration from the previous internal prefix "fauth" to "zenlogau"
- * (the plugin's PHP/option prefix was made more distinctive during the
- * WordPress.org review). Renames every stored artifact in place so existing
- * installs keep their settings, Google credentials, pages, and activity log:
- *
- *  - options:          fauth_*             -> zenlogau_*
- *  - widget instances: widget_fauth_*      -> widget_zenlogau_* (+ sidebar ids)
- *  - post meta:        _fauth_auto_created -> _zenlogau_auto_created
- *  - user meta:        fauth_google_sub    -> zenlogau_google_sub
- *  - table:            {prefix}fauth_activity -> {prefix}zenlogau_activity
- *  - transients:       deleted (they regenerate)
- *
- * Elementor widget type names were intentionally left as "fauth-*", so no
- * _elementor_data rewrite is needed. The encrypted-secret marker ("fauthenc:")
- * is also unchanged, so stored Google secrets still decrypt.
- *
- * Guarded by the presence of the legacy fauth_version option, so it runs at
- * most once per site and is a no-op on fresh installs.
- *
- * @access private — called from zenlogau_maybe_upgrade() and zenlogau_activate().
- */
-function zenlogau_migrate_from_fauth(): void {
-    global $wpdb;
-
-    if ( false === get_option( 'fauth_version', false ) ) {
-        return; // nothing to migrate
-    }
-
-    // phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- one-time schema-level rename of this plugin's own rows/table; no API exists for renaming option/meta keys, table names derive from $wpdb->prefix, and caches are flushed at the end.
-
-    // 1. Options: fauth_* -> zenlogau_* and widget_fauth_* -> widget_zenlogau_*.
-    $rows = $wpdb->get_results(
-        "SELECT option_name, option_value FROM {$wpdb->options}
-         WHERE option_name LIKE 'fauth\\_%' OR option_name LIKE 'widget\\_fauth\\_%'"
-    );
-    foreach ( $rows as $row ) {
-        $new = ( 0 === strpos( $row->option_name, 'widget_' ) )
-            ? 'widget_zenlogau_' . substr( $row->option_name, strlen( 'widget_fauth_' ) )
-            : 'zenlogau_' . substr( $row->option_name, strlen( 'fauth_' ) );
-        if ( null === get_option( $new, null ) ) {
-            add_option( $new, maybe_unserialize( $row->option_value ), '', false );
-        }
-        delete_option( $row->option_name );
-    }
-
-    // 2. Classic-widget ids inside sidebars_widgets.
-    $sidebars = get_option( 'sidebars_widgets' );
-    if ( is_array( $sidebars ) ) {
-        $migrated = [];
-        foreach ( $sidebars as $sidebar => $widgets ) {
-            if ( is_array( $widgets ) ) {
-                foreach ( $widgets as $i => $id ) {
-                    if ( is_string( $id ) && 0 === strpos( $id, 'fauth_' ) ) {
-                        $widgets[ $i ] = 'zenlogau_' . substr( $id, strlen( 'fauth_' ) );
-                    }
-                }
-            }
-            $migrated[ $sidebar ] = $widgets;
-        }
-        if ( $migrated !== $sidebars ) {
-            update_option( 'sidebars_widgets', $migrated );
-        }
-    }
-
-    // 3. Meta keys.
-    $wpdb->query( "UPDATE {$wpdb->postmeta} SET meta_key = '_zenlogau_auto_created' WHERE meta_key = '_fauth_auto_created'" );
-    $wpdb->query( "UPDATE {$wpdb->usermeta} SET meta_key = 'zenlogau_google_sub' WHERE meta_key = 'fauth_google_sub'" );
-
-    // 4. Activity table: rename it so the log history survives. RENAME TABLE is
-    //    standard on MySQL/MariaDB; on the rare environment that doesn't support
-    //    it, we drop the db-version flag so zenlogau_activity_maybe_create_table()
-    //    recreates a fresh table (the activity log is a rolling, non-critical
-    //    history, so resetting it there is acceptable).
-    $old_table  = $wpdb->prefix . 'fauth_activity';
-    $new_table  = $wpdb->prefix . 'zenlogau_activity';
-    $old_exists = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $old_table ) ) === $old_table;
-    $new_exists = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $new_table ) ) === $new_table;
-    if ( $old_exists && ! $new_exists ) {
-        $suppress = $wpdb->suppress_errors( true );
-        $wpdb->query( "RENAME TABLE `{$old_table}` TO `{$new_table}`" );
-        $wpdb->suppress_errors( $suppress );
-        if ( $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $new_table ) ) !== $new_table ) {
-            delete_option( 'zenlogau_activity_db_version' ); // force a fresh table on next create
-        }
-    }
-
-    // 5. Stale transients (rate-limit windows, OAuth state, dashboard cache).
-    $wpdb->query(
-        "DELETE FROM {$wpdb->options}
-         WHERE option_name LIKE '\\_transient\\_fauth\\_%'
-            OR option_name LIKE '\\_transient\\_timeout\\_fauth\\_%'"
-    );
-
-    if ( class_exists( '\Elementor\Plugin' ) && isset( \Elementor\Plugin::$instance->files_manager ) ) {
-        \Elementor\Plugin::$instance->files_manager->clear_cache();
-    }
-    wp_cache_flush();
-    // phpcs:enable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
 }
 
 /**
@@ -534,13 +314,6 @@ register_activation_hook( __FILE__, 'zenlogau_activate' );
 register_deactivation_hook( __FILE__, 'zenlogau_deactivate' );
 
 function zenlogau_activate(): void {
-    // If this site previously ran the plugin under the older "fauth"/"wpfa"
-    // internal prefix (e.g. deactivate-old → activate-new), migrate the stored
-    // data first so settings, Google credentials, pages, and the activity log
-    // carry over. Both are self-guarded no-ops on a fresh install.
-    zenlogau_migrate_legacy_wpfa_prefix();
-    zenlogau_migrate_from_fauth();
-
     // get_option() returns false for missing options AND for options stored as false.
     // null is never stored by add_option/update_option so === null is unambiguous.
     if ( null === get_option( 'zenlogau_rate_limit', null ) ) {

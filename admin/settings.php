@@ -93,6 +93,23 @@ function zenlogau_admin_register_settings(): void {
     // Login-activity log (v1.7.0).
     register_setting( 'zen-login-authentication', 'zenlogau_activity_log_enabled',  [ 'sanitize_callback' => 'absint', 'type' => 'integer', 'autoload' => false ] );
     register_setting( 'zen-login-authentication', 'zenlogau_activity_retention_days', [ 'sanitize_callback' => 'absint', 'type' => 'integer', 'autoload' => false ] );
+
+    // Security hardening (v1.9.0).
+    register_setting( 'zen-login-authentication', 'zenlogau_harden_enum',          [ 'sanitize_callback' => 'absint', 'type' => 'integer', 'autoload' => false ] );
+    register_setting( 'zen-login-authentication', 'zenlogau_generic_login_errors', [ 'sanitize_callback' => 'absint', 'type' => 'integer', 'autoload' => false ] );
+    register_setting( 'zen-login-authentication', 'zenlogau_block_breached',       [ 'sanitize_callback' => 'absint', 'type' => 'integer', 'autoload' => false ] );
+    register_setting( 'zen-login-authentication', 'zenlogau_disable_xmlrpc',       [ 'sanitize_callback' => 'absint', 'type' => 'integer', 'autoload' => false ] );
+
+    // Bot protection — Cloudflare Turnstile (v1.9.0).
+    register_setting( 'zen-login-authentication', 'zenlogau_turnstile_enabled',      [ 'sanitize_callback' => 'absint',              'type' => 'integer', 'autoload' => false ] );
+    register_setting( 'zen-login-authentication', 'zenlogau_turnstile_site_key',     [ 'sanitize_callback' => 'sanitize_text_field', 'type' => 'string',  'autoload' => false ] );
+    register_setting( 'zen-login-authentication', 'zenlogau_turnstile_secret_key',   [ 'sanitize_callback' => 'zenlogau_sanitize_turnstile_secret', 'type' => 'string', 'autoload' => false ] );
+    register_setting( 'zen-login-authentication', 'zenlogau_turnstile_login',        [ 'sanitize_callback' => 'absint',              'type' => 'integer', 'autoload' => false ] );
+    register_setting( 'zen-login-authentication', 'zenlogau_turnstile_register',     [ 'sanitize_callback' => 'absint',              'type' => 'integer', 'autoload' => false ] );
+    register_setting( 'zen-login-authentication', 'zenlogau_turnstile_lostpassword', [ 'sanitize_callback' => 'absint',              'type' => 'integer', 'autoload' => false ] );
+
+    // Two-factor authentication (v2.0.0). Per-user opt-in; this is the master switch.
+    register_setting( 'zen-login-authentication', 'zenlogau_2fa_feature', [ 'sanitize_callback' => 'absint', 'type' => 'integer', 'autoload' => false ] );
 }
 
 function zenlogau_sanitize_login_type( $value ): string {
@@ -332,6 +349,139 @@ function zenlogau_admin_settings_page(): void {
                             <span class="fauth-toggle-slider"></span>
                         </label>
                         <div class="fauth-hint"><?php esc_html_e( 'Count every submission, not just failed ones. Prevents an attacker from spamming reset emails to a known-valid address.', 'zen-login-authentication' ); ?></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Security Hardening (v1.9.0) -->
+            <div class="fauth-card">
+                <h2><?php esc_html_e( 'Security Hardening', 'zen-login-authentication' ); ?></h2>
+                <p class="desc"><?php esc_html_e( 'Modern protections against the most common automated attacks. The first two are safe on a typical site and are on by default.', 'zen-login-authentication' ); ?></p>
+
+                <div class="fauth-row">
+                    <div class="fauth-row-label"><?php esc_html_e( 'Block username enumeration', 'zen-login-authentication' ); ?></div>
+                    <div class="fauth-row-field">
+                        <label class="fauth-toggle">
+                            <input type="hidden" name="zenlogau_harden_enum" value="0">
+                            <input type="checkbox" name="zenlogau_harden_enum" value="1" <?php checked( (bool) get_option( 'zenlogau_harden_enum', true ) ); ?>>
+                            <span class="fauth-toggle-slider"></span>
+                        </label>
+                        <div class="fauth-hint"><?php esc_html_e( 'Stops attackers harvesting valid usernames: redirects ?author=N author scans and removes the REST /wp/v2/users listing for logged-out visitors. Author pages at /author/name/ keep working.', 'zen-login-authentication' ); ?></div>
+                    </div>
+                </div>
+
+                <div class="fauth-row">
+                    <div class="fauth-row-label"><?php esc_html_e( 'Generic login errors', 'zen-login-authentication' ); ?></div>
+                    <div class="fauth-row-field">
+                        <label class="fauth-toggle">
+                            <input type="hidden" name="zenlogau_generic_login_errors" value="0">
+                            <input type="checkbox" name="zenlogau_generic_login_errors" value="1" <?php checked( (bool) get_option( 'zenlogau_generic_login_errors', true ) ); ?>>
+                            <span class="fauth-toggle-slider"></span>
+                        </label>
+                        <div class="fauth-hint"><?php esc_html_e( 'Show one neutral message instead of revealing whether the username or the password was wrong. Applies to wp-login.php and the plugin\'s own forms.', 'zen-login-authentication' ); ?></div>
+                    </div>
+                </div>
+
+                <div class="fauth-row">
+                    <div class="fauth-row-label"><?php esc_html_e( 'Block breached passwords', 'zen-login-authentication' ); ?></div>
+                    <div class="fauth-row-field">
+                        <label class="fauth-toggle">
+                            <input type="hidden" name="zenlogau_block_breached" value="0">
+                            <input type="checkbox" name="zenlogau_block_breached" value="1" <?php checked( (bool) get_option( 'zenlogau_block_breached', false ) ); ?>>
+                            <span class="fauth-toggle-slider"></span>
+                        </label>
+                        <div class="fauth-hint"><?php esc_html_e( 'Stop users from choosing a password found in a known data breach, checked at registration, password reset, and account update. Uses the Have I Been Pwned range API with k-anonymity — only the first 5 characters of the password\'s SHA-1 hash are sent, never the password. Fails open if the service is unreachable. Off by default because it contacts an external service.', 'zen-login-authentication' ); ?></div>
+                    </div>
+                </div>
+
+                <div class="fauth-row">
+                    <div class="fauth-row-label"><?php esc_html_e( 'Disable XML-RPC', 'zen-login-authentication' ); ?></div>
+                    <div class="fauth-row-field">
+                        <label class="fauth-toggle">
+                            <input type="hidden" name="zenlogau_disable_xmlrpc" value="0">
+                            <input type="checkbox" name="zenlogau_disable_xmlrpc" value="1" <?php checked( (bool) get_option( 'zenlogau_disable_xmlrpc', false ) ); ?>>
+                            <span class="fauth-toggle-slider"></span>
+                        </label>
+                        <div class="fauth-hint"><?php esc_html_e( 'Turn off XML-RPC (xmlrpc.php) to close a common brute-force amplifier and pingback abuse. Leave OFF if you use Jetpack or the WordPress mobile app, which rely on it.', 'zen-login-authentication' ); ?></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bot Protection — Cloudflare Turnstile (v1.9.0) -->
+            <div class="fauth-card">
+                <h2><?php esc_html_e( 'Bot Protection (Cloudflare Turnstile)', 'zen-login-authentication' ); ?></h2>
+                <p class="desc"><?php esc_html_e( 'Add a privacy-friendly Cloudflare Turnstile challenge to your forms to stop automated logins, fake registrations, and password-reset spam. Create a free widget in your Cloudflare dashboard under Turnstile, then paste the keys below.', 'zen-login-authentication' ); ?></p>
+
+                <div class="fauth-row">
+                    <div class="fauth-row-label"><?php esc_html_e( 'Enable Turnstile', 'zen-login-authentication' ); ?></div>
+                    <div class="fauth-row-field">
+                        <label class="fauth-toggle">
+                            <input type="hidden" name="zenlogau_turnstile_enabled" value="0">
+                            <input type="checkbox" name="zenlogau_turnstile_enabled" value="1" <?php checked( (bool) get_option( 'zenlogau_turnstile_enabled', false ) ); ?>>
+                            <span class="fauth-toggle-slider"></span>
+                        </label>
+                        <div class="fauth-hint"><?php esc_html_e( 'Takes effect once both keys below are filled in.', 'zen-login-authentication' ); ?></div>
+                    </div>
+                </div>
+
+                <div class="fauth-row">
+                    <div class="fauth-row-label"><?php esc_html_e( 'Site Key', 'zen-login-authentication' ); ?></div>
+                    <div class="fauth-row-field">
+                        <input type="text" name="zenlogau_turnstile_site_key" value="<?php echo esc_attr( (string) get_option( 'zenlogau_turnstile_site_key', '' ) ); ?>" autocomplete="off" placeholder="0x4AAAAAAA...">
+                        <div class="fauth-hint"><?php esc_html_e( 'The public site key from your Turnstile widget.', 'zen-login-authentication' ); ?></div>
+                    </div>
+                </div>
+
+                <div class="fauth-row">
+                    <div class="fauth-row-label"><?php esc_html_e( 'Secret Key', 'zen-login-authentication' ); ?></div>
+                    <div class="fauth-row-field">
+                        <?php if ( defined( 'ZENLOGAU_TURNSTILE_SECRET_KEY' ) ) : ?>
+                            <input type="password" value="****************" disabled>
+                            <div class="fauth-hint"><?php esc_html_e( 'Defined as ZENLOGAU_TURNSTILE_SECRET_KEY in wp-config.php — manage it there.', 'zen-login-authentication' ); ?></div>
+                        <?php else : ?>
+                            <?php $zenlogau_has_ts_secret = '' !== trim( (string) get_option( 'zenlogau_turnstile_secret_key', '' ) ); ?>
+                            <input type="password" name="zenlogau_turnstile_secret_key" value="" autocomplete="new-password" placeholder="<?php echo esc_attr( $zenlogau_has_ts_secret ? __( 'Saved — leave blank to keep the current secret', 'zen-login-authentication' ) : '' ); ?>">
+                            <div class="fauth-hint"><?php esc_html_e( 'Stored encrypted (AES-256-GCM, keyed from your wp-config.php salts) and never shown again after saving.', 'zen-login-authentication' ); ?></div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+
+                <div class="fauth-row">
+                    <div class="fauth-row-label"><?php esc_html_e( 'Protect which forms', 'zen-login-authentication' ); ?></div>
+                    <div class="fauth-row-field">
+                        <?php
+                        $zenlogau_ts_forms = [
+                            'zenlogau_turnstile_login'        => __( 'Login', 'zen-login-authentication' ),
+                            'zenlogau_turnstile_register'     => __( 'Registration', 'zen-login-authentication' ),
+                            'zenlogau_turnstile_lostpassword' => __( 'Lost Password', 'zen-login-authentication' ),
+                        ];
+                        foreach ( $zenlogau_ts_forms as $zenlogau_ts_opt => $zenlogau_ts_label ) :
+                        ?>
+                        <label style="display:inline-flex;align-items:center;gap:6px;margin-right:16px;">
+                            <input type="hidden" name="<?php echo esc_attr( $zenlogau_ts_opt ); ?>" value="0">
+                            <input type="checkbox" name="<?php echo esc_attr( $zenlogau_ts_opt ); ?>" value="1" <?php checked( (bool) get_option( $zenlogau_ts_opt, true ) ); ?>>
+                            <?php echo esc_html( $zenlogau_ts_label ); ?>
+                        </label>
+                        <?php endforeach; ?>
+                        <div class="fauth-hint"><?php esc_html_e( 'The challenge appears on the selected forms — both the plugin\'s forms and the standard wp-login.php.', 'zen-login-authentication' ); ?></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Two-Factor Authentication (v2.0.0) -->
+            <div class="fauth-card">
+                <h2><?php esc_html_e( 'Two-Factor Authentication', 'zen-login-authentication' ); ?></h2>
+                <p class="desc"><?php esc_html_e( 'Let users add a second step at login with an authenticator app (TOTP). Each user turns it on for their own account from the Account page — there is nothing to configure here beyond the master switch. Recovery codes are provided for lost devices. Google sign-in is not affected.', 'zen-login-authentication' ); ?></p>
+
+                <div class="fauth-row">
+                    <div class="fauth-row-label"><?php esc_html_e( 'Enable two-factor authentication', 'zen-login-authentication' ); ?></div>
+                    <div class="fauth-row-field">
+                        <label class="fauth-toggle">
+                            <input type="hidden" name="zenlogau_2fa_feature" value="0">
+                            <input type="checkbox" name="zenlogau_2fa_feature" value="1" <?php checked( (bool) get_option( 'zenlogau_2fa_feature', true ) ); ?>>
+                            <span class="fauth-toggle-slider"></span>
+                        </label>
+                        <div class="fauth-hint"><?php esc_html_e( 'When on, an "Two-Factor Authentication" section appears on the Account form so users can enroll. Turning this off stops the login challenge for everyone (existing enrollments are kept and resume if you turn it back on).', 'zen-login-authentication' ); ?></div>
                     </div>
                 </div>
             </div>

@@ -237,7 +237,9 @@ class ZENLOGAU_Form {
 
         do_action( "zenlogau_after_form_{$this->name}", $this );
 
-        return ob_get_clean();
+        // Allow a whole-form swap (e.g. the two-factor login challenge replaces
+        // the login form). $name lets a single filter target one form.
+        return (string) apply_filters( 'zenlogau_form_html', (string) ob_get_clean(), $this->name, $this );
     }
 
     private function render_field( string $name, array $field ): void {
