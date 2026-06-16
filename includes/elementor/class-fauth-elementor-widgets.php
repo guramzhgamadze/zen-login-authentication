@@ -1496,6 +1496,21 @@ class ZENLOGAU_Elementor_Account_Widget extends ZENLOGAU_Elementor_Base_Widget {
             ],
             'selectors'            => [ '{{WRAPPER}} .fauth-2fa-qr' => '{{VALUE}}' ],
         ] );
+        $this->add_responsive_control( 'tfa_body_align', [
+            'label'     => esc_html__( 'Body Text Alignment', 'zen-login-authentication' ),
+            'type'      => \Elementor\Controls_Manager::CHOOSE,
+            'options'   => [
+                'left'   => [ 'title' => esc_html__( 'Left', 'zen-login-authentication' ),   'icon' => 'eicon-text-align-left' ],
+                'center' => [ 'title' => esc_html__( 'Center', 'zen-login-authentication' ), 'icon' => 'eicon-text-align-center' ],
+                'right'  => [ 'title' => esc_html__( 'Right', 'zen-login-authentication' ),  'icon' => 'eicon-text-align-right' ],
+            ],
+            // The status line, enrolment steps, setup key, recovery-code box, and
+            // "codes remaining" line — but NOT the heading, QR, buttons, or links,
+            // which each have their own alignment control.
+            'selectors' => [
+                '{{WRAPPER}} .fauth-2fa-status, {{WRAPPER}} .fauth-2fa-steps, {{WRAPPER}} .fauth-2fa-key, {{WRAPPER}} .fauth-2fa-codes, {{WRAPPER}} .fauth-2fa-recovery-count' => 'text-align: {{VALUE}};',
+            ],
+        ] );
 
         $this->add_control( 'tfa_bg', [
             'label'     => esc_html__( 'Section Background', 'zen-login-authentication' ),
@@ -1580,9 +1595,51 @@ class ZENLOGAU_Elementor_Account_Widget extends ZENLOGAU_Elementor_Base_Widget {
 
         /* ----- Text links — "Turn off" and "Cancel". ----- */
         $this->add_control( 'tfa_link_heading', [ 'label' => esc_html__( 'Text Links (Turn off, Cancel)', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
+        $this->add_responsive_control( 'tfa_link_align', [
+            'label'     => esc_html__( 'Alignment', 'zen-login-authentication' ),
+            'type'      => \Elementor\Controls_Manager::CHOOSE,
+            'options'   => [
+                'left'   => [ 'title' => esc_html__( 'Left', 'zen-login-authentication' ),   'icon' => 'eicon-text-align-left' ],
+                'center' => [ 'title' => esc_html__( 'Center', 'zen-login-authentication' ), 'icon' => 'eicon-text-align-center' ],
+                'right'  => [ 'title' => esc_html__( 'Right', 'zen-login-authentication' ),  'icon' => 'eicon-text-align-right' ],
+            ],
+            'selectors' => [ '{{WRAPPER}} .fauth-2fa-cancel' => 'text-align: {{VALUE}};' ],
+        ] );
         $this->add_group_control( \Elementor\Group_Control_Typography::get_type(), [ 'name' => 'tfa_link_typography', 'selector' => '{{WRAPPER}} .fauth-2fa .fauth-link-button' ] );
         $this->add_control( 'tfa_link_color', [ 'label' => esc_html__( 'Text', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-2fa .fauth-link-button' => 'color: {{VALUE}};' ] ] );
         $this->add_control( 'tfa_link_color_h', [ 'label' => esc_html__( 'Text (Hover)', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-2fa .fauth-link-button:hover,{{WRAPPER}} .fauth-2fa .fauth-link-button:focus' => 'color: {{VALUE}};' ] ] );
+
+        /* ----- Recovery-code buttons ("Copy codes" / "Download"). Independent of
+         * the main buttons above: laid out side by side with their own controls. ----- */
+        $this->add_control( 'tfa_codebtn_heading', [ 'label' => esc_html__( 'Recovery Code Buttons', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
+        $this->add_responsive_control( 'tfa_codebtn_gap', [
+            'label'      => esc_html__( 'Gap', 'zen-login-authentication' ),
+            'type'       => \Elementor\Controls_Manager::SLIDER,
+            'size_units' => [ 'px' ],
+            'range'      => [ 'px' => [ 'min' => 0, 'max' => 40 ] ],
+            'selectors'  => [ '{{WRAPPER}} .fauth-2fa-code-actions' => 'gap: {{SIZE}}{{UNIT}};' ],
+        ] );
+        $this->add_group_control( \Elementor\Group_Control_Typography::get_type(), [ 'name' => 'tfa_codebtn_typography', 'selector' => '{{WRAPPER}} .fauth-2fa-code-btn' ] );
+        $this->add_responsive_control( 'tfa_codebtn_padding', [ 'label' => esc_html__( 'Padding', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::DIMENSIONS, 'size_units' => [ 'px', 'em' ], 'selectors' => [ '{{WRAPPER}} .fauth-2fa-code-btn' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ] ] );
+        $this->add_responsive_control( 'tfa_codebtn_radius', [ 'label' => esc_html__( 'Border Radius', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::DIMENSIONS, 'size_units' => [ 'px', '%' ], 'selectors' => [ '{{WRAPPER}} .fauth-2fa-code-btn' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ] ] );
+        $this->start_controls_tabs( 'tfa_codebtn_tabs' );
+        $this->start_controls_tab( 'tfa_codebtn_tab_normal', [ 'label' => esc_html__( 'Normal', 'zen-login-authentication' ) ] );
+        $this->add_control( 'tfa_codebtn_color', [ 'label' => esc_html__( 'Text', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-2fa-code-btn' => 'color: {{VALUE}};' ] ] );
+        $this->add_control( 'tfa_codebtn_bg', [ 'label' => esc_html__( 'Background', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-2fa-code-btn' => 'background-color: {{VALUE}};' ] ] );
+        $this->add_group_control( \Elementor\Group_Control_Border::get_type(), [ 'name' => 'tfa_codebtn_border', 'selector' => '{{WRAPPER}} .fauth-2fa-code-btn' ] );
+        if ( class_exists( '\Elementor\Group_Control_Box_Shadow' ) ) {
+            $this->add_group_control( \Elementor\Group_Control_Box_Shadow::get_type(), [ 'name' => 'tfa_codebtn_shadow', 'selector' => '{{WRAPPER}} .fauth-2fa-code-btn' ] );
+        }
+        $this->end_controls_tab();
+        $this->start_controls_tab( 'tfa_codebtn_tab_hover', [ 'label' => esc_html__( 'Hover', 'zen-login-authentication' ) ] );
+        $this->add_control( 'tfa_codebtn_color_h', [ 'label' => esc_html__( 'Text', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-2fa-code-btn:hover,{{WRAPPER}} .fauth-2fa-code-btn:focus' => 'color: {{VALUE}};' ] ] );
+        $this->add_control( 'tfa_codebtn_bg_h', [ 'label' => esc_html__( 'Background', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-2fa-code-btn:hover,{{WRAPPER}} .fauth-2fa-code-btn:focus' => 'background-color: {{VALUE}};' ] ] );
+        $this->add_control( 'tfa_codebtn_border_color_h', [ 'label' => esc_html__( 'Border Color', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-2fa-code-btn:hover,{{WRAPPER}} .fauth-2fa-code-btn:focus' => 'border-color: {{VALUE}};' ] ] );
+        if ( class_exists( '\Elementor\Group_Control_Box_Shadow' ) ) {
+            $this->add_group_control( \Elementor\Group_Control_Box_Shadow::get_type(), [ 'name' => 'tfa_codebtn_shadow_h', 'selector' => '{{WRAPPER}} .fauth-2fa-code-btn:hover,{{WRAPPER}} .fauth-2fa-code-btn:focus' ] );
+        }
+        $this->end_controls_tab();
+        $this->end_controls_tabs();
 
         $this->end_controls_section();
     }

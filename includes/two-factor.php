@@ -533,8 +533,8 @@ function zenlogau_2fa_render_enabled_state( int $uid ): void {
         echo '</ul>';
         echo '</div>'; // close .fauth-2fa-codes — the action buttons live OUTSIDE the codes box
         echo '<div class="fauth-2fa-code-actions">';
-        echo '<button type="button" class="fauth-button fauth-submit-button fauth-button-secondary fauth-2fa-copy" data-done="' . esc_attr__( 'Copied!', 'zen-login-authentication' ) . '">' . esc_html__( 'Copy codes', 'zen-login-authentication' ) . '</button>';
-        echo '<button type="button" class="fauth-button fauth-submit-button fauth-button-secondary fauth-2fa-download" data-filename="' . esc_attr( 'recovery-codes-' . sanitize_title( $site ) . '.txt' ) . '" data-heading="' . esc_attr( sprintf( /* translators: %s: site name */ __( 'Two-factor recovery codes for %s', 'zen-login-authentication' ), $site ) ) . '">' . esc_html__( 'Download', 'zen-login-authentication' ) . '</button>';
+        echo '<button type="button" class="fauth-2fa-code-btn fauth-2fa-copy" data-done="' . esc_attr__( 'Copied!', 'zen-login-authentication' ) . '">' . esc_html__( 'Copy codes', 'zen-login-authentication' ) . '</button>';
+        echo '<button type="button" class="fauth-2fa-code-btn fauth-2fa-download" data-filename="' . esc_attr( 'recovery-codes-' . sanitize_title( $site ) . '.txt' ) . '" data-heading="' . esc_attr( sprintf( /* translators: %s: site name */ __( 'Two-factor recovery codes for %s', 'zen-login-authentication' ), $site ) ) . '">' . esc_html__( 'Download', 'zen-login-authentication' ) . '</button>';
         echo '</div>';
     } else {
         $remaining = zenlogau_2fa_recovery_count( $uid );

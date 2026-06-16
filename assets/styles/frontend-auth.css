@@ -542,11 +542,13 @@ select.fauth-field {
 .fauth-2fa-qr svg{width:100%;height:auto;display:block}
 .fauth-2fa-key{margin:10px 0}
 .fauth-2fa-key code{display:inline-block;padding:8px 12px;background:rgba(0,0,0,.05);border-radius:6px;font-size:1.05em;letter-spacing:1px}
-.fauth-2fa-steps{margin:0 0 12px;padding-left:20px}
+.fauth-2fa-steps{margin:0 0 12px;padding-left:0;list-style-position:inside}
 .fauth-2fa-codes{margin:12px 0;padding:14px;background:rgba(0,0,0,.04);border-radius:8px}
 .fauth-2fa-code-list{list-style:none;margin:8px 0 0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
 .fauth-2fa-code-list code{font-size:1.05em;letter-spacing:1px}
-.fauth-2fa-code-actions{display:flex;flex-direction:column;gap:10px;margin-top:14px}
+.fauth-2fa-code-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+.fauth-2fa-code-btn{flex:1 1 140px;display:inline-block;cursor:pointer;font:inherit;font-weight:600;font-size:.95rem;line-height:1.4;padding:.72em 1.2em;border-radius:var(--fauth-btn-radius,10px);border:1px solid rgba(0,0,0,.14);background:rgba(0,0,0,.06);color:inherit;text-align:center;transition:background .18s ease,color .18s ease,border-color .18s ease}
+.fauth-2fa-code-btn:hover,.fauth-2fa-code-btn:focus{background:rgba(0,0,0,.1);outline:none}
 .fauth-2fa .fauth-submit{margin-top:12px}
 .fauth-2fa-actions{margin-top:14px}
 .fauth-2fa-cancel{margin-top:10px}

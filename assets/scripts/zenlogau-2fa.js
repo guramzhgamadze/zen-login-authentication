@@ -62,21 +62,25 @@
 	}
 
 	function setupCodeActions() {
-		var boxes = document.querySelectorAll( '.fauth-2fa-codes' );
-		for ( var b = 0; b < boxes.length; b++ ) {
-			( function ( box ) {
-				if ( '1' === box.getAttribute( 'data-bound' ) ) {
+		var sections = document.querySelectorAll( '.fauth-2fa' );
+		for ( var s = 0; s < sections.length; s++ ) {
+			( function ( section ) {
+				if ( '1' === section.getAttribute( 'data-codes-bound' ) ) {
 					return;
 				}
-				box.setAttribute( 'data-bound', '1' );
-
-				var codes = collectCodes( box );
+				// The Copy/Download buttons live OUTSIDE the .fauth-2fa-codes box
+				// (siblings within .fauth-2fa), so scope the lookup to the section.
+				var copyBtn = section.querySelector( '.fauth-2fa-copy' );
+				var dlBtn   = section.querySelector( '.fauth-2fa-download' );
+				if ( ! copyBtn && ! dlBtn ) {
+					return;
+				}
+				var codes = collectCodes( section );
 				if ( ! codes.length ) {
 					return;
 				}
-				var text    = codes.join( '\n' ) + '\n';
-				var copyBtn = box.querySelector( '.fauth-2fa-copy' );
-				var dlBtn   = box.querySelector( '.fauth-2fa-download' );
+				section.setAttribute( 'data-codes-bound', '1' );
+				var text = codes.join( '\n' ) + '\n';
 
 				if ( copyBtn ) {
 					copyBtn.addEventListener( 'click', function () {
@@ -112,7 +116,7 @@
 						setTimeout( function () { URL.revokeObjectURL( url ); }, 1000 );
 					} );
 				}
-			} )( boxes[ b ] );
+			} )( sections[ s ] );
 		}
 	}
 
