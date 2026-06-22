@@ -81,6 +81,7 @@ function zenlogau_rate_limit_key( $action, $ip = '' ) {
         $ip = zenlogau_rate_limit_get_ip();
     }
     // Max transient key length is 172 chars; md5 keeps us safe.
+    // nosemgrep: php.lang.security.weak-crypto.weak-crypto -- non-security hash: builds a WordPress transient cache key from the IP, not a security boundary; a collision grants no bypass.
     return 'zenlogau_rl_' . $action . '_' . md5( $ip );
 }
 

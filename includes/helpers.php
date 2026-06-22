@@ -112,6 +112,7 @@ function zenlogau_honeypot_field_name( string $hour = '' ): string {
     if ( '' === $hour ) {
         $hour = gmdate( 'YmdH' );
     }
+    // nosemgrep: php.lang.security.weak-crypto.weak-crypto -- non-security hash: derives a rotating honeypot field name for bot obfuscation, not a secret, password, or integrity check.
     return 'hp_' . substr( md5( wp_salt( 'auth' ) . $hour ), 0, 8 );
 }
 
@@ -180,7 +181,7 @@ function zenlogau_is_elementor_context(): bool {
     }
 
     // phpcs:disable WordPress.Security.NonceVerification.Recommended -- read-only environment detection (is this an Elementor editor/preview request?); no data is processed or persisted.
-    if ( is_admin() && isset( $_GET['action'] ) && 'elementor' === $_GET['action'] ) {
+    if ( is_admin() && isset( $_GET['action'] ) && is_string( $_GET['action'] ) && 'elementor' === sanitize_key( wp_unslash( $_GET['action'] ) ) ) {
         return true;
     }
     if ( isset( $_GET['elementor-preview'] ) ) {

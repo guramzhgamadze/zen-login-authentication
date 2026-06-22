@@ -120,11 +120,22 @@ function zenlogau_sanitize_login_type( $value ): string {
 
 /**
  * Sanitize the subscriber-redirect target. Accepts a slug/path or a full URL.
- * Stored as plain text; same-host safety is enforced at redirect time by
- * zenlogau_get_subscriber_redirect() (home_url) and wp_safe_redirect().
+ *
+ * A full URL is sanitized with esc_url_raw() so query strings and encoded
+ * characters survive (sanitize_text_field() can mangle a valid URL); a
+ * slug/path is sanitized as text. Same-host safety is still enforced at
+ * redirect time by zenlogau_get_subscriber_redirect() (home_url) and
+ * wp_safe_redirect().
  */
 function zenlogau_sanitize_redirect_target( $value ): string {
-    return trim( sanitize_text_field( (string) $value ) );
+    $value = is_scalar( $value ) ? trim( (string) $value ) : '';
+    if ( '' === $value ) {
+        return '';
+    }
+    if ( preg_match( '#^https?://#i', $value ) ) {
+        return esc_url_raw( $value );
+    }
+    return sanitize_text_field( $value );
 }
 
 /* -----------------------------------------------------------------------

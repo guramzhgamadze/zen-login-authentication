@@ -24,6 +24,7 @@ The plugin works with no configuration and adds no tracking or "phone home" beha
 * **Account page** — logged-in users edit their first/last name, public display name, email, and password from the frontend, without ever seeing wp-admin. Guests visiting the account page are sent to the login form and return after signing in.
 * **Sign in with Google** (optional) — a server-side OpenID Connect flow with no Google JavaScript on your pages. New accounts can be auto-created (toggleable) and existing accounts are linked by verified email.
 * **Two-factor authentication** (optional, opt-in per user) — app-based TOTP with local QR enrollment and one-time recovery codes, managed from the Account page. Once a user turns it on, a second-factor step is required at login.
+* **Sign out of other devices** — from the Account page, a logged-in user can end every other active session for their account in one click; the current device stays signed in.
 * **URL rewriting** so every site-wide `wp-login.php` link is transparently redirected to your frontend pages.
 * **Multisite support** — network-activated, per-site settings, signup/activation flow handled.
 * **Smart redirects** — `?redirect_to=` is honoured everywhere. Subscribers are kept out of wp-admin and sent to a destination you set in **Settings &rarr; Zen Login & Authentication &rarr; Subscriber redirect** (a page slug or URL; empty = site home). Privileged users always land where they intended.
@@ -141,6 +142,8 @@ Only pages the plugin created that you never edited (no content, no Elementor da
 = 2.0.0 =
 * New: **Two-factor authentication (TOTP)**. Opt-in per user, managed entirely from the Account page: scan a QR code (or enter the setup key) in any authenticator app, confirm a code to turn it on, and save one-time recovery codes. After the password, a second-factor step is required — enforced across the plugin's forms, AJAX submissions, and wp-login.php (REST/XML-RPC application passwords and Google sign-in are unaffected). The shared secret is stored encrypted at rest and recovery codes are stored hashed and single-use; the login challenge sets no auth cookie until the second factor verifies.
 * The enrollment QR is rendered locally by the bundled qrcode-generator library (Kazuhiko Arase, MIT) — no external request is made.
+* New: **Sign out of other devices** on the Account page — ends every active session except the current one, so users can recover from a shared or lost device.
+* Hardening: the subscriber-redirect setting now keeps full URLs intact (sanitized with `esc_url_raw()` rather than `sanitize_text_field()`, which could mangle a valid URL).
 
 = 1.9.0 =
 * New: **Security Hardening** panel. Username-enumeration protection — blocks `?author=N` author scans and the REST `/wp/v2/users` listing for logged-out visitors, and makes login errors generic so a valid username is never confirmed — is **on by default**. Optional XML-RPC lockdown closes the `system.multicall` brute-force amplifier and pingback abuse.

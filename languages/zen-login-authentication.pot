@@ -1,0 +1,1857 @@
+# Copyright (C) 2026 Guram Zhgamadze
+# This file is distributed under the GPL-2.0-or-later.
+msgid ""
+msgstr ""
+"Project-Id-Version: Zen Login & Authentication 2.0.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/zen-login-authentication\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-06-22T01:56:43+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.12.0\n"
+"X-Domain: zen-login-authentication\n"
+
+#. Plugin Name of the plugin
+#: zen-login-authentication.php
+#: admin/settings.php:19
+#: admin/settings.php:20
+#: admin/settings.php:153
+#: includes/elementor/class-fauth-elementor-widgets.php:54
+#: zen-login-authentication.php:64
+msgid "Zen Login & Authentication"
+msgstr ""
+
+#. Plugin URI of the plugin
+#: zen-login-authentication.php
+msgid "https://github.com/guramzhgamadze/zen-login-authentication"
+msgstr ""
+
+#. Description of the plugin
+#: zen-login-authentication.php
+msgid "Secure, accessible frontend login, registration, and password recovery forms — with rate limiting, honeypot protection, AJAX support, and native Elementor widgets."
+msgstr ""
+
+#. Author of the plugin
+#: zen-login-authentication.php
+msgid "Guram Zhgamadze"
+msgstr ""
+
+#. Author URI of the plugin
+#: zen-login-authentication.php
+msgid "https://github.com/guramzhgamadze"
+msgstr ""
+
+#: admin/dashboard.php:23
+msgid "Zen Login & Authentication — Login Activity"
+msgstr ""
+
+#. translators: %s: settings page URL
+#: admin/dashboard.php:36
+#, php-format
+msgid "Login activity logging is turned off. Enable it under <a href=\"%s\">Zen Login & Authentication → Settings</a>."
+msgstr ""
+
+#: admin/dashboard.php:50
+msgid "Successful"
+msgstr ""
+
+#: admin/dashboard.php:54
+#: admin/dashboard.php:123
+msgid "Failed"
+msgstr ""
+
+#: admin/dashboard.php:58
+msgid "Lockouts"
+msgstr ""
+
+#. translators: %d: number of days
+#: admin/dashboard.php:65
+#, php-format
+msgid "Last %d days."
+msgstr ""
+
+#: admin/dashboard.php:73
+msgid "Top failed logins"
+msgstr ""
+
+#: admin/dashboard.php:74
+msgid "No failed logins."
+msgstr ""
+
+#: admin/dashboard.php:77
+msgid "Top blocked IPs"
+msgstr ""
+
+#: admin/dashboard.php:78
+msgid "No lockouts — nobody has been blocked."
+msgstr ""
+
+#: admin/dashboard.php:82
+msgid "Recent activity"
+msgstr ""
+
+#: admin/dashboard.php:86
+msgid "Activity log settings →"
+msgstr ""
+
+#: admin/dashboard.php:117
+msgid "No activity recorded yet."
+msgstr ""
+
+#: admin/dashboard.php:122
+#: admin/settings.php:325
+#: admin/settings.php:465
+#: includes/options.php:217
+#: includes/widgets.php:266
+#: includes/widgets.php:279
+msgid "Login"
+msgstr ""
+
+#: admin/dashboard.php:124
+msgid "Lockout"
+msgstr ""
+
+#. translators: %s: human-readable time difference, e.g. "5 mins"
+#: admin/dashboard.php:135
+#, php-format
+msgid "%s ago"
+msgstr ""
+
+#: admin/dashboard.php:163
+#: admin/hooks.php:112
+#: admin/hooks.php:125
+msgid "Unauthorized."
+msgstr ""
+
+#: admin/hooks.php:19
+msgid "Settings"
+msgstr ""
+
+#: admin/hooks.php:159
+msgid "Auth pages have been created successfully."
+msgstr ""
+
+#: admin/hooks.php:160
+msgid "Auto-created auth pages have been deleted."
+msgstr ""
+
+#: admin/hooks.php:161
+msgid "Login activity log cleared."
+msgstr ""
+
+#: admin/settings.php:162
+msgid "General"
+msgstr ""
+
+#: admin/settings.php:163
+msgid "Core authentication behavior."
+msgstr ""
+
+#: admin/settings.php:166
+msgid "Login with"
+msgstr ""
+
+#: admin/settings.php:170
+#: includes/elementor/class-fauth-elementor-widgets.php:1020
+#: includes/elementor/class-fauth-elementor-widgets.php:1229
+msgid "Username or Email"
+msgstr ""
+
+#: admin/settings.php:171
+msgid "Username only"
+msgstr ""
+
+#: admin/settings.php:172
+msgid "Email only"
+msgstr ""
+
+#: admin/settings.php:179
+msgid "Pretty URLs"
+msgstr ""
+
+#: admin/settings.php:179
+msgid "Use /login/ instead of ?action=login"
+msgstr ""
+
+#: admin/settings.php:180
+msgid "AJAX forms"
+msgstr ""
+
+#: admin/settings.php:180
+msgid "Submit forms without a page reload"
+msgstr ""
+
+#: admin/settings.php:181
+msgid "User-chosen passwords"
+msgstr ""
+
+#: admin/settings.php:181
+msgid "Show password field on registration"
+msgstr ""
+
+#: admin/settings.php:182
+msgid "Auto-login"
+msgstr ""
+
+#: admin/settings.php:182
+msgid "Log users in automatically after registration"
+msgstr ""
+
+#: admin/settings.php:183
+msgid "Honeypot protection"
+msgstr ""
+
+#: admin/settings.php:183
+msgid "Hidden field to catch spam bots"
+msgstr ""
+
+#: admin/settings.php:201
+msgid "Subscriber redirect"
+msgstr ""
+
+#: admin/settings.php:203
+msgid "e.g. dashboard  (leave empty for home page)"
+msgstr ""
+
+#: admin/settings.php:204
+msgid "Where subscribers land after logging in. Enter a page slug (e.g. dashboard) or a full URL. Leave empty to send them to the site home page. Admins and editors keep their normal redirect."
+msgstr ""
+
+#: admin/settings.php:211
+msgid "Sign in with Google"
+msgstr ""
+
+#: admin/settings.php:212
+msgid "Let users log in (and optionally register) with their Google account. Server-side flow — no Google JavaScript is loaded on your pages."
+msgstr ""
+
+#: admin/settings.php:215
+msgid "Enable Google sign-in"
+msgstr ""
+
+#: admin/settings.php:222
+msgid "Shows a \"Continue with Google\" button on the login and registration forms once the credentials below are filled in."
+msgstr ""
+
+#: admin/settings.php:227
+msgid "Client ID"
+msgstr ""
+
+#: admin/settings.php:234
+msgid "Client Secret"
+msgstr ""
+
+#: admin/settings.php:238
+msgid "Defined as ZENLOGAU_GOOGLE_CLIENT_SECRET in wp-config.php — manage it there."
+msgstr ""
+
+#: admin/settings.php:241
+#: admin/settings.php:454
+msgid "Saved — leave blank to keep the current secret"
+msgstr ""
+
+#: admin/settings.php:242
+msgid "Stored encrypted (AES-256-GCM, keyed from your wp-config.php salts) and never shown again after saving. Tip: you can instead define ZENLOGAU_GOOGLE_CLIENT_ID and ZENLOGAU_GOOGLE_CLIENT_SECRET in wp-config.php to keep credentials out of the database entirely. If you rotate your salts, re-enter the secret."
+msgstr ""
+
+#: admin/settings.php:248
+msgid "Allow new accounts"
+msgstr ""
+
+#: admin/settings.php:255
+msgid "Create an account automatically on first Google sign-in. Existing accounts with the same verified email are always linked. When off, only existing users can sign in with Google."
+msgstr ""
+
+#: admin/settings.php:260
+msgid "Authorized redirect URI"
+msgstr ""
+
+#: admin/settings.php:263
+msgid "Add this exact URL in Google Cloud Console → APIs & Services → Credentials → your OAuth 2.0 Client ID → Authorized redirect URIs."
+msgstr ""
+
+#: admin/settings.php:270
+msgid "Widgets"
+msgstr ""
+
+#: admin/settings.php:271
+msgid "Choose which form widgets are available — in the Elementor panel and as classic sidebar widgets. Turning one off also stops it rendering on pages that already use it, so make sure your login page keeps a working login form."
+msgstr ""
+
+#: admin/settings.php:275
+#: includes/elementor/class-fauth-elementor-widgets.php:855
+#: includes/elementor/class-fauth-elementor-widgets.php:860
+msgid "Login Form"
+msgstr ""
+
+#: admin/settings.php:275
+msgid "The main sign-in form."
+msgstr ""
+
+#: admin/settings.php:276
+#: includes/elementor/class-fauth-elementor-widgets.php:1040
+#: includes/elementor/class-fauth-elementor-widgets.php:1045
+msgid "Registration Form"
+msgstr ""
+
+#: admin/settings.php:276
+msgid "New-account registration form."
+msgstr ""
+
+#: admin/settings.php:277
+#: includes/elementor/class-fauth-elementor-widgets.php:1160
+#: includes/elementor/class-fauth-elementor-widgets.php:1165
+msgid "Lost Password Form"
+msgstr ""
+
+#: admin/settings.php:277
+msgid "Request a password-reset email."
+msgstr ""
+
+#: admin/settings.php:278
+#: includes/elementor/class-fauth-elementor-widgets.php:1247
+#: includes/elementor/class-fauth-elementor-widgets.php:1252
+msgid "Reset Password Form"
+msgstr ""
+
+#: admin/settings.php:278
+msgid "Set a new password from a reset-email link."
+msgstr ""
+
+#: admin/settings.php:279
+#: includes/elementor/class-fauth-elementor-widgets.php:1404
+#: includes/elementor/class-fauth-elementor-widgets.php:1410
+msgid "Account Form"
+msgstr ""
+
+#: admin/settings.php:279
+msgid "Frontend profile editing for logged-in users."
+msgstr ""
+
+#: admin/settings.php:299
+msgid "Rate Limiting"
+msgstr ""
+
+#: admin/settings.php:300
+msgid "Limit failed attempts per IP address before a temporary lockout."
+msgstr ""
+
+#: admin/settings.php:303
+msgid "Max attempts"
+msgstr ""
+
+#: admin/settings.php:306
+msgid "Set to 0 to disable."
+msgstr ""
+
+#: admin/settings.php:310
+msgid "Lockout window"
+msgstr ""
+
+#: admin/settings.php:312
+msgid "minutes"
+msgstr ""
+
+#: admin/settings.php:319
+msgid "Per-Form Rate Limiting"
+msgstr ""
+
+#: admin/settings.php:320
+msgid "Enable or disable rate limiting per form, and override the global Max attempts threshold."
+msgstr ""
+
+#: admin/settings.php:326
+#: admin/settings.php:466
+msgid "Registration"
+msgstr ""
+
+#: admin/settings.php:327
+#: admin/settings.php:467
+#: includes/handlers.php:94
+#: includes/options.php:219
+msgid "Lost Password"
+msgstr ""
+
+#: admin/settings.php:328
+#: includes/elementor/class-fauth-elementor-widgets.php:1259
+#: includes/elementor/class-fauth-elementor-widgets.php:1329
+#: includes/elementor/class-fauth-elementor-widgets.php:1390
+#: includes/forms.php:214
+#: includes/handlers.php:100
+#: includes/options.php:220
+#: includes/widgets.php:379
+#: includes/widgets.php:392
+#: includes/widgets.php:438
+#: includes/widgets.php:503
+msgid "Reset Password"
+msgstr ""
+
+#: admin/settings.php:337
+msgid "Enable rate limiting for this form"
+msgstr ""
+
+#: admin/settings.php:342
+msgid "Max attempts:"
+msgstr ""
+
+#. translators: %d = global default
+#: admin/settings.php:347
+#, php-format
+msgid "0 = use global default (%d)"
+msgstr ""
+
+#: admin/settings.php:355
+msgid "Count successful lost-password requests"
+msgstr ""
+
+#: admin/settings.php:362
+msgid "Count every submission, not just failed ones. Prevents an attacker from spamming reset emails to a known-valid address."
+msgstr ""
+
+#: admin/settings.php:369
+msgid "Security Hardening"
+msgstr ""
+
+#: admin/settings.php:370
+msgid "Modern protections against the most common automated attacks. The first two are safe on a typical site and are on by default."
+msgstr ""
+
+#: admin/settings.php:373
+msgid "Block username enumeration"
+msgstr ""
+
+#: admin/settings.php:380
+msgid "Stops attackers harvesting valid usernames: redirects ?author=N author scans and removes the REST /wp/v2/users listing for logged-out visitors. Author pages at /author/name/ keep working."
+msgstr ""
+
+#: admin/settings.php:385
+msgid "Generic login errors"
+msgstr ""
+
+#: admin/settings.php:392
+msgid "Show one neutral message instead of revealing whether the username or the password was wrong. Applies to wp-login.php and the plugin's own forms."
+msgstr ""
+
+#: admin/settings.php:397
+msgid "Block breached passwords"
+msgstr ""
+
+#: admin/settings.php:404
+msgid "Stop users from choosing a password found in a known data breach, checked at registration, password reset, and account update. Uses the Have I Been Pwned range API with k-anonymity — only the first 5 characters of the password's SHA-1 hash are sent, never the password. Fails open if the service is unreachable. Off by default because it contacts an external service."
+msgstr ""
+
+#: admin/settings.php:409
+msgid "Disable XML-RPC"
+msgstr ""
+
+#: admin/settings.php:416
+msgid "Turn off XML-RPC (xmlrpc.php) to close a common brute-force amplifier and pingback abuse. Leave OFF if you use Jetpack or the WordPress mobile app, which rely on it."
+msgstr ""
+
+#: admin/settings.php:423
+msgid "Bot Protection (Cloudflare Turnstile)"
+msgstr ""
+
+#: admin/settings.php:424
+msgid "Add a privacy-friendly Cloudflare Turnstile challenge to your forms to stop automated logins, fake registrations, and password-reset spam. Create a free widget in your Cloudflare dashboard under Turnstile, then paste the keys below."
+msgstr ""
+
+#: admin/settings.php:427
+msgid "Enable Turnstile"
+msgstr ""
+
+#: admin/settings.php:434
+msgid "Takes effect once both keys below are filled in."
+msgstr ""
+
+#: admin/settings.php:439
+msgid "Site Key"
+msgstr ""
+
+#: admin/settings.php:442
+msgid "The public site key from your Turnstile widget."
+msgstr ""
+
+#: admin/settings.php:447
+msgid "Secret Key"
+msgstr ""
+
+#: admin/settings.php:451
+msgid "Defined as ZENLOGAU_TURNSTILE_SECRET_KEY in wp-config.php — manage it there."
+msgstr ""
+
+#: admin/settings.php:455
+msgid "Stored encrypted (AES-256-GCM, keyed from your wp-config.php salts) and never shown again after saving."
+msgstr ""
+
+#: admin/settings.php:461
+msgid "Protect which forms"
+msgstr ""
+
+#: admin/settings.php:477
+msgid "The challenge appears on the selected forms — both the plugin's forms and the standard wp-login.php."
+msgstr ""
+
+#: admin/settings.php:484
+#: includes/elementor/class-fauth-elementor-widgets.php:1469
+#: includes/two-factor.php:455
+msgid "Two-Factor Authentication"
+msgstr ""
+
+#: admin/settings.php:485
+msgid "Let users add a second step at login with an authenticator app (TOTP). Each user turns it on for their own account from the Account page — there is nothing to configure here beyond the master switch. Recovery codes are provided for lost devices. Google sign-in is not affected."
+msgstr ""
+
+#: admin/settings.php:488
+msgid "Enable two-factor authentication"
+msgstr ""
+
+#: admin/settings.php:495
+msgid "When on, an \"Two-Factor Authentication\" section appears on the Account form so users can enroll. Turning this off stops the login challenge for everyone (existing enrollments are kept and resume if you turn it back on)."
+msgstr ""
+
+#: admin/settings.php:502
+msgid "Login Activity"
+msgstr ""
+
+#: admin/settings.php:503
+msgid "Records successful logins, failed attempts, and rate-limit lockouts so you can review them in the \"Login Activity\" widget on your WordPress dashboard. IP addresses are stored anonymised."
+msgstr ""
+
+#: admin/settings.php:506
+msgid "Log login activity"
+msgstr ""
+
+#: admin/settings.php:513
+msgid "Turn off to stop recording new events. Existing entries are kept until cleared or aged out."
+msgstr ""
+
+#: admin/settings.php:518
+msgid "Keep history for"
+msgstr ""
+
+#: admin/settings.php:520
+msgid "days"
+msgstr ""
+
+#: admin/settings.php:521
+msgid "Older entries are deleted automatically. Set to 0 to keep entries indefinitely (not recommended)."
+msgstr ""
+
+#: admin/settings.php:528
+msgid "Page Slugs"
+msgstr ""
+
+#: admin/settings.php:529
+msgid "Customise the URL slug for each action page."
+msgstr ""
+
+#: admin/settings.php:545
+#: includes/elementor/class-fauth-elementor-widgets.php:1432
+#: includes/elementor/class-fauth-elementor-widgets.php:1712
+#: includes/forms.php:341
+msgid "Save Changes"
+msgstr ""
+
+#: admin/settings.php:551
+msgid "Login Activity Log"
+msgstr ""
+
+#: admin/settings.php:552
+msgid "The recorded events power the \"Login Activity\" widget on your WordPress dashboard. Use the button below to erase all recorded events immediately."
+msgstr ""
+
+#: admin/settings.php:553
+msgid "Permanently delete all recorded login-activity entries?"
+msgstr ""
+
+#: admin/settings.php:556
+msgid "Clear Activity Log"
+msgstr ""
+
+#: admin/settings.php:562
+msgid "Page Management"
+msgstr ""
+
+#: admin/settings.php:563
+msgid "Create or remove the real WordPress pages used by each auth action. Pages are only required for Elementor Theme Builder targeting — the plugin works without them via virtual URL rewrites."
+msgstr ""
+
+#: admin/settings.php:568
+msgid "Action"
+msgstr ""
+
+#: admin/settings.php:569
+msgid "Page"
+msgstr ""
+
+#: admin/settings.php:570
+msgid "Status"
+msgstr ""
+
+#: admin/settings.php:593
+msgid "Published"
+msgstr ""
+
+#: admin/settings.php:595
+msgid "Not created"
+msgstr ""
+
+#: admin/settings.php:607
+msgid "Create Missing Pages"
+msgstr ""
+
+#: admin/settings.php:609
+msgid "This will permanently delete only the auto-created pages (not pages you created manually). Continue?"
+msgstr ""
+
+#: admin/settings.php:612
+msgid "Delete Auto-Created Pages"
+msgstr ""
+
+#: includes/account-sessions.php:44
+msgid "Sign out of all other devices"
+msgstr ""
+
+#: includes/account-sessions.php:61
+msgid "You have been signed out of all other devices."
+msgstr ""
+
+#: includes/account-sessions.php:85
+#: includes/handlers.php:37
+msgid "Security check failed. Please try again."
+msgstr ""
+
+#: includes/account-sessions.php:86
+#: includes/handlers.php:38
+#: includes/two-factor.php:440
+msgid "Security Error"
+msgstr ""
+
+#: includes/breached-password.php:38
+msgid "This password has appeared in a known data breach and is unsafe to use. Please choose a different password."
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:97
+#: includes/elementor/class-fauth-elementor-widgets.php:245
+msgid "Form Title"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:100
+msgid "Leave empty to hide"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:105
+msgid "Title HTML Tag"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:115
+msgid "Redirect URL"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:119
+#: includes/widgets.php:206
+msgid "Default: admin dashboard"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:124
+msgid "Show action links"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:126
+#: includes/elementor/class-fauth-elementor-widgets.php:446
+#: includes/elementor/class-fauth-elementor-widgets.php:1419
+#: includes/elementor/class-fauth-elementor-widgets.php:1446
+msgid "Yes"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:127
+#: includes/elementor/class-fauth-elementor-widgets.php:447
+#: includes/elementor/class-fauth-elementor-widgets.php:1420
+#: includes/elementor/class-fauth-elementor-widgets.php:1447
+msgid "No"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:138
+msgid "Form Container"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:143
+#: includes/elementor/class-fauth-elementor-widgets.php:314
+#: includes/elementor/class-fauth-elementor-widgets.php:1564
+msgid "Width"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:157
+msgid "Max Width"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:190
+#: includes/elementor/class-fauth-elementor-widgets.php:251
+#: includes/elementor/class-fauth-elementor-widgets.php:361
+#: includes/elementor/class-fauth-elementor-widgets.php:1599
+msgid "Alignment"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:193
+#: includes/elementor/class-fauth-elementor-widgets.php:1477
+#: includes/elementor/class-fauth-elementor-widgets.php:1488
+#: includes/elementor/class-fauth-elementor-widgets.php:1503
+#: includes/elementor/class-fauth-elementor-widgets.php:1602
+msgid "Left"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:194
+#: includes/elementor/class-fauth-elementor-widgets.php:1478
+#: includes/elementor/class-fauth-elementor-widgets.php:1489
+#: includes/elementor/class-fauth-elementor-widgets.php:1504
+#: includes/elementor/class-fauth-elementor-widgets.php:1603
+msgid "Center"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:195
+#: includes/elementor/class-fauth-elementor-widgets.php:1479
+#: includes/elementor/class-fauth-elementor-widgets.php:1490
+#: includes/elementor/class-fauth-elementor-widgets.php:1505
+#: includes/elementor/class-fauth-elementor-widgets.php:1604
+msgid "Right"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:197
+msgid "Requires a Form Width value smaller than the column width to be visible."
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:210
+#: includes/elementor/class-fauth-elementor-widgets.php:274
+#: includes/elementor/class-fauth-elementor-widgets.php:334
+#: includes/elementor/class-fauth-elementor-widgets.php:343
+#: includes/elementor/class-fauth-elementor-widgets.php:391
+#: includes/elementor/class-fauth-elementor-widgets.php:396
+#: includes/elementor/class-fauth-elementor-widgets.php:491
+#: includes/elementor/class-fauth-elementor-widgets.php:496
+#: includes/elementor/class-fauth-elementor-widgets.php:577
+#: includes/elementor/class-fauth-elementor-widgets.php:581
+#: includes/elementor/class-fauth-elementor-widgets.php:585
+#: includes/elementor/class-fauth-elementor-widgets.php:589
+#: includes/elementor/class-fauth-elementor-widgets.php:675
+#: includes/elementor/class-fauth-elementor-widgets.php:694
+#: includes/elementor/class-fauth-elementor-widgets.php:1580
+#: includes/elementor/class-fauth-elementor-widgets.php:1588
+#: includes/elementor/class-fauth-elementor-widgets.php:1628
+#: includes/elementor/class-fauth-elementor-widgets.php:1636
+msgid "Background"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:214
+#: includes/elementor/class-fauth-elementor-widgets.php:278
+#: includes/elementor/class-fauth-elementor-widgets.php:329
+#: includes/elementor/class-fauth-elementor-widgets.php:477
+#: includes/elementor/class-fauth-elementor-widgets.php:639
+#: includes/elementor/class-fauth-elementor-widgets.php:1574
+#: includes/elementor/class-fauth-elementor-widgets.php:1623
+msgid "Padding"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:219
+msgid "Spacing Top"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:225
+msgid "Spacing Bottom"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:233
+#: includes/elementor/class-fauth-elementor-widgets.php:277
+#: includes/elementor/class-fauth-elementor-widgets.php:330
+#: includes/elementor/class-fauth-elementor-widgets.php:483
+#: includes/elementor/class-fauth-elementor-widgets.php:570
+#: includes/elementor/class-fauth-elementor-widgets.php:659
+#: includes/elementor/class-fauth-elementor-widgets.php:1528
+#: includes/elementor/class-fauth-elementor-widgets.php:1575
+#: includes/elementor/class-fauth-elementor-widgets.php:1624
+msgid "Border Radius"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:248
+#: includes/elementor/class-fauth-elementor-widgets.php:262
+#: includes/elementor/class-fauth-elementor-widgets.php:303
+#: includes/elementor/class-fauth-elementor-widgets.php:358
+msgid "Color"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:255
+#: includes/elementor/class-fauth-elementor-widgets.php:264
+msgid "Bottom Spacing"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:260
+msgid "Labels"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:265
+msgid "Required Mark Color"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:270
+msgid "Input Fields"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:272
+#: includes/elementor/class-fauth-elementor-widgets.php:670
+#: includes/elementor/class-fauth-elementor-widgets.php:689
+msgid "Text Color"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:273
+msgid "Placeholder Color"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:279
+msgid "Focus State"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:280
+#: includes/elementor/class-fauth-elementor-widgets.php:344
+#: includes/elementor/class-fauth-elementor-widgets.php:492
+#: includes/elementor/class-fauth-elementor-widgets.php:497
+#: includes/elementor/class-fauth-elementor-widgets.php:578
+#: includes/elementor/class-fauth-elementor-widgets.php:582
+#: includes/elementor/class-fauth-elementor-widgets.php:586
+#: includes/elementor/class-fauth-elementor-widgets.php:590
+#: includes/elementor/class-fauth-elementor-widgets.php:699
+#: includes/elementor/class-fauth-elementor-widgets.php:1589
+#: includes/elementor/class-fauth-elementor-widgets.php:1637
+msgid "Border Color"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:283
+msgid "Glow Spread (px)"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:291
+msgid "Glow Color"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:293
+msgid "Set to transparent to remove the focus glow."
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:301
+msgid "Field Spacing"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:302
+msgid "Help Text"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:309
+msgid "Button"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:317
+#: includes/elementor/class-fauth-elementor-widgets.php:1567
+msgid "Auto"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:318
+#: includes/elementor/class-fauth-elementor-widgets.php:1568
+msgid "Full Width"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:332
+#: includes/elementor/class-fauth-elementor-widgets.php:489
+#: includes/elementor/class-fauth-elementor-widgets.php:668
+#: includes/elementor/class-fauth-elementor-widgets.php:1578
+#: includes/elementor/class-fauth-elementor-widgets.php:1626
+msgid "Normal"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:333
+#: includes/elementor/class-fauth-elementor-widgets.php:342
+#: includes/elementor/class-fauth-elementor-widgets.php:390
+#: includes/elementor/class-fauth-elementor-widgets.php:395
+#: includes/elementor/class-fauth-elementor-widgets.php:490
+#: includes/elementor/class-fauth-elementor-widgets.php:495
+#: includes/elementor/class-fauth-elementor-widgets.php:576
+#: includes/elementor/class-fauth-elementor-widgets.php:580
+#: includes/elementor/class-fauth-elementor-widgets.php:584
+#: includes/elementor/class-fauth-elementor-widgets.php:588
+#: includes/elementor/class-fauth-elementor-widgets.php:1579
+#: includes/elementor/class-fauth-elementor-widgets.php:1587
+#: includes/elementor/class-fauth-elementor-widgets.php:1609
+#: includes/elementor/class-fauth-elementor-widgets.php:1627
+#: includes/elementor/class-fauth-elementor-widgets.php:1635
+msgid "Text"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:341
+#: includes/elementor/class-fauth-elementor-widgets.php:359
+#: includes/elementor/class-fauth-elementor-widgets.php:494
+#: includes/elementor/class-fauth-elementor-widgets.php:687
+#: includes/elementor/class-fauth-elementor-widgets.php:1586
+#: includes/elementor/class-fauth-elementor-widgets.php:1634
+msgid "Hover"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:349
+#: includes/elementor/class-fauth-elementor-widgets.php:714
+msgid "Transition (ms)"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:356
+#: includes/elementor/class-fauth-elementor-widgets.php:882
+#: includes/elementor/class-fauth-elementor-widgets.php:1066
+#: includes/elementor/class-fauth-elementor-widgets.php:1177
+msgid "Action Links"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:364
+msgid "Underline"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:368
+msgid "Default (hover only)"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:369
+msgid "Always"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:370
+msgid "Never"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:386
+msgid "Messages & Errors"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:389
+msgid "Errors"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:392
+#: includes/elementor/class-fauth-elementor-widgets.php:397
+msgid "Border"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:394
+msgid "Success"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:411
+msgid "Password Toggle Button"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:416
+msgid "Show label"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:419
+#: includes/elementor/class-fauth-elementor-widgets.php:1021
+#: includes/elementor/class-fauth-elementor-widgets.php:1143
+#: includes/elementor/class-fauth-elementor-widgets.php:1144
+#: includes/elementor/class-fauth-elementor-widgets.php:1332
+#: includes/elementor/class-fauth-elementor-widgets.php:1388
+#: includes/elementor/class-fauth-elementor-widgets.php:1389
+#: includes/elementor/class-fauth-elementor-widgets.php:1710
+#: includes/elementor/class-fauth-elementor-widgets.php:1711
+#: includes/hooks.php:196
+msgid "Show"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:422
+msgid "Text on the toggle button when the password is hidden."
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:425
+msgid "Hide label"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:428
+#: includes/hooks.php:197
+msgid "Hide"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:431
+msgid "Text on the toggle button when the password is visible."
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:439
+msgid "Google Sign-In"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:444
+msgid "Show Google button"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:450
+msgid "Appears on the live page only when Google sign-in is configured under Settings → Zen Login & Authentication."
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:453
+msgid "Google button text"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:456
+#: includes/elementor/class-fauth-elementor-widgets.php:549
+#: includes/google-login.php:439
+msgid "Continue with Google"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:468
+msgid "Google Button"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:501
+msgid "Divider Color"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:547
+#: includes/google-login.php:442
+msgid "or"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:562
+msgid "Password Strength Meter"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:575
+msgid "Too Short"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:579
+#: includes/hooks.php:200
+msgid "Weak"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:583
+#: includes/hooks.php:201
+msgid "Good"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:587
+#: includes/hooks.php:202
+msgid "Strong"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:600
+#: includes/elementor/class-fauth-elementor-widgets.php:870
+#: includes/forms.php:59
+msgid "Remember Me"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:604
+msgid "Label Color"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:613
+msgid "Gap (checkbox ↔ label)"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:630
+msgid "Password Toggle"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:647
+msgid "Gap (input ↔ button)"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:866
+#: includes/elementor/class-fauth-elementor-widgets.php:1048
+#: includes/elementor/class-fauth-elementor-widgets.php:1168
+#: includes/elementor/class-fauth-elementor-widgets.php:1255
+#: includes/elementor/class-fauth-elementor-widgets.php:1414
+msgid "Field Labels"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:868
+#: includes/elementor/class-fauth-elementor-widgets.php:1050
+#: includes/elementor/class-fauth-elementor-widgets.php:1415
+msgid "Username label"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:868
+#: includes/elementor/class-fauth-elementor-widgets.php:1170
+#: includes/forms.php:148
+#: includes/helpers.php:106
+msgid "Username or Email Address"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:869
+#: includes/elementor/class-fauth-elementor-widgets.php:1052
+msgid "Password label"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:869
+#: includes/elementor/class-fauth-elementor-widgets.php:1021
+#: includes/elementor/class-fauth-elementor-widgets.php:1052
+#: includes/elementor/class-fauth-elementor-widgets.php:1143
+#: includes/forms.php:45
+#: includes/forms.php:109
+msgid "Password"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:870
+msgid "Remember Me label"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:871
+#: includes/elementor/class-fauth-elementor-widgets.php:1054
+#: includes/elementor/class-fauth-elementor-widgets.php:1171
+#: includes/elementor/class-fauth-elementor-widgets.php:1259
+#: includes/elementor/class-fauth-elementor-widgets.php:1432
+msgid "Button text"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:871
+#: includes/elementor/class-fauth-elementor-widgets.php:1022
+#: includes/elementor/class-fauth-elementor-widgets.php:1067
+#: includes/elementor/class-fauth-elementor-widgets.php:1146
+#: includes/elementor/class-fauth-elementor-widgets.php:1178
+#: includes/elementor/class-fauth-elementor-widgets.php:1231
+#: includes/forms.php:67
+#: includes/forms.php:397
+#: includes/forms.php:402
+#: includes/handlers.php:73
+msgid "Log In"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:874
+#: includes/elementor/class-fauth-elementor-widgets.php:1057
+#: includes/elementor/class-fauth-elementor-widgets.php:1174
+#: includes/elementor/class-fauth-elementor-widgets.php:1262
+#: includes/elementor/class-fauth-elementor-widgets.php:1435
+msgid "Field Placeholders"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:875
+#: includes/elementor/class-fauth-elementor-widgets.php:1058
+msgid "Username placeholder"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:875
+#: includes/elementor/class-fauth-elementor-widgets.php:1059
+#: includes/elementor/class-fauth-elementor-widgets.php:1175
+#: includes/elementor/class-fauth-elementor-widgets.php:1438
+msgid "e.g. your@email.com"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:876
+#: includes/elementor/class-fauth-elementor-widgets.php:1060
+msgid "Password placeholder"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:876
+#: includes/elementor/class-fauth-elementor-widgets.php:1060
+#: includes/elementor/class-fauth-elementor-widgets.php:1061
+#: includes/elementor/class-fauth-elementor-widgets.php:1263
+#: includes/elementor/class-fauth-elementor-widgets.php:1264
+msgid "e.g. ••••••••"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:884
+msgid "Register link text"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:884
+#: includes/elementor/class-fauth-elementor-widgets.php:1025
+#: includes/elementor/class-fauth-elementor-widgets.php:1054
+#: includes/elementor/class-fauth-elementor-widgets.php:1145
+#: includes/forms.php:132
+#: includes/forms.php:390
+#: includes/handlers.php:87
+#: includes/options.php:218
+#: includes/widgets.php:313
+#: includes/widgets.php:352
+msgid "Register"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:885
+msgid "Register link URL"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:885
+#: includes/elementor/class-fauth-elementor-widgets.php:887
+#: includes/elementor/class-fauth-elementor-widgets.php:1068
+#: includes/elementor/class-fauth-elementor-widgets.php:1179
+msgid "Leave empty for auto-detect"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:886
+msgid "Lost password link text"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:886
+#: includes/elementor/class-fauth-elementor-widgets.php:1025
+#: includes/forms.php:392
+msgid "Lost your password?"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:887
+msgid "Lost password link URL"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:1050
+#: includes/elementor/class-fauth-elementor-widgets.php:1140
+#: includes/elementor/class-fauth-elementor-widgets.php:1415
+#: includes/elementor/class-fauth-elementor-widgets.php:1705
+#: includes/forms.php:87
+#: includes/forms.php:261
+#: includes/helpers.php:100
+#: includes/helpers.php:102
+msgid "Username"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:1051
+#: includes/elementor/class-fauth-elementor-widgets.php:1428
+msgid "Email label"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:1051
+#: includes/elementor/class-fauth-elementor-widgets.php:1141
+#: includes/elementor/class-fauth-elementor-widgets.php:1428
+#: includes/elementor/class-fauth-elementor-widgets.php:1709
+#: includes/forms.php:98
+#: includes/forms.php:306
+#: includes/helpers.php:104
+msgid "Email Address"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:1053
+#: includes/elementor/class-fauth-elementor-widgets.php:1258
+#: includes/elementor/class-fauth-elementor-widgets.php:1430
+msgid "Confirm Password label"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:1053
+#: includes/elementor/class-fauth-elementor-widgets.php:1144
+#: includes/forms.php:117
+msgid "Confirm Password"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:1058
+msgid "e.g. johndoe"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:1059
+#: includes/elementor/class-fauth-elementor-widgets.php:1438
+msgid "Email placeholder"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:1061
+#: includes/elementor/class-fauth-elementor-widgets.php:1264
+msgid "Confirm Password placeholder"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:1067
+#: includes/elementor/class-fauth-elementor-widgets.php:1178
+msgid "Log In link text"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:1068
+#: includes/elementor/class-fauth-elementor-widgets.php:1179
+msgid "Log In link URL"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:1081
+msgid "Registration disabled in Settings > General."
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:1170
+msgid "Username / Email label"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:1171
+#: includes/elementor/class-fauth-elementor-widgets.php:1230
+#: includes/forms.php:163
+msgid "Get New Password"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:1175
+msgid "Username / Email placeholder"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:1257
+#: includes/elementor/class-fauth-elementor-widgets.php:1429
+msgid "New Password label"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:1257
+#: includes/elementor/class-fauth-elementor-widgets.php:1327
+#: includes/elementor/class-fauth-elementor-widgets.php:1388
+#: includes/elementor/class-fauth-elementor-widgets.php:1429
+#: includes/elementor/class-fauth-elementor-widgets.php:1710
+#: includes/forms.php:191
+#: includes/forms.php:319
+msgid "New Password"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:1258
+#: includes/elementor/class-fauth-elementor-widgets.php:1328
+#: includes/elementor/class-fauth-elementor-widgets.php:1389
+#: includes/elementor/class-fauth-elementor-widgets.php:1430
+#: includes/elementor/class-fauth-elementor-widgets.php:1711
+#: includes/forms.php:200
+#: includes/forms.php:328
+msgid "Confirm New Password"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:1263
+msgid "New Password placeholder"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:1269
+msgid "Invalid / Expired Link State"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:1271
+msgid "Error message"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:1271
+#: includes/elementor/class-fauth-elementor-widgets.php:1312
+#: includes/elementor/class-fauth-elementor-widgets.php:1378
+#: includes/hooks.php:476
+#: includes/widgets.php:477
+msgid "This password reset link is invalid or has expired. Please request a new one."
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:1272
+msgid "Link text"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:1272
+#: includes/elementor/class-fauth-elementor-widgets.php:1313
+#: includes/elementor/class-fauth-elementor-widgets.php:1381
+#: includes/hooks.php:479
+#: includes/widgets.php:484
+msgid "Request a new password reset link"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:1274
+msgid "Link URL (override)"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:1278
+msgid "Leave empty to auto-detect from plugin settings"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:1280
+msgid "Override the \"request new link\" URL. Leave empty to use your Lost Password page slug from Zen Login & Authentication settings."
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:1325
+#: includes/elementor/class-fauth-elementor-widgets.php:1386
+msgid "Form preview (visible only in editor):"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:1417
+msgid "Show username field"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:1423
+msgid "Read-only, like the wp-admin profile screen — usernames cannot be changed."
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:1425
+msgid "First Name label"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:1425
+#: includes/elementor/class-fauth-elementor-widgets.php:1706
+#: includes/forms.php:271
+msgid "First Name"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:1426
+msgid "Last Name label"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:1426
+#: includes/elementor/class-fauth-elementor-widgets.php:1707
+#: includes/forms.php:280
+msgid "Last Name"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:1427
+msgid "Display Name label"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:1427
+#: includes/elementor/class-fauth-elementor-widgets.php:1708
+#: includes/forms.php:289
+msgid "Display name publicly as"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:1431
+msgid "Password hint text"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:1431
+#: includes/elementor/class-fauth-elementor-widgets.php:1710
+#: includes/forms.php:323
+msgid "Leave blank to keep your current password."
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:1436
+msgid "First Name placeholder"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:1436
+msgid "e.g. John"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:1437
+msgid "Last Name placeholder"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:1437
+msgid "e.g. Doe"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:1444
+msgid "Show Log Out link"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:1474
+msgid "Heading Alignment"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:1485
+msgid "QR Code Alignment"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:1500
+msgid "Body Text Alignment"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:1516
+msgid "Section Background"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:1521
+msgid "Section Padding"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:1534
+msgid "Heading"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:1536
+msgid "Heading Color"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:1543
+msgid "QR Code Size"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:1552
+msgid "Recovery Codes Background"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:1561
+msgid "Buttons"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:1597
+msgid "Text Links (Turn off, Cancel)"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:1610
+msgid "Text (Hover)"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:1614
+msgid "Recovery Code Buttons"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:1616
+msgid "Gap"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:1705
+#: includes/forms.php:266
+msgid "Usernames cannot be changed."
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:1708
+msgid "Your Name"
+msgstr ""
+
+#: includes/elementor/class-fauth-elementor-widgets.php:1713
+#: includes/forms.php:409
+#: includes/handlers.php:79
+msgid "Log Out"
+msgstr ""
+
+#: includes/forms.php:93
+msgid "Letters, numbers, and underscores only."
+msgstr ""
+
+#: includes/google-login.php:476
+msgid "Google sign-in was cancelled."
+msgstr ""
+
+#: includes/google-login.php:477
+msgid "The sign-in attempt expired. Please try again."
+msgstr ""
+
+#: includes/google-login.php:478
+msgid "Your Google account email address is not verified, so it cannot be used to sign in."
+msgstr ""
+
+#: includes/google-login.php:479
+msgid "No account matches this Google email address, and new registrations via Google are disabled."
+msgstr ""
+
+#: includes/google-login.php:480
+msgid "Too many attempts. Please try again later."
+msgstr ""
+
+#: includes/google-login.php:481
+msgid "Google sign-in failed. Please try again."
+msgstr ""
+
+#: includes/handlers.php:33
+msgid "Your session has expired. Please reload the page and try again."
+msgstr ""
+
+#: includes/handlers.php:107
+#: includes/widgets.php:556
+#: includes/widgets.php:569
+msgid "My Account"
+msgstr ""
+
+#. translators: %d = minutes
+#: includes/handlers.php:163
+#, php-format
+msgid "Too many failed attempts. Please try again in %d minutes."
+msgstr ""
+
+#: includes/handlers.php:290
+msgid "Registration complete. Please check your email."
+msgstr ""
+
+#: includes/handlers.php:298
+msgid "Too many registration attempts. Please wait before trying again."
+msgstr ""
+
+#: includes/handlers.php:367
+msgid "Registration complete. Please check your email for login instructions."
+msgstr ""
+
+#: includes/handlers.php:384
+msgid "Too many attempts. Please wait a few minutes before trying again."
+msgstr ""
+
+#: includes/handlers.php:399
+#: includes/handlers.php:440
+#: includes/hooks.php:204
+msgid "Check your email for a link to reset your password."
+msgstr ""
+
+#. translators: %d = minutes
+#: includes/handlers.php:464
+#, php-format
+msgid "Too many attempts. Please try again in %d minutes."
+msgstr ""
+
+#: includes/handlers.php:480
+msgid "This password reset link has expired or is invalid. Please request a new one."
+msgstr ""
+
+#: includes/handlers.php:491
+#: includes/handlers.php:588
+msgid "Passwords do not match. Please try again."
+msgstr ""
+
+#: includes/handlers.php:502
+#: includes/handlers.php:590
+#: includes/handlers.php:702
+msgid "Password must be at least 8 characters."
+msgstr ""
+
+#: includes/handlers.php:551
+msgid "Your session has expired. Please log in and try again."
+msgstr ""
+
+#: includes/handlers.php:571
+msgid "Please choose a display name."
+msgstr ""
+
+#: includes/handlers.php:575
+msgid "Please enter a valid email address."
+msgstr ""
+
+#: includes/handlers.php:579
+msgid "That email address is already in use by another account."
+msgstr ""
+
+#: includes/handlers.php:681
+msgid "Your profile has been updated."
+msgstr ""
+
+#: includes/handlers.php:698
+msgid "Please enter a password."
+msgstr ""
+
+#: includes/handlers.php:700
+msgid "Passwords do not match."
+msgstr ""
+
+#: includes/handlers.php:724
+msgid "Please log in with your email address."
+msgstr ""
+
+#: includes/handlers.php:730
+msgid "Please log in with your username, not your email address."
+msgstr ""
+
+#: includes/helpers.php:141
+msgid "Leave this empty"
+msgstr ""
+
+#: includes/hooks.php:195
+msgid "An error occurred. Please try again."
+msgstr ""
+
+#: includes/hooks.php:198
+msgid "Toggle password visibility"
+msgstr ""
+
+#: includes/hooks.php:199
+msgid "Very weak"
+msgstr ""
+
+#: includes/hooks.php:203
+msgid "Registration successful! Please check your email for login instructions."
+msgstr ""
+
+#: includes/hooks.php:205
+msgid "Your password has been reset. You can now log in."
+msgstr ""
+
+#: includes/hooks.php:464
+msgid "User registration is currently not allowed."
+msgstr ""
+
+#: includes/ms-hooks.php:63
+msgid "Your account has been activated. You can now log in."
+msgstr ""
+
+#: includes/options.php:221
+msgid "Account"
+msgstr ""
+
+#: includes/security-hardening.php:109
+msgid "Invalid login credentials. Please check your details and try again."
+msgstr ""
+
+#: includes/turnstile.php:114
+msgid "Please complete the verification challenge and try again."
+msgstr ""
+
+#: includes/two-factor.php:208
+msgid "Enter your authentication code to finish signing in."
+msgstr ""
+
+#: includes/two-factor.php:242
+#: includes/two-factor.php:342
+msgid "That code was not correct. Please try again."
+msgstr ""
+
+#: includes/two-factor.php:250
+msgid "Authentication code"
+msgstr ""
+
+#: includes/two-factor.php:252
+msgid "Open your authenticator app and enter the 6-digit code, or use a recovery code."
+msgstr ""
+
+#: includes/two-factor.php:254
+msgid "Verify"
+msgstr ""
+
+#: includes/two-factor.php:277
+msgid "Your session expired. Please log in again."
+msgstr ""
+
+#: includes/two-factor.php:315
+msgid "Your sign-in session expired. Please log in again."
+msgstr ""
+
+#: includes/two-factor.php:327
+msgid "Too many attempts. Please wait a few minutes and try again."
+msgstr ""
+
+#: includes/two-factor.php:469
+msgid "Two-factor authentication is off. Add a second step at login using an authenticator app."
+msgstr ""
+
+#: includes/two-factor.php:473
+msgid "Set up two-factor authentication"
+msgstr ""
+
+#: includes/two-factor.php:484
+msgid "That code was not correct. Check your app and try again."
+msgstr ""
+
+#: includes/two-factor.php:489
+msgid "Open your authenticator app (Google Authenticator, Authy, 1Password, etc.)."
+msgstr ""
+
+#: includes/two-factor.php:490
+msgid "Scan the QR code, or enter this setup key manually:"
+msgstr ""
+
+#: includes/two-factor.php:505
+msgid "Enter the 6-digit code from your app to confirm"
+msgstr ""
+
+#: includes/two-factor.php:508
+msgid "Verify and turn on"
+msgstr ""
+
+#: includes/two-factor.php:514
+msgid "Cancel"
+msgstr ""
+
+#: includes/two-factor.php:519
+msgid "Two-factor authentication is ON for your account."
+msgstr ""
+
+#: includes/two-factor.php:528
+msgid "Save your recovery codes"
+msgstr ""
+
+#: includes/two-factor.php:528
+msgid "each can be used once if you lose access to your app. They are shown only now, so copy or download them."
+msgstr ""
+
+#: includes/two-factor.php:536
+msgid "Copied!"
+msgstr ""
+
+#: includes/two-factor.php:536
+msgid "Copy codes"
+msgstr ""
+
+#. translators: %s: site name
+#: includes/two-factor.php:537
+#, php-format
+msgid "Two-factor recovery codes for %s"
+msgstr ""
+
+#. translators: %s: site name
+#: includes/two-factor.php:537
+msgid "Download"
+msgstr ""
+
+#. translators: %d: number of unused recovery codes remaining.
+#: includes/two-factor.php:544
+#, php-format
+msgid "%d recovery code remaining."
+msgid_plural "%d recovery codes remaining."
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/two-factor.php:555
+msgid "Regenerate recovery codes"
+msgstr ""
+
+#: includes/two-factor.php:558
+msgid "Turn off two-factor authentication for your account?"
+msgstr ""
+
+#: includes/two-factor.php:561
+msgid "Turn off two-factor authentication"
+msgstr ""
+
+#: includes/widgets.php:180
+msgid "Title:"
+msgstr ""
+
+#: includes/widgets.php:195
+msgid "Redirect URL after success:"
+msgstr ""
+
+#: includes/widgets.php:224
+msgid "Show action links below form"
+msgstr ""
+
+#: includes/widgets.php:256
+msgid "Zen Login & Authentication: Login"
+msgstr ""
+
+#: includes/widgets.php:258
+msgid "Displays the login form. Shows a welcome panel when the user is logged in."
+msgstr ""
+
+#: includes/widgets.php:303
+msgid "Zen Login & Authentication: Register"
+msgstr ""
+
+#: includes/widgets.php:305
+msgid "Displays the user registration form."
+msgstr ""
+
+#: includes/widgets.php:333
+msgid "User registration is currently disabled. Enable it under Settings → General."
+msgstr ""
+
+#: includes/widgets.php:353
+msgid "Redirect URL after registration:"
+msgstr ""
+
+#: includes/widgets.php:369
+msgid "Zen Login & Authentication: Lost Password"
+msgstr ""
+
+#: includes/widgets.php:371
+msgid "Displays the lost password / password reset form."
+msgstr ""
+
+#: includes/widgets.php:428
+msgid "Zen Login & Authentication: Reset Password"
+msgstr ""
+
+#: includes/widgets.php:430
+msgid "Displays the password reset form. Place on the page your reset-password email links point to."
+msgstr ""
+
+#: includes/widgets.php:508
+msgid "Message when reset link is missing or expired:"
+msgstr ""
+
+#: includes/widgets.php:514
+msgid "Leave empty to use the default message."
+msgstr ""
+
+#: includes/widgets.php:517
+msgid "Place this widget on the page your reset-password email links point to. Make sure that page's slug matches the \"resetpass slug\" in Zen Login & Authentication settings."
+msgstr ""
+
+#: includes/widgets.php:546
+msgid "Zen Login & Authentication: Account"
+msgstr ""
+
+#: includes/widgets.php:548
+msgid "Lets logged-in users edit their display name, email, and password from the frontend."
+msgstr ""
+
+#: includes/widgets.php:573
+msgid "Only visible to logged-in users. Guests visiting the Account page are redirected to the login form."
+msgstr ""
+
+#. translators: %s: the PHP version the server is currently running.
+#: zen-login-authentication.php:47
+#, php-format
+msgid "Your server is running PHP %s. Please upgrade to PHP 8.0 or higher, or deactivate the plugin."
+msgstr ""
+
+#: zen-login-authentication.php:65
+msgid "requires WordPress 6.5 or higher. Please update WordPress or deactivate the plugin."
+msgstr ""

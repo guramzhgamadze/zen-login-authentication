@@ -305,8 +305,7 @@ select.fauth-field {
     }
 }
 
-.fauth-button[disabled],
-.fauth-button.fauth-loading {
+.fauth-button[disabled] {
     cursor: not-allowed;
     opacity: 0.65;
 }

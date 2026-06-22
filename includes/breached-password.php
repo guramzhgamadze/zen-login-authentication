@@ -50,6 +50,7 @@ function zenlogau_password_is_breached( string $password ): bool {
         return false;
     }
 
+    // nosemgrep: php.lang.security.weak-crypto.weak-crypto -- HIBP Pwned Passwords is a SHA-1 k-anonymity service; SHA-1 is mandated by the API and the password is never stored or sent (only a 5-char hash prefix leaves the server).
     $hash   = strtoupper( sha1( $password ) );
     $prefix = substr( $hash, 0, 5 );
     $suffix = substr( $hash, 5 );

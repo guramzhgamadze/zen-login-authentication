@@ -92,6 +92,7 @@ require ZENLOGAU_PATH . 'includes/breached-password.php';
 require ZENLOGAU_PATH . 'includes/turnstile.php';
 require ZENLOGAU_PATH . 'includes/totp.php';
 require ZENLOGAU_PATH . 'includes/two-factor.php';
+require ZENLOGAU_PATH . 'includes/account-sessions.php';
 require ZENLOGAU_PATH . 'includes/activity-log.php';
 require ZENLOGAU_PATH . 'includes/class-fauth.php';
 require ZENLOGAU_PATH . 'includes/class-fauth-form.php';
