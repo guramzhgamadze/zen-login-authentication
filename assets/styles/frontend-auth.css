@@ -21,8 +21,12 @@
 
 /* -----------------------------------------------------------------------
    CSS Custom Properties
+   Defined on BOTH .fauth (the form) and .fauth-form-wrap (the Elementor outer
+   wrapper) — the wrapper is the PARENT of .fauth, so it can't inherit these
+   from it; the card rule below targets the wrapper and needs them in scope.
 ------------------------------------------------------------------------- */
-.fauth {
+.fauth,
+.fauth-form-wrap {
     /* Modern, polished defaults. Every value is overridable via theme CSS
        (just redefine the custom property) or per-widget Elementor controls. */
     --fauth-font-size: 1rem;
@@ -30,37 +34,46 @@
     --fauth-text-color: inherit;
     --fauth-label-color: inherit;
     --fauth-label-weight: 600;
-    --fauth-required-color: #ef4444;
+    --fauth-required-color: #dc2626;
 
     --fauth-field-bg: #ffffff;
-    --fauth-field-color: #1f2937;
-    --fauth-field-border: 1px solid #d0d5dd;
+    --fauth-field-color: #0f172a;
+    --fauth-field-border: 1px solid #cbd5e1;
     --fauth-field-radius: 10px;
-    --fauth-field-padding: 0.7em 0.95em;
-    --fauth-field-focus-color: #3b82f6;
-    --fauth-field-focus-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18);
+    --fauth-field-padding: 0.75em 1em;
+    --fauth-field-focus-color: #0369a1;
+    --fauth-field-focus-shadow: 0 0 0 3px rgba(3, 105, 161, 0.18);
     --fauth-field-spacing: 1.15em;
 
-    --fauth-btn-bg: #3b82f6;
+    --fauth-btn-bg: #0369a1;
     --fauth-btn-color: #ffffff;
     --fauth-btn-border: 1px solid transparent;
     --fauth-btn-radius: 10px;
-    --fauth-btn-padding: 0.72em 1.5em;
-    --fauth-btn-hover-bg: #2563eb;
+    --fauth-btn-padding: 0.78em 1.5em;
+    --fauth-btn-hover-bg: #075985;
     --fauth-btn-hover-color: #ffffff;
     --fauth-btn-shadow: 0 1px 2px rgba(16, 24, 40, 0.06);
     --fauth-btn-hover-shadow: 0 4px 12px rgba(16, 24, 40, 0.12);
 
-    --fauth-link-color: #2563eb;
-    --fauth-link-hover-color: #1d4ed8;
+    --fauth-link-color: #0369a1;
+    --fauth-link-hover-color: #075985;
 
     --fauth-radius: 12px;
+
+    /* Card surface — the form's default redesigned look. Overridable via the
+       Elementor "Form Container" controls or by redefining these variables. */
+    --fauth-card-bg: #ffffff;
+    --fauth-card-border: 1px solid #e2e8f0;
+    --fauth-card-radius: 14px;
+    --fauth-card-padding: 28px;
+    --fauth-card-shadow: 0 1px 3px rgba(16, 24, 40, 0.06), 0 10px 30px rgba(16, 24, 40, 0.05);
+
     --fauth-error-bg: #fef2f2;
     --fauth-error-color: #991b1b;
-    --fauth-error-border: #ef4444;
-    --fauth-msg-bg: #eff6ff;
-    --fauth-msg-color: #1e40af;
-    --fauth-msg-border: #3b82f6;
+    --fauth-error-border: #dc2626;
+    --fauth-msg-bg: #f0f9ff;
+    --fauth-msg-color: #0c4a6e;
+    --fauth-msg-border: #0ea5e9;
 
     --fauth-description-color: #6b7280;
     --fauth-strength-text-color: #374151;
@@ -106,11 +119,44 @@
     box-sizing: border-box;
 }
 
-/* The form card itself — bg, padding, shadow go here */
 .fauth-form {
     display: block;
     width: 100%;
     box-sizing: border-box;
+}
+
+/* Default card surface (the redesigned look). Applied to the outer wrapper in
+   Elementor — so the form title sits INSIDE the card — and to the bare form in
+   non-Elementor contexts (shortcode / classic widget). The nested override
+   stops a double card when the form is inside the wrapper. Everything here is
+   overridable via the Elementor "Form Container" controls (they target
+   .fauth-form-wrap) or by redefining the --fauth-card-* variables. */
+.fauth-form-wrap,
+.fauth-form {
+    background: var(--fauth-card-bg);
+    border: var(--fauth-card-border);
+    border-radius: var(--fauth-card-radius);
+    padding: var(--fauth-card-padding);
+    box-shadow: var(--fauth-card-shadow);
+}
+.fauth-form-wrap .fauth-form {
+    background: none;
+    border: 0;
+    border-radius: 0;
+    padding: 0;
+    box-shadow: none;
+}
+.fauth-form-title {
+    margin: 0 0 1.25rem;
+    line-height: 1.3;
+    /* Clean default so the title doesn't inherit a clashing theme heading
+       colour. Overridable via the Elementor "Form Title → Color" control. */
+    color: var(--fauth-title-color, #0f172a);
+}
+/* Primary submit is full-width by default for a cohesive auth card; the
+   Elementor "Button → Width" control (default Full) overrides per widget. */
+.fauth-submit-button {
+    width: 100%;
 }
 
 /* Editor preview form in Reset Password — suppress visual control styles
@@ -186,16 +232,15 @@
     transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-.fauth-field:focus {
+.fauth-field:focus,
+.fauth-field:focus-visible {
+    /* Clean blue border + soft ring as the focus indicator — no offset outline
+       / floating line. Text inputs match :focus-visible even on mouse click, so
+       both states share this look. The 3px ring + colour-changed border is an
+       accessible, visible indicator for mouse and keyboard (WCAG 2.4.11). */
     border-color: var(--fauth-field-focus-color);
     box-shadow: var(--fauth-field-focus-shadow);
-    outline: none; /* hidden for mouse — see :focus-visible below */
-}
-
-/* Fix E — restore keyboard focus indicator per WCAG 2.2 SC 2.4.11 */
-.fauth-field:focus-visible {
-    outline: 2px solid var(--fauth-field-focus-color);
-    outline-offset: 2px;
+    outline: none;
 }
 
 .fauth-description {
@@ -277,6 +322,10 @@ select.fauth-field {
     background: var(--fauth-btn-hover-bg);
     color: var(--fauth-btn-hover-color);
     box-shadow: var(--fauth-btn-hover-shadow);
+    /* Re-assert the border on hover (transparent by default) so the active
+       theme can't inject a hover border. Elementor's hover Border control,
+       being more specific, still overrides this. */
+    border: var(--fauth-btn-border);
     outline: none;
 }
 
@@ -455,7 +504,7 @@ select.fauth-field {
    Social sign-in (Google) — rendered below the login/register forms
 ------------------------------------------------------------------------- */
 .fauth-sso {
-    margin-top: 1em;
+    margin-top: 10px;
 }
 
 .fauth-sso-divider {
@@ -464,7 +513,9 @@ select.fauth-field {
     gap: 0.75em;
     color: var(--fauth-sso-divider-text, #9aa3b2);
     font-size: 0.78em;
-    margin: 0 0 1em;
+    /* Standalone now (above passkey + Google); top margin separates it from the
+       form, the buttons below supply their own top spacing. */
+    margin: 1.25em 0 0;
 }
 
 .fauth-sso-divider::before,
@@ -553,4 +604,24 @@ select.fauth-field {
 .fauth-2fa-cancel{margin-top:10px}
 .fauth-link-button{display:inline-block;background:none!important;border:0!important;box-shadow:none!important;color:var(--fauth-link-color,#b32d2e);text-decoration:underline;cursor:pointer;padding:4px 2px;font:inherit;line-height:1.4}
 .fauth-link-button:hover,.fauth-link-button:focus{transform:none;outline:none;text-decoration:none;color:var(--fauth-link-hover-color,#8a2222)}
-.fauth-button-secondary{opacity:.92}
+.fauth-button-secondary{background:transparent;color:var(--fauth-btn-bg);border:1px solid var(--fauth-btn-bg);box-shadow:none}
+.fauth-button-secondary:hover,.fauth-button-secondary:focus{background:var(--fauth-btn-bg);color:var(--fauth-btn-color);box-shadow:none}
+
+/* Passkeys (v2.1.0) */
+.fauth-passkeys{margin-top:24px;padding-top:20px;border-top:1px solid rgba(0,0,0,.1)}
+.fauth-passkeys-title{margin:0 0 10px;font-size:1.1em}
+.fauth-passkeys-intro{margin:0 0 12px}
+.fauth-passkeys-note{margin:0 0 12px;color:#646970}
+.fauth-passkey-items{list-style:none;margin:0 0 12px;padding:0}
+.fauth-passkey-item{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 0;border-bottom:1px solid rgba(0,0,0,.06)}
+.fauth-passkey-name{font-weight:600}
+.fauth-passkey-meta{color:#646970;font-size:.9em}
+.fauth-passkey-remove{margin-left:auto}
+.fauth-passkeys-empty{margin:0 0 12px;color:#646970}
+.fauth-passkey-status{margin:0;min-height:0}
+.fauth-passkey-status:not(:empty){margin-top:8px}
+.fauth-passkey-error{color:#b32d2e}
+.fauth-passkey-login{margin-top:10px}
+.fauth-passkey-login .fauth-passkey-signin{width:100%}
+.fauth-passkey-signin{display:flex;align-items:center;justify-content:center;gap:.5em}
+.fauth-passkey-icon{flex-shrink:0}

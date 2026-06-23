@@ -438,8 +438,9 @@ function zenlogau_google_button_html(): string {
 
     $text = (string) apply_filters( 'zenlogau_google_button_text', __( 'Continue with Google', 'zen-login-authentication' ) );
 
+    // The "or" divider is rendered separately by zenlogau_render_signin_divider()
+    // so it can sit above ALL alternative sign-in buttons (passkey + Google).
     return '<div class="fauth-sso">'
-        . '<div class="fauth-sso-divider" aria-hidden="true"><span>' . esc_html__( 'or', 'zen-login-authentication' ) . '</span></div>'
         . '<a class="fauth-google-btn" href="' . esc_url( $url ) . '">' . zenlogau_google_button_svg()
         . '<span>' . esc_html( $text ) . '</span></a>'
         . '</div>';
@@ -454,6 +455,33 @@ function zenlogau_google_render_button( $form ): void {
         return;
     }
     echo zenlogau_google_button_html(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped during construction
+}
+
+/* -----------------------------------------------------------------------
+ * Shared "or" divider — sits ABOVE the alternative sign-in buttons (passkey,
+ * Google). Rendered at a low priority so both buttons fall below it, and only
+ * when at least one of them will actually appear.
+ * -------------------------------------------------------------------- */
+add_action( 'zenlogau_after_form_login',    'zenlogau_render_signin_divider', 6 );
+add_action( 'zenlogau_after_form_register', 'zenlogau_render_signin_divider', 6 );
+
+function zenlogau_render_signin_divider( $form ): void {
+    $name = $form instanceof ZENLOGAU_Form ? $form->get_name() : '';
+
+    $has_passkey = 'login' === $name
+        && function_exists( 'zenlogau_passkeys_available' )
+        && zenlogau_passkeys_available()
+        && ! is_user_logged_in();
+
+    $has_google = zenlogau_google_is_configured()
+        && (bool) apply_filters( 'zenlogau_show_google_button', true, $name );
+
+    if ( ! $has_passkey && ! $has_google ) {
+        return;
+    }
+
+    echo '<div class="fauth-sso-divider" aria-hidden="true"><span>'
+        . esc_html__( 'or', 'zen-login-authentication' ) . '</span></div>';
 }
 
 /* -----------------------------------------------------------------------

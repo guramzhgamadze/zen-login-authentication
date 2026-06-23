@@ -12,6 +12,10 @@ Zen Login & Authentication replaces the default `wp-login.php` experience with c
 - **Registration form** with optional user-chosen passwords and auto-login.
 - **Lost Password / Reset Password** forms with full email flow integration.
 - **Account page** — logged-in users edit their first/last name, public display name (live "Display name publicly as" dropdown, like the core profile screen), email, and password entirely on the frontend. Guests visiting the account page are sent to login and returned after signing in.
+- **Two-factor authentication** (optional, opt-in per user) — app-based TOTP set up from the Account page, with a locally rendered QR (no external calls) and one-time recovery codes. Enforced across the plugin's forms, AJAX, and `wp-login.php`.
+- **Passkeys (WebAuthn)** (optional) — passwordless sign-in with Face ID, a fingerprint, Windows Hello, or a security key, registered from the Account page. Phishing-resistant and inherently multi-factor, so it skips both the password and any 2FA step. Verified locally by the bundled lbuchs/WebAuthn library — no external request. Requires HTTPS.
+- **New-device login alerts** — emails the account owner the first time their account is signed in from an unrecognised device, using your site's normal email (no external service). On by default; supports a custom HTML body.
+- **Sign out of other devices** — a one-click action on the Account page that ends every other active session for the account, keeping the current one.
 - **Login activity dashboard** — a "Login Activity" widget on the WordPress dashboard summarising successful logins, failed attempts, and rate-limit lockouts over the past week, with the top failed usernames, most-blocked IPs, and a recent-events feed. IPs are stored anonymised, history auto-prunes, and the data is removed on uninstall.
 - **Per-widget toggles** — enable or disable each form widget (login, register, lost password, reset password, account) for both the Elementor panel and classic widget areas, under **Settings → Zen Login & Authentication → Widgets**.
 - **Sign in with Google** (optional) — a server-side OpenID Connect flow with no Google JavaScript on your pages and no third-party libraries. New accounts can be auto-created (toggleable); existing accounts are linked by verified email. Configured under **Settings → Zen Login & Authentication → Sign in with Google**.
@@ -29,6 +33,9 @@ Zen Login & Authentication replaces the default `wp-login.php` experience with c
 - **No password pre-population** — password fields are never re-filled from POST data.
 - **bcrypt-compatible** — uses `wp_set_password()` / `wp_signon()` which support WP 6.8+ bcrypt hashing.
 - **Password minimum length** — reset and registration passwords require at least 8 characters.
+- **Breached-password blocking** (optional) — reject passwords found in the Have I Been Pwned corpus via k-anonymity; only a 5-character SHA-1 prefix ever leaves the site, never the password, and it fails open if the service is unreachable.
+- **Username-enumeration & XML-RPC hardening** — blocks `?author=N` author scans and the guest REST user listing, collapses login errors to one neutral message so a valid username is never confirmed, and offers an optional XML-RPC lockdown. On by default where it's safe.
+- **Cloudflare Turnstile** (optional) — privacy-first bot challenge on login, registration, and lost-password (and `wp-login.php`), with server-side token verification and the secret stored encrypted at rest.
 
 ### Elementor Integration
 

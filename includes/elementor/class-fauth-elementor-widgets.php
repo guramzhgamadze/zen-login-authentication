@@ -317,7 +317,7 @@ abstract class ZENLOGAU_Elementor_Base_Widget extends \Elementor\Widget_Base {
                 'auto' => [ 'title' => esc_html__( 'Auto',       'zen-login-authentication' ), 'icon' => 'eicon-fit-to-screen' ],
                 'full' => [ 'title' => esc_html__( 'Full Width', 'zen-login-authentication' ), 'icon' => 'eicon-h-align-stretch' ],
             ],
-            'default'             => 'auto',
+            'default'             => 'full',
             'selectors_dictionary' => [
                 'auto' => 'width: auto;',
                 'full' => 'width: 100%;',
@@ -510,6 +510,47 @@ abstract class ZENLOGAU_Elementor_Base_Widget extends \Elementor\Widget_Base {
     }
 
     /**
+     * Style controls for the "Sign in with a passkey" button (login form only).
+     * It uses .fauth-passkey-signin (not .fauth-submit-button), so the main
+     * Button controls don't reach it — these give it its own Normal/Hover styling.
+     */
+    protected function register_passkey_button_style_controls(): void {
+        $this->start_controls_section( 'section_style_passkey', [
+            'label' => esc_html__( 'Passkey Button', 'zen-login-authentication' ),
+            'tab'   => \Elementor\Controls_Manager::TAB_STYLE,
+        ] );
+        $this->add_group_control( \Elementor\Group_Control_Typography::get_type(), [
+            'name'     => 'passkey_btn_typography',
+            'selector' => '{{WRAPPER}} .fauth-passkey-signin',
+        ] );
+        $this->add_responsive_control( 'passkey_btn_padding', [
+            'label'      => esc_html__( 'Padding', 'zen-login-authentication' ),
+            'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+            'size_units' => [ 'px', 'em' ],
+            'selectors'  => [ '{{WRAPPER}} .fauth-passkey-signin' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ],
+        ] );
+        $this->add_responsive_control( 'passkey_btn_radius', [
+            'label'      => esc_html__( 'Border Radius', 'zen-login-authentication' ),
+            'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+            'size_units' => [ 'px', '%' ],
+            'selectors'  => [ '{{WRAPPER}} .fauth-passkey-signin' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ],
+        ] );
+        $this->start_controls_tabs( 'passkey_btn_tabs' );
+        $this->start_controls_tab( 'passkey_btn_normal', [ 'label' => esc_html__( 'Normal', 'zen-login-authentication' ) ] );
+        $this->add_control( 'passkey_btn_color', [ 'label' => esc_html__( 'Text', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-passkey-signin' => 'color: {{VALUE}};' ] ] );
+        $this->add_control( 'passkey_btn_bg', [ 'label' => esc_html__( 'Background', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-passkey-signin' => 'background-color: {{VALUE}};' ] ] );
+        $this->add_control( 'passkey_btn_border', [ 'label' => esc_html__( 'Border Color', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-passkey-signin' => 'border-color: {{VALUE}};' ] ] );
+        $this->end_controls_tab();
+        $this->start_controls_tab( 'passkey_btn_hover', [ 'label' => esc_html__( 'Hover', 'zen-login-authentication' ) ] );
+        $this->add_control( 'passkey_btn_color_h', [ 'label' => esc_html__( 'Text', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-passkey-signin:hover,{{WRAPPER}} .fauth-passkey-signin:focus' => 'color: {{VALUE}};' ] ] );
+        $this->add_control( 'passkey_btn_bg_h', [ 'label' => esc_html__( 'Background', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-passkey-signin:hover,{{WRAPPER}} .fauth-passkey-signin:focus' => 'background-color: {{VALUE}};' ] ] );
+        $this->add_control( 'passkey_btn_border_h', [ 'label' => esc_html__( 'Border Color', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::COLOR, 'selectors' => [ '{{WRAPPER}} .fauth-passkey-signin:hover,{{WRAPPER}} .fauth-passkey-signin:focus' => 'border-color: {{VALUE}};' ] ] );
+        $this->end_controls_tab();
+        $this->end_controls_tabs();
+        $this->end_controls_section();
+    }
+
+    /**
      * Apply the widget's Google-button settings as request-scoped filters.
      * Returns a cleanup callable to invoke immediately after the form renders —
      * same add→render→remove pattern as the link filters (see render_login_form).
@@ -533,6 +574,26 @@ abstract class ZENLOGAU_Elementor_Base_Widget extends \Elementor\Widget_Base {
             }
             if ( null !== $text_cb ) {
                 remove_filter( 'zenlogau_google_button_text', $text_cb, 99 );
+            }
+        };
+    }
+
+    /**
+     * Apply the widget's passkey-button text as a request-scoped filter, mirroring
+     * the Google override. Returns a cleanup callable to run after the form renders.
+     */
+    protected function setup_passkey_button_overrides( array $s ): callable {
+        $text    = trim( (string) ( $s['passkey_button_text'] ?? '' ) );
+        $text_cb = null;
+        if ( '' !== $text ) {
+            $text_cb = static function () use ( $text ) {
+                return $text;
+            };
+            add_filter( 'zenlogau_passkey_button_text', $text_cb, 99 );
+        }
+        return static function () use ( $text_cb ): void {
+            if ( null !== $text_cb ) {
+                remove_filter( 'zenlogau_passkey_button_text', $text_cb, 99 );
             }
         };
     }
@@ -888,6 +949,8 @@ class ZENLOGAU_Elementor_Login_Widget extends ZENLOGAU_Elementor_Base_Widget {
 
 
         $this->register_google_button_controls();
+        $this->add_control( 'zenlogau_h_passkey', [ 'label' => esc_html__( 'Passkey', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
+        $this->add_control( 'passkey_button_text', [ 'label' => esc_html__( 'Passkey button text', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Sign in with a passkey', 'zen-login-authentication' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
         $this->register_redirect_controls();
         $this->end_controls_section();
 
@@ -895,6 +958,7 @@ class ZENLOGAU_Elementor_Login_Widget extends ZENLOGAU_Elementor_Base_Widget {
         $this->register_password_toggle_style_controls();
         $this->register_checkbox_style_controls(); // Fix H
         $this->register_google_button_style_controls();
+        $this->register_passkey_button_style_controls();
     }
 
     protected function render(): void {
@@ -979,7 +1043,8 @@ class ZENLOGAU_Elementor_Login_Widget extends ZENLOGAU_Elementor_Base_Widget {
             $link_callback = null;
         }
 
-        $google_cleanup = $this->setup_google_button_overrides( $s );
+        $google_cleanup  = $this->setup_google_button_overrides( $s );
+        $passkey_cleanup = $this->setup_passkey_button_overrides( $s );
 
         $this->open_form_wrap();
         $this->render_form_title( $s );
@@ -987,6 +1052,7 @@ class ZENLOGAU_Elementor_Login_Widget extends ZENLOGAU_Elementor_Base_Widget {
         $this->close_form_wrap();
 
         $google_cleanup();
+        $passkey_cleanup();
 
         /*
          * ELEMENTOR EDITOR FIX (v1.4.2):
@@ -1024,7 +1090,16 @@ class ZENLOGAU_Elementor_Login_Widget extends ZENLOGAU_Elementor_Base_Widget {
         echo '<# if ( "yes" === settings.show_links ) { #>';
         echo '<p class="fauth-links"><a href="#"><# if(settings.link_register_text){#>{{{settings.link_register_text}}}<#}else{#>' . esc_html__( 'Register', 'zen-login-authentication' ) . '<#}#></a> &bull; <a href="#"><# if(settings.link_lostpw_text){#>{{{settings.link_lostpw_text}}}<#}else{#>' . esc_html__( 'Lost your password?', 'zen-login-authentication' ) . '<#}#></a></p>';
         echo '<# } #></div>';
-        echo $this->google_button_content_template(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped during construction
+        // Editor preview of the alternative sign-in buttons. The front end injects
+        // these via hooks that don't run in the JS preview, so they're mirrored
+        // here (order: divider -> passkey -> Google) so they render and can be styled.
+        $svg = function_exists( 'zenlogau_google_button_svg' ) ? zenlogau_google_button_svg() : '';
+        echo '<div class="fauth-sso-divider" aria-hidden="true"><span>' . esc_html__( 'or', 'zen-login-authentication' ) . '</span></div>';
+        $pk_icon = function_exists( 'zenlogau_passkey_icon_svg' ) ? zenlogau_passkey_icon_svg() : '';
+        echo '<div class="fauth fauth-passkey-login"><button type="button" class="fauth-button fauth-button-secondary fauth-passkey-signin">' . $pk_icon . '<span><# if(settings.passkey_button_text){#>{{{settings.passkey_button_text}}}<#}else{#>' . esc_html__( 'Sign in with a passkey', 'zen-login-authentication' ) . '<#}#></span></button></div>';
+        echo '<# if ( "yes" === settings.show_google_button ) { #>';
+        echo '<div class="fauth-sso"><a class="fauth-google-btn" href="#" onclick="return false;">' . $svg . '<span><# if(settings.google_button_text){#>{{{settings.google_button_text}}}<#}else{#>' . esc_html__( 'Continue with Google', 'zen-login-authentication' ) . '<#}#></span></a></div>';
+        echo '<# } #>';
         echo '</div><!-- /.fauth-form-wrap -->';
     }
 }
@@ -1436,6 +1511,8 @@ class ZENLOGAU_Elementor_Account_Widget extends ZENLOGAU_Elementor_Base_Widget {
         $this->add_control( 'placeholder_first_name', [ 'label' => esc_html__( 'First Name placeholder', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'e.g. John', 'zen-login-authentication' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
         $this->add_control( 'placeholder_last_name', [ 'label' => esc_html__( 'Last Name placeholder', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'e.g. Doe', 'zen-login-authentication' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
         $this->add_control( 'placeholder_email', [ 'label' => esc_html__( 'Email placeholder', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'e.g. your@email.com', 'zen-login-authentication' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
+        $this->add_control( 'placeholder_password', [ 'label' => esc_html__( 'New Password placeholder', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Leave blank to keep current', 'zen-login-authentication' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
+        $this->add_control( 'placeholder_confirm_pw', [ 'label' => esc_html__( 'Confirm Password placeholder', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Re-enter new password', 'zen-login-authentication' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
 
         // --- Password Toggle ---
         $this->register_password_toggle_content_controls();
@@ -1455,6 +1532,94 @@ class ZENLOGAU_Elementor_Account_Widget extends ZENLOGAU_Elementor_Base_Widget {
         $this->register_password_toggle_style_controls();
         $this->register_strength_meter_style_controls();
         $this->register_2fa_style_controls();
+        $this->register_passkeys_style_controls();
+    }
+
+    /**
+     * Style controls for the Passkeys section shown on the account page once the
+     * feature is enabled. Rendered on the front end (not this editor preview).
+     * The "Add a passkey" button reuses .fauth-submit-button, so the Button
+     * controls above already style it; these cover the passkey-specific parts.
+     */
+    protected function register_passkeys_style_controls(): void {
+        $this->start_controls_section( 'section_passkeys_style', [
+            'label' => esc_html__( 'Passkeys', 'zen-login-authentication' ),
+            'tab'   => \Elementor\Controls_Manager::TAB_STYLE,
+        ] );
+
+        $this->add_responsive_control( 'pk_align', [
+            'label'     => esc_html__( 'Heading Alignment', 'zen-login-authentication' ),
+            'type'      => \Elementor\Controls_Manager::CHOOSE,
+            'options'   => [
+                'left'   => [ 'title' => esc_html__( 'Left', 'zen-login-authentication' ),   'icon' => 'eicon-text-align-left' ],
+                'center' => [ 'title' => esc_html__( 'Center', 'zen-login-authentication' ), 'icon' => 'eicon-text-align-center' ],
+                'right'  => [ 'title' => esc_html__( 'Right', 'zen-login-authentication' ),  'icon' => 'eicon-text-align-right' ],
+            ],
+            'selectors' => [ '{{WRAPPER}} .fauth-passkeys-title' => 'text-align: {{VALUE}};' ],
+        ] );
+        $this->add_responsive_control( 'pk_body_align', [
+            'label'     => esc_html__( 'Body Text Alignment', 'zen-login-authentication' ),
+            'type'      => \Elementor\Controls_Manager::CHOOSE,
+            'options'   => [
+                'left'   => [ 'title' => esc_html__( 'Left', 'zen-login-authentication' ),   'icon' => 'eicon-text-align-left' ],
+                'center' => [ 'title' => esc_html__( 'Center', 'zen-login-authentication' ), 'icon' => 'eicon-text-align-center' ],
+                'right'  => [ 'title' => esc_html__( 'Right', 'zen-login-authentication' ),  'icon' => 'eicon-text-align-right' ],
+            ],
+            'selectors' => [
+                '{{WRAPPER}} .fauth-passkeys-intro, {{WRAPPER}} .fauth-passkeys-note, {{WRAPPER}} .fauth-passkey-items, {{WRAPPER}} .fauth-passkeys-empty, {{WRAPPER}} .fauth-passkey-status' => 'text-align: {{VALUE}};',
+            ],
+        ] );
+
+        $this->add_control( 'pk_bg', [
+            'label'     => esc_html__( 'Section Background', 'zen-login-authentication' ),
+            'type'      => \Elementor\Controls_Manager::COLOR,
+            'selectors' => [ '{{WRAPPER}} .fauth-passkeys' => 'background-color: {{VALUE}};' ],
+        ] );
+        $this->add_responsive_control( 'pk_padding', [
+            'label'      => esc_html__( 'Section Padding', 'zen-login-authentication' ),
+            'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+            'size_units' => [ 'px', 'em' ],
+            'selectors'  => [ '{{WRAPPER}} .fauth-passkeys' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ],
+        ] );
+        $this->add_group_control( \Elementor\Group_Control_Border::get_type(), [ 'name' => 'pk_border', 'selector' => '{{WRAPPER}} .fauth-passkeys' ] );
+        $this->add_responsive_control( 'pk_radius', [
+            'label'      => esc_html__( 'Border Radius', 'zen-login-authentication' ),
+            'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+            'size_units' => [ 'px', '%' ],
+            'selectors'  => [ '{{WRAPPER}} .fauth-passkeys' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ],
+        ] );
+
+        $this->add_control( 'pk_title_heading', [ 'label' => esc_html__( 'Heading', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
+        $this->add_control( 'pk_title_color', [
+            'label'     => esc_html__( 'Heading Color', 'zen-login-authentication' ),
+            'type'      => \Elementor\Controls_Manager::COLOR,
+            'selectors' => [ '{{WRAPPER}} .fauth-passkeys-title' => 'color: {{VALUE}};' ],
+        ] );
+        $this->add_group_control( \Elementor\Group_Control_Typography::get_type(), [ 'name' => 'pk_title_typography', 'selector' => '{{WRAPPER}} .fauth-passkeys-title' ] );
+
+        $this->add_control( 'pk_text_heading', [ 'label' => esc_html__( 'Body Text', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
+        $this->add_control( 'pk_text_color', [
+            'label'     => esc_html__( 'Color', 'zen-login-authentication' ),
+            'type'      => \Elementor\Controls_Manager::COLOR,
+            'selectors' => [
+                '{{WRAPPER}} .fauth-passkeys-intro, {{WRAPPER}} .fauth-passkeys-note, {{WRAPPER}} .fauth-passkey-name, {{WRAPPER}} .fauth-passkey-meta, {{WRAPPER}} .fauth-passkeys-empty, {{WRAPPER}} .fauth-passkey-status' => 'color: {{VALUE}};',
+            ],
+        ] );
+        $this->add_group_control( \Elementor\Group_Control_Typography::get_type(), [ 'name' => 'pk_text_typography', 'selector' => '{{WRAPPER}} .fauth-passkeys-intro, {{WRAPPER}} .fauth-passkey-name' ] );
+
+        $this->add_control( 'pk_remove_heading', [ 'label' => esc_html__( 'Remove Link', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
+        $this->add_control( 'pk_remove_color', [
+            'label'     => esc_html__( 'Color', 'zen-login-authentication' ),
+            'type'      => \Elementor\Controls_Manager::COLOR,
+            'selectors' => [ '{{WRAPPER}} .fauth-passkey-remove' => 'color: {{VALUE}};' ],
+        ] );
+        $this->add_control( 'pk_remove_color_h', [
+            'label'     => esc_html__( 'Hover Color', 'zen-login-authentication' ),
+            'type'      => \Elementor\Controls_Manager::COLOR,
+            'selectors' => [ '{{WRAPPER}} .fauth-passkey-remove:hover, {{WRAPPER}} .fauth-passkey-remove:focus' => 'color: {{VALUE}};' ],
+        ] );
+
+        $this->end_controls_section();
     }
 
     /**
@@ -1683,6 +1848,8 @@ class ZENLOGAU_Elementor_Account_Widget extends ZENLOGAU_Elementor_Base_Widget {
             'placeholder_first_name'   => [ 'first_name',   'placeholder' ],
             'placeholder_last_name'    => [ 'last_name',    'placeholder' ],
             'placeholder_email'        => [ 'user_email',   'placeholder' ],
+            'placeholder_password'     => [ 'pass1',        'placeholder' ],
+            'placeholder_confirm_pw'   => [ 'pass2',        'placeholder' ],
             'toggle_show_text'         => [ 'pass1',        'toggle_show' ],
             'toggle_hide_text'         => [ 'pass1',        'toggle_hide' ],
         ], $s );
@@ -1707,10 +1874,22 @@ class ZENLOGAU_Elementor_Account_Widget extends ZENLOGAU_Elementor_Base_Widget {
         echo '<p class="fauth-field-wrap"><label class="fauth-label"><# if(settings.label_last_name){#>{{{settings.label_last_name}}}<#}else{#>' . esc_html__('Last Name','zen-login-authentication') . '<#}#></label><input type="text" class="fauth-field" placeholder="<# if(settings.placeholder_last_name){#>{{settings.placeholder_last_name}}<#}#>" disabled></p>';
         echo '<p class="fauth-field-wrap"><label class="fauth-label"><# if(settings.label_display_name){#>{{{settings.label_display_name}}}<#}else{#>' . esc_html__('Display name publicly as','zen-login-authentication') . '<#}#> <span class="fauth-required">*</span></label><select class="fauth-field fauth-select" disabled><option>' . esc_html__('Your Name','zen-login-authentication') . '</option></select></p>';
         echo '<p class="fauth-field-wrap"><label class="fauth-label"><# if(settings.label_email){#>{{{settings.label_email}}}<#}else{#>' . esc_html__('Email Address','zen-login-authentication') . '<#}#> <span class="fauth-required">*</span></label><input type="email" class="fauth-field" placeholder="<# if(settings.placeholder_email){#>{{settings.placeholder_email}}<#}#>" disabled></p>';
-        echo '<p class="fauth-field-wrap fauth-field-wrap--password"><label class="fauth-label"><# if(settings.label_password){#>{{{settings.label_password}}}<#}else{#>' . esc_html__('New Password','zen-login-authentication') . '<#}#></label><input type="password" class="fauth-field" disabled><button type="button" class="fauth-password-toggle"><# if(settings.toggle_show_text){#>{{{settings.toggle_show_text}}}<#}else{#>' . esc_html__('Show','zen-login-authentication') . '<#}#></button><span class="fauth-description"><# if(settings.password_hint){#>{{{settings.password_hint}}}<#}else{#>' . esc_html__('Leave blank to keep your current password.','zen-login-authentication') . '<#}#></span></p>';
-        echo '<p class="fauth-field-wrap fauth-field-wrap--password"><label class="fauth-label"><# if(settings.label_confirm_pw){#>{{{settings.label_confirm_pw}}}<#}else{#>' . esc_html__('Confirm New Password','zen-login-authentication') . '<#}#></label><input type="password" class="fauth-field" disabled><button type="button" class="fauth-password-toggle"><# if(settings.toggle_show_text){#>{{{settings.toggle_show_text}}}<#}else{#>' . esc_html__('Show','zen-login-authentication') . '<#}#></button></p>';
+        echo '<p class="fauth-field-wrap fauth-field-wrap--password"><label class="fauth-label"><# if(settings.label_password){#>{{{settings.label_password}}}<#}else{#>' . esc_html__('New Password','zen-login-authentication') . '<#}#></label><input type="password" class="fauth-field" placeholder="<# if(settings.placeholder_password){#>{{settings.placeholder_password}}<#}#>" disabled><button type="button" class="fauth-password-toggle"><# if(settings.toggle_show_text){#>{{{settings.toggle_show_text}}}<#}else{#>' . esc_html__('Show','zen-login-authentication') . '<#}#></button><span class="fauth-description"><# if(settings.password_hint){#>{{{settings.password_hint}}}<#}else{#>' . esc_html__('Leave blank to keep your current password.','zen-login-authentication') . '<#}#></span></p>';
+        echo '<p class="fauth-field-wrap fauth-field-wrap--password"><label class="fauth-label"><# if(settings.label_confirm_pw){#>{{{settings.label_confirm_pw}}}<#}else{#>' . esc_html__('Confirm New Password','zen-login-authentication') . '<#}#></label><input type="password" class="fauth-field" placeholder="<# if(settings.placeholder_confirm_pw){#>{{settings.placeholder_confirm_pw}}<#}#>" disabled><button type="button" class="fauth-password-toggle"><# if(settings.toggle_show_text){#>{{{settings.toggle_show_text}}}<#}else{#>' . esc_html__('Show','zen-login-authentication') . '<#}#></button></p>';
         echo '<p class="fauth-submit"><button type="button" class="fauth-button fauth-submit-button"><# if(settings.button_text){#>{{{settings.button_text}}}<#}else{#>' . esc_html__('Save Changes','zen-login-authentication') . '<#}#></button></p>';
-        echo '</div><# if("yes"===settings.show_links){#><p class="fauth-links"><a href="#">' . esc_html__('Log Out','zen-login-authentication') . '</a></p><#}#></div>';
+        echo '</div>'; // close .fauth-inner-form
+        echo '<# if("yes"===settings.show_links){#><p class="fauth-links"><a href="#">' . esc_html__('Log Out','zen-login-authentication') . '</a> &bull; <a href="#">' . esc_html__('Sign out of all other devices','zen-login-authentication') . '</a></p><#}#>';
+        // Editor previews of the dynamic Account sections. On the front end these
+        // render server-side via hooks (they need a logged-in user / live state),
+        // so they're shown statically here so they appear in the editor and can be styled.
+        echo '<div class="fauth fauth-passkeys"><h3 class="fauth-passkeys-title">' . esc_html__('Passkeys','zen-login-authentication') . '</h3>';
+        echo '<p class="fauth-passkeys-intro">' . esc_html__('Sign in without a password using your fingerprint, face, screen lock, or a security key.','zen-login-authentication') . '</p>';
+        echo '<div class="fauth-passkeys-list"><ul class="fauth-passkey-items"><li class="fauth-passkey-item"><span class="fauth-passkey-name">' . esc_html__('My device','zen-login-authentication') . '</span> <button type="button" class="fauth-link-button fauth-passkey-remove">' . esc_html__('Remove','zen-login-authentication') . '</button></li></ul></div>';
+        echo '<p class="fauth-passkeys-actions"><button type="button" class="fauth-button fauth-submit-button fauth-passkey-add">' . esc_html__('Add a passkey','zen-login-authentication') . '</button></p></div>';
+        echo '<div class="fauth fauth-2fa"><h3 class="fauth-2fa-title">' . esc_html__('Two-Factor Authentication','zen-login-authentication') . '</h3>';
+        echo '<p class="fauth-2fa-status">' . esc_html__('Add a second step at login with an authenticator app.','zen-login-authentication') . '</p>';
+        echo '<p class="fauth-submit"><button type="button" class="fauth-button fauth-submit-button">' . esc_html__('Set up two-factor authentication','zen-login-authentication') . '</button></p></div>';
+        echo '</div>'; // close .fauth-form
         echo '</div><!-- /.fauth-form-wrap -->';
     }
 }

@@ -57,11 +57,11 @@
 #zenlogau_activity_widget .fauth-dash-stat.lock .num { color:#9a6700; }
 #zenlogau_activity_widget h4 { margin:14px 0 6px; font-size:0.82rem; text-transform:uppercase; letter-spacing:.02em; color:#1d2327; }
 #zenlogau_activity_widget table.fauth-dash-table { width:100%; border-collapse:collapse; }
-#zenlogau_activity_widget table.fauth-dash-table td { padding:5px 0; border-bottom:1px solid #f0f0f1; font-size:0.86rem; }
+#zenlogau_activity_widget table.fauth-dash-table td { padding:5px 0; border-bottom:1px solid #f0f0f1; font-size:0.86rem; vertical-align:top; overflow-wrap:anywhere; word-break:break-word; }
 #zenlogau_activity_widget table.fauth-dash-table tr:last-child td { border-bottom:none; }
-#zenlogau_activity_widget table.fauth-dash-table td.cnt { text-align:right; font-weight:600; color:#646970; white-space:nowrap; }
+#zenlogau_activity_widget table.fauth-dash-table td.cnt { text-align:right; font-weight:600; color:#646970; white-space:nowrap; padding-left:10px; width:3.5em; }
 #zenlogau_activity_widget .fauth-dash-cols { display:flex; gap:22px; flex-wrap:wrap; }
-#zenlogau_activity_widget .fauth-dash-cols > div { flex:1; min-width:180px; }
+#zenlogau_activity_widget .fauth-dash-cols > div { flex:1 1 160px; min-width:0; }
 #zenlogau_activity_widget .fauth-dash-empty { color:#646970; font-style:italic; font-size:0.85rem; }
 #zenlogau_activity_widget .fauth-pill { display:inline-block; font-size:0.7rem; font-weight:600; padding:1px 7px; border-radius:10px; }
 #zenlogau_activity_widget .fauth-pill.ok   { background:#edf7f1; color:#00794f; }

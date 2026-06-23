@@ -4,7 +4,7 @@ Tags: login, registration, authentication, elementor, frontend
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 2.0.0
+Stable tag: 2.1.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -25,6 +25,8 @@ The plugin works with no configuration and adds no tracking or "phone home" beha
 * **Sign in with Google** (optional) — a server-side OpenID Connect flow with no Google JavaScript on your pages. New accounts can be auto-created (toggleable) and existing accounts are linked by verified email.
 * **Two-factor authentication** (optional, opt-in per user) — app-based TOTP with local QR enrollment and one-time recovery codes, managed from the Account page. Once a user turns it on, a second-factor step is required at login.
 * **Sign out of other devices** — from the Account page, a logged-in user can end every other active session for their account in one click; the current device stays signed in.
+* **Passkeys (WebAuthn)** (optional, opt-in per user) — users add passkeys from the Account page and sign in with no password using Face ID, a fingerprint, Windows Hello, or a security key. Passwordless sign-ins are phishing-resistant and count as multi-factor, so they skip both the password and any two-factor step. Verified locally; requires HTTPS.
+* **New-device login alerts** — emails the account owner the first time their account is signed in from an unrecognised device or browser, using your site's normal email. On by default.
 * **URL rewriting** so every site-wide `wp-login.php` link is transparently redirected to your frontend pages.
 * **Multisite support** — network-activated, per-site settings, signup/activation flow handled.
 * **Smart redirects** — `?redirect_to=` is honoured everywhere. Subscribers are kept out of wp-admin and sent to a destination you set in **Settings &rarr; Zen Login & Authentication &rarr; Subscriber redirect** (a page slug or URL; empty = site home). Privileged users always land where they intended.
@@ -138,6 +140,17 @@ Only pages the plugin created that you never edited (no content, no Elementor da
 8. The Sign in with Google settings panel &mdash; enable the feature, add your Client ID and Secret (stored encrypted), and choose whether new accounts are created automatically.
 
 == Changelog ==
+
+= 2.1.1 =
+* Redesigned login, registration, and account forms: a polished default card surface, a refined "security blue" palette, full-width primary buttons, and an outline secondary style — all still controllable from the Elementor toolbar.
+* The "Sign in with a passkey" button now has an icon and its own Normal/Hover style controls, and sits below the "or" divider with the other sign-in options.
+* Cleaner input focus (solid border + soft ring, no floating outline) and no stray hover border on buttons.
+* The new-device alert email is now a styled, mobile-friendly HTML message, with an optional admin-supplied custom body.
+* Added the missing password placeholder controls on the Account widget; the Elementor editor now previews the passkey, Google, two-factor, and passkeys/sessions sections.
+
+= 2.1.0 =
+* New: **Passkeys (WebAuthn)**. Users can add passkeys from the Account page and sign in with no password using Face ID, a fingerprint, Windows Hello, or a security key. Passwordless sign-ins are phishing-resistant and count as multi-factor, so they skip the password and any two-factor step. Credentials are verified locally by the bundled lbuchs/WebAuthn library (MIT) using "none" attestation — no external request is made. Requires HTTPS.
+* New: **New-device login alerts**. Emails the account owner the first time their account is signed in from an unrecognised device or browser (similar to the "new sign-in" alerts from Google or GitHub). Recognises devices with a long-lived cookie and sends with your site's normal email — no external service. On by default.
 
 = 2.0.0 =
 * New: **Two-factor authentication (TOTP)**. Opt-in per user, managed entirely from the Account page: scan a QR code (or enter the setup key) in any authenticator app, confirm a code to turn it on, and save one-time recovery codes. After the password, a second-factor step is required — enforced across the plugin's forms, AJAX submissions, and wp-login.php (REST/XML-RPC application passwords and Google sign-in are unaffected). The shared secret is stored encrypted at rest and recovery codes are stored hashed and single-use; the login challenge sets no auth cookie until the second factor verifies.

@@ -110,6 +110,14 @@ function zenlogau_admin_register_settings(): void {
 
     // Two-factor authentication (v2.0.0). Per-user opt-in; this is the master switch.
     register_setting( 'zen-login-authentication', 'zenlogau_2fa_feature', [ 'sanitize_callback' => 'absint', 'type' => 'integer', 'autoload' => false ] );
+
+    // New-device login email alerts (v2.1.0). Default on.
+    register_setting( 'zen-login-authentication', 'zenlogau_new_device_email', [ 'sanitize_callback' => 'absint', 'type' => 'integer', 'autoload' => false ] );
+    // Optional custom HTML body for the new-device alert (v2.1.0). Blank = built-in message.
+    register_setting( 'zen-login-authentication', 'zenlogau_new_device_email_body', [ 'sanitize_callback' => 'zenlogau_sanitize_email_body', 'type' => 'string', 'autoload' => false ] );
+
+    // Passkeys / WebAuthn passwordless login (v2.1.0). Master switch; default on.
+    register_setting( 'zen-login-authentication', 'zenlogau_passkeys_feature', [ 'sanitize_callback' => 'absint', 'type' => 'integer', 'autoload' => false ] );
 }
 
 function zenlogau_sanitize_login_type( $value ): string {
@@ -493,6 +501,53 @@ function zenlogau_admin_settings_page(): void {
                             <span class="fauth-toggle-slider"></span>
                         </label>
                         <div class="fauth-hint"><?php esc_html_e( 'When on, an "Two-Factor Authentication" section appears on the Account form so users can enroll. Turning this off stops the login challenge for everyone (existing enrollments are kept and resume if you turn it back on).', 'zen-login-authentication' ); ?></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Passkeys (v2.1.0) -->
+            <div class="fauth-card">
+                <h2><?php esc_html_e( 'Passkeys', 'zen-login-authentication' ); ?></h2>
+                <p class="desc"><?php esc_html_e( 'Let users sign in without a password using a passkey — fingerprint, face, screen lock, or a security key. Each user adds their own passkeys from the Account page. Passkeys are phishing-resistant and count as multi-factor, so a passkey sign-in skips both the password and any two-factor step. Requires HTTPS.', 'zen-login-authentication' ); ?></p>
+
+                <div class="fauth-row">
+                    <div class="fauth-row-label"><?php esc_html_e( 'Enable passkeys', 'zen-login-authentication' ); ?></div>
+                    <div class="fauth-row-field">
+                        <label class="fauth-toggle">
+                            <input type="hidden" name="zenlogau_passkeys_feature" value="0">
+                            <input type="checkbox" name="zenlogau_passkeys_feature" value="1" <?php checked( (bool) get_option( 'zenlogau_passkeys_feature', true ) ); ?>>
+                            <span class="fauth-toggle-slider"></span>
+                        </label>
+                        <div class="fauth-hint"><?php esc_html_e( 'Adds a "Passkeys" section to the Account form and a "Sign in with a passkey" button to the login form. Turning this off hides both; saved passkeys are kept and resume if you re-enable.', 'zen-login-authentication' ); ?></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- New-device login email (v2.1.0) -->
+            <div class="fauth-card">
+                <h2><?php esc_html_e( 'New-Device Login Alerts', 'zen-login-authentication' ); ?></h2>
+                <p class="desc"><?php esc_html_e( 'Email the account owner the first time their account is signed in from a browser or device the site has not seen before — like the "new sign-in" alerts from Google or GitHub. Sent with your site\'s normal email; no external service is used.', 'zen-login-authentication' ); ?></p>
+
+                <div class="fauth-row">
+                    <div class="fauth-row-label"><?php esc_html_e( 'Send new-device alerts', 'zen-login-authentication' ); ?></div>
+                    <div class="fauth-row-field">
+                        <label class="fauth-toggle">
+                            <input type="hidden" name="zenlogau_new_device_email" value="0">
+                            <input type="checkbox" name="zenlogau_new_device_email" value="1" <?php checked( (bool) get_option( 'zenlogau_new_device_email', true ) ); ?>>
+                            <span class="fauth-toggle-slider"></span>
+                        </label>
+                        <div class="fauth-hint"><?php esc_html_e( 'Recognises devices with a long-lived cookie. Clearing cookies counts as a new device, so an alert may be sent again.', 'zen-login-authentication' ); ?></div>
+                    </div>
+                </div>
+
+                <div class="fauth-row">
+                    <div class="fauth-row-label"><?php esc_html_e( 'Custom email body', 'zen-login-authentication' ); ?></div>
+                    <div class="fauth-row-field">
+                        <textarea name="zenlogau_new_device_email_body" rows="8" class="fauth-textarea" style="width:100%;max-width:580px;font-family:ui-monospace,Consolas,monospace;font-size:.85em;line-height:1.5;" placeholder="<?php esc_attr_e( 'Leave blank to use the styled default message.', 'zen-login-authentication' ); ?>"><?php echo esc_textarea( (string) get_option( 'zenlogau_new_device_email_body', '' ) ); ?></textarea>
+                        <div class="fauth-hint">
+                            <?php esc_html_e( 'Optional. Leave blank to send the styled default HTML message. Use INLINE styles only — e.g. <p style="color:#0369a1">. Email clients ignore stylesheets, so <style> blocks, <head>, and <html>/<body> wrappers are removed automatically. These placeholders are replaced when the email is sent:', 'zen-login-authentication' ); ?>
+                            <code>{site_name}</code> <code>{display_name}</code> <code>{time}</code> <code>{ip}</code> <code>{device}</code> <code>{account_url}</code>
+                        </div>
                     </div>
                 </div>
             </div>

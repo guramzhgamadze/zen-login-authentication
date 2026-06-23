@@ -42,6 +42,9 @@ $zenlogau_options = [
     'zenlogau_turnstile_register',
     'zenlogau_turnstile_lostpassword',
     'zenlogau_2fa_feature',
+    'zenlogau_new_device_email',
+    'zenlogau_new_device_email_body',
+    'zenlogau_passkeys_feature',
     'zenlogau_slug_login',
     'zenlogau_slug_logout',
     'zenlogau_slug_register',
@@ -136,6 +139,12 @@ function zenlogau_uninstall_site( array $options, array $page_actions ): void {
     foreach ( [ 'zenlogau_2fa_secret', 'zenlogau_2fa_pending_secret', 'zenlogau_2fa_enabled', 'zenlogau_2fa_recovery' ] as $zenlogau_2fa_meta ) {
         delete_metadata( 'user', 0, $zenlogau_2fa_meta, '', true );
     }
+
+    // Known-device list for new-device login alerts (v2.1.0).
+    delete_metadata( 'user', 0, 'zenlogau_known_devices', '', true );
+
+    // Registered passkeys / WebAuthn credentials (v2.1.0).
+    delete_metadata( 'user', 0, 'zenlogau_passkeys', '', true );
 
     // Legacy pre-release "wpfa" prefix leftovers, for installs that never ran
     // the wpfa -> fauth migration before being uninstalled.

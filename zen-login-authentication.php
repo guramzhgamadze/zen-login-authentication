@@ -3,7 +3,7 @@
  * Plugin Name:       Zen Login & Authentication
  * Plugin URI:        https://github.com/guramzhgamadze/zen-login-authentication
  * Description:       Secure, accessible frontend login, registration, and password recovery forms — with rate limiting, honeypot protection, AJAX support, and native Elementor widgets.
- * Version:           2.0.0
+ * Version:           2.1.1
  * Requires at least: 6.5
  * Requires PHP:      8.0
  * Author:            Guram Zhgamadze
@@ -68,7 +68,7 @@ if ( version_compare( get_bloginfo( 'version' ), '6.5', '<' ) ) {
     return;
 }
 
-define( 'ZENLOGAU_VERSION', '2.0.0' );
+define( 'ZENLOGAU_VERSION', '2.1.1' );
 define( 'ZENLOGAU_PATH',    plugin_dir_path( __FILE__ ) );
 define( 'ZENLOGAU_URL',     plugin_dir_url( __FILE__ ) );
 
@@ -93,6 +93,8 @@ require ZENLOGAU_PATH . 'includes/turnstile.php';
 require ZENLOGAU_PATH . 'includes/totp.php';
 require ZENLOGAU_PATH . 'includes/two-factor.php';
 require ZENLOGAU_PATH . 'includes/account-sessions.php';
+require ZENLOGAU_PATH . 'includes/new-device-email.php';
+require ZENLOGAU_PATH . 'includes/passkeys.php';
 require ZENLOGAU_PATH . 'includes/activity-log.php';
 require ZENLOGAU_PATH . 'includes/class-fauth.php';
 require ZENLOGAU_PATH . 'includes/class-fauth-form.php';
