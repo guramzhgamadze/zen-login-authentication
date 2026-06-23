@@ -130,14 +130,16 @@ Only pages the plugin created that you never edited (no content, no Elementor da
 
 == Screenshots ==
 
-1. The frontend Login form with the optional "Continue with Google" button, rendered on a live theme.
-2. The frontend Registration form (username, email, and user-chosen passwords).
-3. The frontend Lost Password (password recovery) form.
-4. The frontend Reset Password form with the in-field show/hide toggle.
-5. Settings &mdash; General: login identifier, pretty URLs, AJAX submission, user-chosen passwords, honeypot, and the subscriber redirect.
-6. Settings &mdash; Rate limiting, with optional per-form thresholds.
-7. Settings &mdash; Page slugs and page management (adopt-or-create auth pages).
-8. The Sign in with Google settings panel &mdash; enable the feature, add your Client ID and Secret (stored encrypted), and choose whether new accounts are created automatically.
+1. Settings &mdash; General: login identifier, pretty URLs, AJAX submission, user-chosen passwords, honeypot, and the subscriber redirect.
+2. Settings &mdash; Sign in with Google: enable the feature, add your Client ID and Secret (stored encrypted), choose whether new accounts are created automatically, and copy the authorized redirect URI for Google Cloud Console.
+3. Settings &mdash; Widgets: enable or disable each form widget (Login, Registration, Lost Password, Reset Password, Account) for the Elementor panel and classic widget areas.
+4. Settings &mdash; Rate Limiting: global max attempts and lockout window, plus per-form enable/disable and threshold overrides for Login, Registration, Lost Password, and Reset Password.
+5. Settings &mdash; Security Hardening: block username enumeration, show generic login errors, block breached passwords via Have I Been Pwned, and disable XML-RPC.
+6. Settings &mdash; Bot Protection (Cloudflare Turnstile): enable the challenge, add your Site Key and Secret Key, and choose which forms are protected.
+7. Settings &mdash; Two-Factor Authentication and Passkeys: master switch for TOTP (users enroll from the Account page) and passkey (WebAuthn) sign-in.
+8. Settings &mdash; New-Device Login Alerts and Login Activity: configure new-device email alerts with an optional custom body, and set the activity-log retention window.
+9. Settings &mdash; Page Slugs: customise the URL slug for each auth action (Login, Logout, Register, Lost Password, Reset Pass, Account).
+10. Settings &mdash; Tools: clear the activity log and manage auth pages (view status, create missing pages, or delete auto-created pages).
 
 == Changelog ==
 

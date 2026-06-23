@@ -267,6 +267,65 @@ zen-login-authentication/
 
 ## Changelog
 
+### 2.1.1
+
+**Design & Polish**
+
+- Redesigned login, registration, and account forms: polished default card surface, refined "security blue" palette, full-width primary buttons, and an outline secondary style — all still controllable from the Elementor style panel.
+- The "Sign in with a passkey" button now has an icon and its own Normal/Hover style controls, and sits below the "or" divider alongside other sign-in options.
+- Cleaner input focus (solid border + soft ring, no floating outline) and no stray hover border on buttons.
+- The new-device alert email is now a styled, mobile-friendly HTML message with an optional admin-supplied custom body.
+- Added missing password placeholder controls on the Account widget; the Elementor editor now previews the passkey, Google, two-factor, and passkeys/sessions sections.
+
+### 2.1.0
+
+**New: Passkeys (WebAuthn)**
+
+- Users can add passkeys from the Account page and sign in with no password using Face ID, a fingerprint, Windows Hello, or a security key. Passwordless sign-ins are phishing-resistant and inherently multi-factor, skipping both the password and any two-factor step. Credentials are verified locally by the bundled lbuchs/WebAuthn library (MIT) using "none" attestation — no external request. Requires HTTPS.
+
+**New: New-device login alerts**
+
+- Emails the account owner the first time their account is signed in from an unrecognised device or browser, similar to the "new sign-in" alerts from Google or GitHub. Recognises devices with a long-lived cookie; uses your site's normal email (no external service). On by default; supports a custom HTML body.
+
+### 2.0.0
+
+**New: Two-factor authentication (TOTP)**
+
+- Opt-in per user, managed entirely from the Account page: scan a QR code (or enter the setup key) in any authenticator app, confirm a code to enable it, and save one-time recovery codes. After the password, a second-factor step is required — enforced across the plugin's forms, AJAX submissions, and `wp-login.php`. REST/XML-RPC application passwords and Google sign-in are unaffected.
+- The shared secret is stored encrypted at rest; recovery codes are stored hashed and single-use. The login challenge sets no auth cookie until the second factor verifies.
+- The enrollment QR is rendered locally by the bundled qrcode-generator library (Kazuhiko Arase, MIT) — no external request.
+
+**New: Sign out of other devices**
+
+- From the Account page, a logged-in user can end every other active session for their account in one click; the current device stays signed in.
+
+**Security**
+
+- The subscriber-redirect setting now uses `esc_url_raw()` instead of `sanitize_text_field()` to keep full URLs intact.
+
+### 1.9.0
+
+**New: Security Hardening panel**
+
+- **Username-enumeration protection** (on by default) — blocks `?author=N` author scans and the REST `/wp/v2/users` listing for logged-out visitors, and collapses login errors to one neutral message so a valid username is never confirmed. Applies to `wp-login.php` and the plugin's own forms.
+- **XML-RPC lockdown** (optional) — disables `xmlrpc.php` to close the `system.multicall` brute-force amplifier and pingback abuse.
+
+**New: Breached-password blocking (optional)**
+
+- Rejects passwords found in the Have I Been Pwned corpus at registration, password reset, and account update. Uses the k-anonymity range API — only the first 5 characters of the password's SHA-1 hash leave the site, never the password — and fails open if the service is unreachable.
+
+**New: Cloudflare Turnstile bot protection (optional)**
+
+- Privacy-friendly bot challenge on the login, registration, and lost-password forms — both the plugin's forms and `wp-login.php`. Server-side token verification; the secret key is stored encrypted at rest.
+
+### 1.8.1
+
+- Removed the one-time pre-release prefix-migration routine (it had served its purpose; all known installs are already on the current `zenlogau` prefix). No change to normal installs or updates.
+
+### 1.8.0
+
+- Internal: the plugin's PHP/option prefix is now `zenlogau` (functions, classes, constants, options, transients, user/post meta, and the activity table). A one-time migration moves existing data automatically on update, so settings, Google credentials, pages, and the activity log carry over.
+
 ### 1.7.2
 
 - Removed a read of WP Super Cache's `$file_prefix` global during the version-change cache purge. Auth pages already set `DONOTCACHEPAGE` (which WP Super Cache honours), so they are never cached and need no explicit purge.
