@@ -150,7 +150,9 @@ function zenlogau_activity_prune(): void {
     $table  = zenlogau_activity_table();
     $cutoff = gmdate( 'Y-m-d H:i:s', time() - $days * DAY_IN_SECONDS );
     // phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- retention DELETE on the plugin's own table; $table derives from $wpdb->prefix (never user input) and a DELETE cannot be cached.
-    $wpdb->query( $wpdb->prepare( "DELETE FROM {$table} WHERE created_at < %s", $cutoff ) );
+    // LIMIT keeps each opportunistic prune bounded so a large backlog can't block
+    // the DB in one query; the next write prunes the next batch.
+    $wpdb->query( $wpdb->prepare( "DELETE FROM {$table} WHERE created_at < %s LIMIT 500", $cutoff ) );
     // phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
 }
 

@@ -28,7 +28,7 @@ abstract class FormatBase {
     public function __destruct() {
         // delete X.509 chain certificate file after use
         if ($this->_x5c_tempFile && \is_file($this->_x5c_tempFile)) {
-            \unlink($this->_x5c_tempFile);
+            \wp_delete_file($this->_x5c_tempFile);
         }
     }
 

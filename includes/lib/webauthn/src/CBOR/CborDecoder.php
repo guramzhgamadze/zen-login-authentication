@@ -2,6 +2,7 @@
 
 
 namespace lbuchs\WebAuthn\CBOR;
+// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped -- vendored lbuchs/WebAuthn (MIT); thrown exception messages, caught in includes/passkeys.php, never output.
 use lbuchs\WebAuthn\WebAuthnException;
 use lbuchs\WebAuthn\Binary\ByteBuffer;
 

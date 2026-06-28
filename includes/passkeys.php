@@ -308,6 +308,10 @@ function zenlogau_passkey_ajax_login_options(): void {
     if ( ! zenlogau_passkeys_available() ) {
         wp_send_json_error( [ 'message' => __( 'Passkeys are not available.', 'zen-login-authentication' ) ], 400 );
     }
+    // Share the login throttle so a locked-out IP can't spam challenge transients.
+    if ( zenlogau_rate_limit_is_locked( 'login' ) ) {
+        wp_send_json_error( [ 'message' => __( 'Too many attempts. Please wait a few minutes and try again.', 'zen-login-authentication' ) ], 429 );
+    }
 
     try {
         // Empty allowCredentials → the browser offers any discoverable passkey.
@@ -352,6 +356,10 @@ function zenlogau_passkey_ajax_login_verify(): void {
     if ( ! zenlogau_passkeys_available() ) {
         wp_send_json_error( [ 'message' => __( 'Passkeys are not available.', 'zen-login-authentication' ) ], 400 );
     }
+    // Share the login throttle so credential-ID probing can't run unbounded.
+    if ( zenlogau_rate_limit_is_locked( 'login' ) ) {
+        wp_send_json_error( [ 'message' => __( 'Too many attempts. Please wait a few minutes and try again.', 'zen-login-authentication' ) ], 429 );
+    }
 
     $client_data = base64_decode( (string) zenlogau_get_request_value( 'clientDataJSON', 'post' ), true );
     $auth_data   = base64_decode( (string) zenlogau_get_request_value( 'authenticatorData', 'post' ), true );
@@ -378,30 +386,35 @@ function zenlogau_passkey_ajax_login_verify(): void {
     $user_id = is_string( $user_handle ) ? absint( $user_handle ) : 0;
     $user    = $user_id ? get_user_by( 'id', $user_id ) : false;
     if ( ! $user instanceof WP_User ) {
+        zenlogau_rate_limit_bump( 'login' );
         wp_send_json_error( $generic, 400 );
     }
 
     $passkeys = zenlogau_get_passkeys( $user->ID );
     $cred_key = zenlogau_b64url_encode( $raw_id );
     if ( ! isset( $passkeys[ $cred_key ]['key'] ) ) {
+        zenlogau_rate_limit_bump( 'login' );
         wp_send_json_error( $generic, 400 );
     }
 
     $webauthn = zenlogau_passkey_webauthn();
+    // Pass the stored counter so a regression (a sign a hardware authenticator
+    // was cloned) is caught. Synced passkeys legitimately keep the counter at 0
+    // and never increment, so skip the check (null) only when stored counter is 0.
+    $prev_counter = (int) ( $passkeys[ $cred_key ]['counter'] ?? 0 );
     try {
-        // prevSignatureCnt = null: synced passkeys legitimately keep the counter
-        // at zero / do not increment, so the regression check is skipped.
         $webauthn->processGet(
             $client_data,
             $auth_data,
             $signature,
             (string) $passkeys[ $cred_key ]['key'],
             $challenge,
-            null,
+            $prev_counter > 0 ? $prev_counter : null,
             false, // require user verification
             true   // require user present
         );
     } catch ( \Throwable $e ) {
+        zenlogau_rate_limit_bump( 'login' );
         wp_send_json_error( $generic, 400 );
     }
 

@@ -4,7 +4,7 @@ Tags: login, registration, authentication, elementor, frontend
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 2.1.2
+Stable tag: 2.1.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -147,6 +147,15 @@ Only pages the plugin created that you never edited (no content, no Elementor da
 
 == Changelog ==
 
+= 2.1.3 =
+* Security hardening (post-audit): turning OFF two-factor authentication now requires a current authenticator or recovery code, and TOTP codes can no longer be replayed within their validity window.
+* Auto-login after registration now fires the standard login hook, so new-device alerts and the activity log capture it.
+* Passkey sign-in is now rate-limited and validates the authenticator signature counter (clone detection for hardware security keys).
+* Changing your email address or password on the Account page now requires your current password (filterable for sites whose users sign in only with Google or passkeys).
+* Added GDPR personal-data export and erasure support (Tools &rarr; Export/Erase Personal Data) covering devices, passkeys, two-factor, and Google links.
+* Bundled WebAuthn library: added direct-access protection and switched to WordPress HTTP/filesystem/URL helpers.
+* Uninstall now also clears the plugin's transients.
+
 = 2.1.2 =
 * Security/hardening: every Elementor editor-preview template now escapes interpolated field values (titles, labels, button/link text, passkey and Google button text). The editor preview previously used raw interpolation, which could render unescaped HTML inside the builder.
 * The Google sign-in button preview is now built entirely from escaped, literal markup — removing a misleading "escaped during construction" suppression flagged in review.
@@ -246,6 +255,9 @@ Only pages the plugin created that you never edited (no content, no Elementor da
 Older versions: see the project's CHANGELOG / README on the plugin homepage.
 
 == Upgrade Notice ==
+
+= 2.1.3 =
+Security hardening from a full audit: 2FA-disable re-authentication, TOTP replay protection, passkey rate-limiting, account-change re-auth, and GDPR export/erasure. Recommended for everyone.
 
 = 2.1.2 =
 Security/review hardening: all Elementor editor-preview output is now properly escaped. No functional changes — recommended for everyone.

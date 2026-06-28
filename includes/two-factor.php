@@ -82,6 +82,7 @@ function zenlogau_2fa_disable_user( int $user_id ): void {
     delete_user_meta( $user_id, 'zenlogau_2fa_pending_secret' );
     delete_user_meta( $user_id, 'zenlogau_2fa_enabled' );
     delete_user_meta( $user_id, 'zenlogau_2fa_recovery' );
+    delete_user_meta( $user_id, 'zenlogau_2fa_last_step' );
     do_action( 'zenlogau_2fa_disabled', $user_id );
 }
 
@@ -138,10 +139,37 @@ function zenlogau_2fa_consume_recovery_code( int $user_id, string $code ): bool 
 function zenlogau_2fa_verify_input( int $user_id, string $input ): bool {
     $input  = trim( $input );
     $secret = zenlogau_2fa_get_secret( $user_id );
-    if ( '' !== $secret && zenlogau_totp_verify( $secret, $input ) ) {
+    if ( '' !== $secret && zenlogau_2fa_totp_verify_no_replay( $user_id, $secret, $input ) ) {
         return true;
     }
     return zenlogau_2fa_consume_recovery_code( $user_id, $input );
+}
+
+/**
+ * Verify a TOTP code AND prevent replay: each time-step can be used only once.
+ * The last accepted step is stored per user; a code at or before it is rejected
+ * even while still inside the ±1 clock-skew window (RFC 6238 §5.2). The pure
+ * window logic lives here (not in totp.php) so totp.php stays WordPress-free.
+ */
+function zenlogau_2fa_totp_verify_no_replay( int $user_id, string $secret, string $code, int $window = 1 ): bool {
+    $code = (string) preg_replace( '/\D/', '', $code );
+    if ( strlen( $code ) !== ZENLOGAU_TOTP_DIGITS ) {
+        return false;
+    }
+    $current_step = intdiv( time(), ZENLOGAU_TOTP_PERIOD );
+    $last_step    = (int) get_user_meta( $user_id, 'zenlogau_2fa_last_step', true );
+    for ( $i = -$window; $i <= $window; $i++ ) {
+        $step = $current_step + $i;
+        if ( $step <= $last_step ) {
+            continue; // already consumed — reject the replay
+        }
+        $candidate = zenlogau_totp_code( $secret, $step * ZENLOGAU_TOTP_PERIOD );
+        if ( hash_equals( $candidate, $code ) ) {
+            update_user_meta( $user_id, 'zenlogau_2fa_last_step', $step );
+            return true;
+        }
+    }
+    return false;
 }
 
 /* -----------------------------------------------------------------------
@@ -188,6 +216,7 @@ function zenlogau_2fa_authenticate_guard( $user, $username, $password ) {
     // are designed to bypass interactive 2FA, and cron/CLI have no second factor.
     if ( ( defined( 'REST_REQUEST' ) && REST_REQUEST )
         || ( defined( 'XMLRPC_REQUEST' ) && XMLRPC_REQUEST )
+        || did_action( 'application_password_did_authenticate' )
         || wp_doing_cron()
         || ( defined( 'WP_CLI' ) && WP_CLI ) ) {
         return $user;
@@ -378,7 +407,7 @@ function zenlogau_2fa_account_redirect( array $args = [] ): void {
     if ( '' === $base ) {
         $base = zenlogau_get_action_url( 'account' );
     }
-    $base = remove_query_arg( [ 'zenlogau_2fa_activated', 'zenlogau_2fa_disabled', 'zenlogau_2fa_setup_error', 'zenlogau_2fa_codes' ], $base );
+    $base = remove_query_arg( [ 'zenlogau_2fa_activated', 'zenlogau_2fa_disabled', 'zenlogau_2fa_setup_error', 'zenlogau_2fa_disable_error', 'zenlogau_2fa_codes' ], $base );
     wp_safe_redirect( $args ? add_query_arg( $args, $base ) : $base );
     exit;
 }
@@ -417,7 +446,15 @@ function zenlogau_2fa_handle_activate(): void {
 }
 
 function zenlogau_2fa_handle_disable(): void {
-    zenlogau_2fa_disable_user( get_current_user_id() );
+    $uid = get_current_user_id();
+    // Require a current authenticator (or recovery) code before turning 2FA off,
+    // so a valid nonce alone — e.g. on a briefly unlocked browser — cannot
+    // disable the account's second factor.
+    $code = (string) zenlogau_get_request_value( 'zenlogau_2fa_code', 'post' );
+    if ( '' === $code || ! zenlogau_2fa_verify_input( $uid, $code ) ) {
+        zenlogau_2fa_account_redirect( [ 'zenlogau_2fa_disable_error' => '1' ] );
+    }
+    zenlogau_2fa_disable_user( $uid );
     zenlogau_2fa_account_redirect( [ 'zenlogau_2fa_disabled' => '1' ] );
 }
 
@@ -518,6 +555,12 @@ function zenlogau_2fa_render_enrolling_state( int $uid ): void {
 function zenlogau_2fa_render_enabled_state( int $uid ): void {
     echo '<p class="fauth-2fa-status fauth-2fa-on">' . esc_html__( 'Two-factor authentication is ON for your account.', 'zen-login-authentication' ) . '</p>';
 
+    if ( '' !== (string) zenlogau_get_request_value( 'zenlogau_2fa_disable_error', 'get' ) ) {
+        echo '<ul class="fauth-errors" role="alert"><li class="fauth-error">'
+            . esc_html__( 'That code was not correct, so two-factor authentication is still on. Please try again.', 'zen-login-authentication' )
+            . '</li></ul>';
+    }
+
     // Show freshly generated recovery codes once (after activation or regen).
     $codes = get_transient( 'zenlogau_2fa_codes_' . $uid );
     if ( is_array( $codes ) && $codes ) {
@@ -555,10 +598,15 @@ function zenlogau_2fa_render_enabled_state( int $uid ): void {
     echo '<p class="fauth-submit"><button type="submit" class="fauth-button fauth-submit-button fauth-button-secondary">' . esc_html__( 'Regenerate recovery codes', 'zen-login-authentication' ) . '</button></p>';
     echo '</form>';
 
-    echo '<form method="post" action="" class="fauth-2fa-cancel" onsubmit="return confirm(\'' . esc_js( __( 'Turn off two-factor authentication for your account?', 'zen-login-authentication' ) ) . '\');">';
+    echo '<form method="post" action="" class="fauth-2fa-disable-form">';
     wp_nonce_field( 'zenlogau_2fa_disable', 'zenlogau_2fa_nonce', false );
     echo '<input type="hidden" name="zenlogau_2fa_action" value="disable">';
-    echo '<button type="submit" class="fauth-link-button fauth-2fa-disable">' . esc_html__( 'Turn off two-factor authentication', 'zen-login-authentication' ) . '</button>';
+    echo '<p class="fauth-field-wrap">';
+    echo '<label class="fauth-label" for="zenlogau-2fa-disable-code">' . esc_html__( 'Enter a current code to turn off two-factor authentication', 'zen-login-authentication' ) . '</label>';
+    echo '<input type="text" id="zenlogau-2fa-disable-code" name="zenlogau_2fa_code" class="fauth-field" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9A-Za-z\-]*" required>';
+    echo '<span class="fauth-description">' . esc_html__( 'Use your authenticator code, or a recovery code if you have lost your device.', 'zen-login-authentication' ) . '</span>';
+    echo '</p>';
+    echo '<p class="fauth-submit"><button type="submit" class="fauth-link-button fauth-2fa-disable">' . esc_html__( 'Turn off two-factor authentication', 'zen-login-authentication' ) . '</button></p>';
     echo '</form>';
 
     echo '</div>';

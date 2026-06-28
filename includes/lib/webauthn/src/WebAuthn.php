@@ -2,6 +2,14 @@
 
 namespace lbuchs\WebAuthn;
 use lbuchs\WebAuthn\Binary\ByteBuffer;
+
+if ( ! defined( 'ABSPATH' ) ) { exit; } // Prevent direct access (WordPress).
+
+// Vendored lbuchs/WebAuthn (MIT). The ExceptionNotEscaped notices below are false
+// positives: these are thrown exception messages, not page output, and every
+// WebAuthn exception is caught in includes/passkeys.php — none ever reaches output.
+// phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped
+
 require_once 'WebAuthnException.php';
 require_once 'Binary/ByteBuffer.php';
 require_once 'Attestation/AttestationObject.php';
@@ -533,18 +541,13 @@ class WebAuthn {
      */
     public function queryFidoMetaDataService($certFolder, $deleteCerts=true) {
         $url = 'https://mds.fidoalliance.org/';
-        $raw = null;
-        if (\function_exists('curl_init')) {
-            $ch = \curl_init($url);
-            \curl_setopt($ch, CURLOPT_HEADER, false);
-            \curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            \curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-            \curl_setopt($ch, CURLOPT_USERAGENT, 'github.com/lbuchs/WebAuthn - A simple PHP WebAuthn server library');
-            $raw = \curl_exec($ch);
-            \curl_close($ch);
-        } else {
-            $raw = \file_get_contents($url);
-        }
+        // Use the WordPress HTTP API instead of raw cURL (this MDS path is only
+        // reached for full attestation; the plugin uses 'none', so it is unused).
+        $response = \wp_remote_get($url, array(
+            'timeout'    => 15,
+            'user-agent' => 'github.com/lbuchs/WebAuthn - A simple PHP WebAuthn server library',
+        ));
+        $raw = \is_wp_error($response) ? null : \wp_remote_retrieve_body($response);
 
         $certFolder = \rtrim(\realpath($certFolder), '\\/');
         if (!is_dir($certFolder)) {
@@ -563,9 +566,7 @@ class WebAuthn {
         if ($deleteCerts) {
             foreach (\scandir($certFolder) as $ca) {
                 if (\substr($ca, -4) === '.pem') {
-                    if (\unlink($certFolder . DIRECTORY_SEPARATOR . $ca) === false) {
-                        throw new WebAuthnException('Cannot delete certs in folder for FIDO Alliance Metadata Service');
-                    }
+                    \wp_delete_file($certFolder . DIRECTORY_SEPARATOR . $ca);
                 }
             }
         }
@@ -628,12 +629,12 @@ class WebAuthn {
         // https://www.w3.org/TR/webauthn/#rp-id
 
         // The origin's scheme must be https
-        if ($this->_rpId !== 'localhost' && \parse_url($origin, PHP_URL_SCHEME) !== 'https') {
+        if ($this->_rpId !== 'localhost' && \wp_parse_url($origin, PHP_URL_SCHEME) !== 'https') {
             return false;
         }
 
         // extract host from origin
-        $host = \parse_url($origin, PHP_URL_HOST);
+        $host = \wp_parse_url($origin, PHP_URL_HOST);
         $host = \trim($host, '.');
 
         // The RP ID must be equal to the origin's effective domain, or a registrable

@@ -331,6 +331,18 @@ function zenlogau_register_account_form(): void {
         'priority' => 35,
     ] );
 
+    // Re-authentication for sensitive changes. Only consulted server-side when
+    // the email or password is actually changing (see zenlogau_handle_account);
+    // left blank otherwise, so name-only edits don't require it.
+    $form->add_field( 'current_password', [
+        'type'        => 'password',
+        'label'       => __( 'Current Password', 'zen-login-authentication' ),
+        'id'          => 'current_password',
+        'attrs'       => [ 'autocomplete' => 'current-password' ],
+        'priority'    => 37,
+        'description' => __( 'Required only to change your email address or password.', 'zen-login-authentication' ),
+    ] );
+
     $form->add_field( 'account_form_hook', [
         'type'     => 'action',
         'priority' => 38,

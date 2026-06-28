@@ -136,7 +136,7 @@ function zenlogau_uninstall_site( array $options, array $page_actions ): void {
     delete_metadata( 'user', 0, 'zenlogau_google_sub', '', true );
 
     // Two-factor authentication per-user data (v2.0.0).
-    foreach ( [ 'zenlogau_2fa_secret', 'zenlogau_2fa_pending_secret', 'zenlogau_2fa_enabled', 'zenlogau_2fa_recovery' ] as $zenlogau_2fa_meta ) {
+    foreach ( [ 'zenlogau_2fa_secret', 'zenlogau_2fa_pending_secret', 'zenlogau_2fa_enabled', 'zenlogau_2fa_recovery', 'zenlogau_2fa_last_step' ] as $zenlogau_2fa_meta ) {
         delete_metadata( 'user', 0, $zenlogau_2fa_meta, '', true );
     }
 
@@ -145,6 +145,19 @@ function zenlogau_uninstall_site( array $options, array $page_actions ): void {
 
     // Registered passkeys / WebAuthn credentials (v2.1.0).
     delete_metadata( 'user', 0, 'zenlogau_passkeys', '', true );
+
+    // Active plugin transients (rate-limit buckets + their _ts companions,
+    // OAuth/2FA/passkey challenges, breached-password cache). No core API does
+    // prefix-based transient deletion; most are short-lived, but a clean
+    // uninstall should remove them. Object-cache transients aren't stored in
+    // the options table and expire on their own.
+    // phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- uninstall-time LIKE cleanup of the plugin's own transients; no core API exists.
+    $wpdb->query(
+        "DELETE FROM {$wpdb->options}
+         WHERE option_name LIKE '\\_transient\\_zenlogau\\_%'
+            OR option_name LIKE '\\_transient\\_timeout\\_zenlogau\\_%'"
+    );
+    // phpcs:enable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
     // Legacy pre-release "wpfa" prefix leftovers, for installs that never ran
     // the wpfa -> fauth migration before being uninstalled.

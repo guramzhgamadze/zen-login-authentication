@@ -267,6 +267,17 @@ zen-login-authentication/
 
 ## Changelog
 
+### 2.1.3
+
+**Security hardening (post-audit)**
+
+- Turning off two-factor authentication now requires a current authenticator or recovery code; TOTP codes can no longer be replayed within their validity window.
+- Auto-login after registration now fires the standard `wp_login` hook, so new-device alerts and the activity log capture it.
+- Passkey sign-in is rate-limited and validates the authenticator signature counter (clone detection for hardware keys).
+- Changing the email address or password on the Account page now requires the current password (filterable for Google/passkey-only sites).
+- Added GDPR personal-data export and erasure (devices, passkeys, two-factor, Google link).
+- Bundled WebAuthn library hardened (direct-access guard + WordPress HTTP/filesystem/URL helpers); uninstall now clears plugin transients.
+
 ### 2.1.2
 
 **Security & Review Hardening**

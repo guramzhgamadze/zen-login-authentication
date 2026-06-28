@@ -351,7 +351,14 @@ function zenlogau_handle_register(): void {
 
     if ( zenlogau_allow_auto_login() ) {
         wp_set_auth_cookie( $new_user_id );
-        $new_user    = get_user_by( 'id', $new_user_id );
+        $new_user = get_user_by( 'id', $new_user_id );
+        if ( $new_user instanceof WP_User ) {
+            wp_set_current_user( $new_user_id );
+            // Fire the standard login hook so integrations, the activity log, and
+            // the new-device alert see this auto-login — every other login path
+            // fires it, and without it those features silently miss registrations.
+            do_action( 'wp_login', $new_user->user_login, $new_user ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- firing WordPress core's own wp_login hook.
+        }
         $redirect_to = $new_user instanceof WP_User
             ? zenlogau_resolve_login_redirect( $new_user, (string) zenlogau_get_request_value( 'redirect_to' ) )
             : home_url();
@@ -590,6 +597,21 @@ function zenlogau_handle_account(): void {
             $errors->add( 'password_too_short', __( 'Password must be at least 8 characters.', 'zen-login-authentication' ) );
         } elseif ( zenlogau_password_is_breached( $pass1 ) ) {
             $errors->add( 'breached_password', zenlogau_breached_password_error_message() );
+        }
+    }
+
+    // Re-authenticate sensitive changes (email or password). A public-facing
+    // account form is more exposed than wp-admin (e.g. a briefly unlocked
+    // browser), so changing the email or password requires the current password
+    // — closing the "change email → password-reset → takeover" path. Filterable
+    // off for sites whose users sign in only via Google/passkeys and may not
+    // know a password. (wp_update_user() also emails the OLD address on change.)
+    $email_changed   = ( '' !== $user_email && is_email( $user_email ) && $user_email !== $user->user_email );
+    $require_current = (bool) apply_filters( 'zenlogau_account_require_current_password', true, $user );
+    if ( $require_current && ( $change_password || $email_changed ) ) {
+        $current_password = (string) zenlogau_get_request_value( 'current_password', 'post' );
+        if ( '' === $current_password || ! wp_check_password( $current_password, $user->user_pass, $user->ID ) ) {
+            $errors->add( 'current_password', __( 'Please enter your current password to change your email address or password.', 'zen-login-authentication' ) );
         }
     }
 

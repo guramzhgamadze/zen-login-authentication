@@ -46,7 +46,10 @@ function zenlogau_is_get_request(): bool {
 }
 
 function zenlogau_is_ajax_request(): bool {
-    return (bool) zenlogau_get_request_value( 'zenlogau_ajax' );
+    // AJAX submissions are always POST; gate on the method so a forged GET with
+    // ?zenlogau_ajax=1 cannot coax a JSON response out of an HTML form path.
+    return zenlogau_is_post_request()
+        && '' !== (string) zenlogau_get_request_value( 'zenlogau_ajax', 'post' );
 }
 
 /* -----------------------------------------------------------------------
