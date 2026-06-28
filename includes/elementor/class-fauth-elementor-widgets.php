@@ -24,7 +24,7 @@
  *
  *
  * Audit-2 fixes (v1.4.8):
- *  A  Triple-brace {{{ }}} in placeholder HTML attributes → double-brace {{ }}
+ *  A  Triple-brace in placeholder HTML attributes → escaped double-brace
  *  B  render_editor_placeholder() inline styles → CSS class
  *  C  class_exists() double-escaped backslash corrected
  *  D  bindPasswordToggle() + bindPasswordStrength() wired to element_ready lifecycle
@@ -39,6 +39,18 @@
  *  M  Password strength meter: full style section (typography + 4-state colours)
  *  N  toggle_margin_top removed; replaced with toggle_gap targeting flex gap
  *  O  h_placeholders, h_toggle renamed to zenlogau_h_* to avoid cross-widget ID collision
+ *
+ * Audit-3 fixes (v2.1.2) — wp.org "escape on output" review:
+ *  P  EVERY Backbone interpolation of a user setting in all content_template()
+ *     previews switched from raw triple-brace to escaped double-brace {{ }}
+ *     (form title text + tag, field labels, button/link/toggle text, passkey +
+ *     Google button text, invalid-key message). Raw triple-brace emitted
+ *     unescaped HTML into the editor preview — an editor-context XSS vector.
+ *  Q  google_button_content_template() now echoes internally from string
+ *     literals + esc_html__() (previously `echo $this->method()` behind a
+ *     misleading "escaped during construction" phpcs:ignore). Editor-preview
+ *     icons are static inline SVG literals (viewBox is case-sensitive, so
+ *     wp_kses() is unsuitable), leaving no OutputNotEscaped suppression here.
  *
  * @package Frontend_Auth
  */
@@ -602,12 +614,16 @@ abstract class ZENLOGAU_Elementor_Base_Widget extends \Elementor\Widget_Base {
      * Editor-preview markup for the Google button (Backbone template fragment).
      * Mirrors zenlogau_google_button_html(); shown whenever the widget toggle is on.
      */
-    protected function google_button_content_template(): string {
-        $svg = function_exists( 'zenlogau_google_button_svg' ) ? zenlogau_google_button_svg() : '';
-        return '<# if ( "yes" === settings.show_google_button ) { #>'
+    protected function google_button_content_template(): void {
+        // Editor-preview only. Built entirely from literals + esc_html__(); the
+        // Google "G" mark is a static inline SVG literal (kept here rather than via
+        // a returned variable so output stays literal and needs no escaping wrapper,
+        // and so the case-sensitive viewBox survives — wp_kses() lowercases it).
+        echo '<# if ( "yes" === settings.show_google_button ) { #>'
             . '<div class="fauth-sso"><div class="fauth-sso-divider"><span>' . esc_html__( 'or', 'zen-login-authentication' ) . '</span></div>'
-            . '<a class="fauth-google-btn" href="#" onclick="return false;">' . $svg
-            . '<span><# if(settings.google_button_text){#>{{{settings.google_button_text}}}<#}else{#>' . esc_html__( 'Continue with Google', 'zen-login-authentication' ) . '<#}#></span></a></div>'
+            . '<a class="fauth-google-btn" href="#" onclick="return false;">'
+            . '<svg class="fauth-google-icon" width="18" height="18" viewBox="0 0 18 18" aria-hidden="true" focusable="false"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92a8.78 8.78 0 0 0 2.68-6.62z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.8.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.03-3.71H.96v2.33A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.97 10.71A5.41 5.41 0 0 1 3.68 9c0-.59.1-1.17.28-1.71V4.96H.96A9 9 0 0 0 0 9c0 1.45.35 2.83.96 4.04l3.01-2.33z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.59A9 9 0 0 0 .96 4.96l3.01 2.33C4.68 5.16 6.66 3.58 9 3.58z"/></svg>'
+            . '<span><# if(settings.google_button_text){#>{{settings.google_button_text}}<#}else{#>' . esc_html__( 'Continue with Google', 'zen-login-authentication' ) . '<#}#></span></a></div>'
             . '<# } #>';
     }
 
@@ -1080,25 +1096,26 @@ class ZENLOGAU_Elementor_Login_Widget extends ZENLOGAU_Elementor_Base_Widget {
     protected function content_template(): void {
         echo '<div class="fauth-form-wrap">';
         echo '<# var tag = settings.form_title_tag || "h3"; if ( settings.form_title_text ) { #>';
-        echo '<{{{ tag }}} class="fauth-form-title">{{{ settings.form_title_text }}}</{{{ tag }}}>';
+        echo '<{{ tag }} class="fauth-form-title">{{ settings.form_title_text }}</{{ tag }}>';
         echo '<# } #>';
         echo '<div class="fauth fauth-form fauth-form-login"><div class="fauth-inner-form">';
-        echo '<p class="fauth-field-wrap"><label class="fauth-label"><# if(settings.label_username){#>{{{settings.label_username}}}<#}else{#>' . esc_html__( 'Username or Email', 'zen-login-authentication' ) . '<#}#></label><input type="text" class="fauth-field" placeholder="<# if(settings.placeholder_username){#>{{settings.placeholder_username}}<#}#>" disabled></p>';
-        echo '<p class="fauth-field-wrap fauth-field-wrap--password"><label class="fauth-label"><# if(settings.label_password){#>{{{settings.label_password}}}<#}else{#>' . esc_html__( 'Password', 'zen-login-authentication' ) . '<#}#></label><input type="password" class="fauth-field" placeholder="<# if(settings.placeholder_password){#>{{settings.placeholder_password}}<#}#>" disabled><button type="button" class="fauth-password-toggle"><# if(settings.toggle_show_text){#>{{{settings.toggle_show_text}}}<#}else{#>' . esc_html__( 'Show', 'zen-login-authentication' ) . '<#}#></button></p>';
-        echo '<p class="fauth-submit"><button type="button" class="fauth-button fauth-submit-button"><# if(settings.button_text){#>{{{settings.button_text}}}<#}else{#>' . esc_html__( 'Log In', 'zen-login-authentication' ) . '<#}#></button></p>';
+        echo '<p class="fauth-field-wrap"><label class="fauth-label"><# if(settings.label_username){#>{{settings.label_username}}<#}else{#>' . esc_html__( 'Username or Email', 'zen-login-authentication' ) . '<#}#></label><input type="text" class="fauth-field" placeholder="<# if(settings.placeholder_username){#>{{settings.placeholder_username}}<#}#>" disabled></p>';
+        echo '<p class="fauth-field-wrap fauth-field-wrap--password"><label class="fauth-label"><# if(settings.label_password){#>{{settings.label_password}}<#}else{#>' . esc_html__( 'Password', 'zen-login-authentication' ) . '<#}#></label><input type="password" class="fauth-field" placeholder="<# if(settings.placeholder_password){#>{{settings.placeholder_password}}<#}#>" disabled><button type="button" class="fauth-password-toggle"><# if(settings.toggle_show_text){#>{{settings.toggle_show_text}}<#}else{#>' . esc_html__( 'Show', 'zen-login-authentication' ) . '<#}#></button></p>';
+        echo '<p class="fauth-submit"><button type="button" class="fauth-button fauth-submit-button"><# if(settings.button_text){#>{{settings.button_text}}<#}else{#>' . esc_html__( 'Log In', 'zen-login-authentication' ) . '<#}#></button></p>';
         echo '</div>';
         echo '<# if ( "yes" === settings.show_links ) { #>';
-        echo '<p class="fauth-links"><a href="#"><# if(settings.link_register_text){#>{{{settings.link_register_text}}}<#}else{#>' . esc_html__( 'Register', 'zen-login-authentication' ) . '<#}#></a> &bull; <a href="#"><# if(settings.link_lostpw_text){#>{{{settings.link_lostpw_text}}}<#}else{#>' . esc_html__( 'Lost your password?', 'zen-login-authentication' ) . '<#}#></a></p>';
+        echo '<p class="fauth-links"><a href="#"><# if(settings.link_register_text){#>{{settings.link_register_text}}<#}else{#>' . esc_html__( 'Register', 'zen-login-authentication' ) . '<#}#></a> &bull; <a href="#"><# if(settings.link_lostpw_text){#>{{settings.link_lostpw_text}}<#}else{#>' . esc_html__( 'Lost your password?', 'zen-login-authentication' ) . '<#}#></a></p>';
         echo '<# } #></div>';
         // Editor preview of the alternative sign-in buttons. The front end injects
         // these via hooks that don't run in the JS preview, so they're mirrored
         // here (order: divider -> passkey -> Google) so they render and can be styled.
-        $svg = function_exists( 'zenlogau_google_button_svg' ) ? zenlogau_google_button_svg() : '';
+        // Icons are static inline SVG literals (not variables) so the echoed
+        // string stays fully literal — no escaping wrapper needed, and the
+        // case-sensitive viewBox is preserved (wp_kses() would lowercase it).
         echo '<div class="fauth-sso-divider" aria-hidden="true"><span>' . esc_html__( 'or', 'zen-login-authentication' ) . '</span></div>';
-        $pk_icon = function_exists( 'zenlogau_passkey_icon_svg' ) ? zenlogau_passkey_icon_svg() : '';
-        echo '<div class="fauth fauth-passkey-login"><button type="button" class="fauth-button fauth-button-secondary fauth-passkey-signin">' . $pk_icon . '<span><# if(settings.passkey_button_text){#>{{{settings.passkey_button_text}}}<#}else{#>' . esc_html__( 'Sign in with a passkey', 'zen-login-authentication' ) . '<#}#></span></button></div>';
+        echo '<div class="fauth fauth-passkey-login"><button type="button" class="fauth-button fauth-button-secondary fauth-passkey-signin"><svg class="fauth-passkey-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18.9 7a8 8 0 0 1 1.1 5v1a6 6 0 0 0 .8 3"/><path d="M8 11a4 4 0 0 1 8 0v1a10 10 0 0 0 2 6"/><path d="M12 11v2a14 14 0 0 0 2.5 8"/><path d="M8 15a18 18 0 0 0 1.8 6"/><path d="M4.9 19a22 22 0 0 1 -.9 -7v-1a8 8 0 0 1 12 -6.95"/></svg><span><# if(settings.passkey_button_text){#>{{settings.passkey_button_text}}<#}else{#>' . esc_html__( 'Sign in with a passkey', 'zen-login-authentication' ) . '<#}#></span></button></div>';
         echo '<# if ( "yes" === settings.show_google_button ) { #>';
-        echo '<div class="fauth-sso"><a class="fauth-google-btn" href="#" onclick="return false;">' . $svg . '<span><# if(settings.google_button_text){#>{{{settings.google_button_text}}}<#}else{#>' . esc_html__( 'Continue with Google', 'zen-login-authentication' ) . '<#}#></span></a></div>';
+        echo '<div class="fauth-sso"><a class="fauth-google-btn" href="#" onclick="return false;"><svg class="fauth-google-icon" width="18" height="18" viewBox="0 0 18 18" aria-hidden="true" focusable="false"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92a8.78 8.78 0 0 0 2.68-6.62z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.8.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.03-3.71H.96v2.33A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.97 10.71A5.41 5.41 0 0 1 3.68 9c0-.59.1-1.17.28-1.71V4.96H.96A9 9 0 0 0 0 9c0 1.45.35 2.83.96 4.04l3.01-2.33z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.59A9 9 0 0 0 .96 4.96l3.01 2.33C4.68 5.16 6.66 3.58 9 3.58z"/></svg><span><# if(settings.google_button_text){#>{{settings.google_button_text}}<#}else{#>' . esc_html__( 'Continue with Google', 'zen-login-authentication' ) . '<#}#></span></a></div>';
         echo '<# } #>';
         echo '</div><!-- /.fauth-form-wrap -->';
     }
@@ -1210,16 +1227,16 @@ class ZENLOGAU_Elementor_Register_Widget extends ZENLOGAU_Elementor_Base_Widget 
 
     protected function content_template(): void {
         echo '<div class="fauth-form-wrap">';
-        echo '<# var tag = settings.form_title_tag || "h3"; if ( settings.form_title_text ) { #><{{{ tag }}} class="fauth-form-title">{{{ settings.form_title_text }}}</{{{ tag }}}><# } #>';
+        echo '<# var tag = settings.form_title_tag || "h3"; if ( settings.form_title_text ) { #><{{ tag }} class="fauth-form-title">{{ settings.form_title_text }}</{{ tag }}><# } #>';
         echo '<div class="fauth fauth-form fauth-form-register"><div class="fauth-inner-form">';
-        echo '<p class="fauth-field-wrap"><label class="fauth-label"><# if(settings.label_username){#>{{{settings.label_username}}}<#}else{#>' . esc_html__('Username','zen-login-authentication') . '<#}#></label><input type="text" class="fauth-field" placeholder="<# if(settings.placeholder_username){#>{{settings.placeholder_username}}<#}#>" disabled></p>';
-        echo '<p class="fauth-field-wrap"><label class="fauth-label"><# if(settings.label_email){#>{{{settings.label_email}}}<#}else{#>' . esc_html__('Email Address','zen-login-authentication') . '<#}#></label><input type="email" class="fauth-field" placeholder="<# if(settings.placeholder_email){#>{{settings.placeholder_email}}<#}#>" disabled></p>';
+        echo '<p class="fauth-field-wrap"><label class="fauth-label"><# if(settings.label_username){#>{{settings.label_username}}<#}else{#>' . esc_html__('Username','zen-login-authentication') . '<#}#></label><input type="text" class="fauth-field" placeholder="<# if(settings.placeholder_username){#>{{settings.placeholder_username}}<#}#>" disabled></p>';
+        echo '<p class="fauth-field-wrap"><label class="fauth-label"><# if(settings.label_email){#>{{settings.label_email}}<#}else{#>' . esc_html__('Email Address','zen-login-authentication') . '<#}#></label><input type="email" class="fauth-field" placeholder="<# if(settings.placeholder_email){#>{{settings.placeholder_email}}<#}#>" disabled></p>';
         // Fix #1 — password fields + toggle button previews
-        echo '<p class="fauth-field-wrap fauth-field-wrap--password"><label class="fauth-label"><# if(settings.label_password){#>{{{settings.label_password}}}<#}else{#>' . esc_html__('Password','zen-login-authentication') . '<#}#> <span class="fauth-required">*</span></label><input type="password" class="fauth-field" placeholder="<# if(settings.placeholder_password){#>{{settings.placeholder_password}}<#}#>" disabled><button type="button" class="fauth-password-toggle"><# if(settings.toggle_show_text){#>{{{settings.toggle_show_text}}}<#}else{#>' . esc_html__('Show','zen-login-authentication') . '<#}#></button></p>';
-        echo '<p class="fauth-field-wrap fauth-field-wrap--password"><label class="fauth-label"><# if(settings.label_confirm_pw){#>{{{settings.label_confirm_pw}}}<#}else{#>' . esc_html__('Confirm Password','zen-login-authentication') . '<#}#> <span class="fauth-required">*</span></label><input type="password" class="fauth-field" placeholder="<# if(settings.placeholder_confirm_pw){#>{{settings.placeholder_confirm_pw}}<#}#>" disabled><button type="button" class="fauth-password-toggle"><# if(settings.toggle_show_text){#>{{{settings.toggle_show_text}}}<#}else{#>' . esc_html__('Show','zen-login-authentication') . '<#}#></button></p>';
-        echo '<p class="fauth-submit"><button type="button" class="fauth-button fauth-submit-button"><# if(settings.button_text){#>{{{settings.button_text}}}<#}else{#>' . esc_html__('Register','zen-login-authentication') . '<#}#></button></p>';
-        echo '</div><# if("yes"===settings.show_links){#><p class="fauth-links"><a href="#"><# if(settings.link_login_text){#>{{{settings.link_login_text}}}<#}else{#>' . esc_html__('Log In','zen-login-authentication') . '<#}#></a></p><#}#></div>';
-        echo $this->google_button_content_template(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped during construction
+        echo '<p class="fauth-field-wrap fauth-field-wrap--password"><label class="fauth-label"><# if(settings.label_password){#>{{settings.label_password}}<#}else{#>' . esc_html__('Password','zen-login-authentication') . '<#}#> <span class="fauth-required">*</span></label><input type="password" class="fauth-field" placeholder="<# if(settings.placeholder_password){#>{{settings.placeholder_password}}<#}#>" disabled><button type="button" class="fauth-password-toggle"><# if(settings.toggle_show_text){#>{{settings.toggle_show_text}}<#}else{#>' . esc_html__('Show','zen-login-authentication') . '<#}#></button></p>';
+        echo '<p class="fauth-field-wrap fauth-field-wrap--password"><label class="fauth-label"><# if(settings.label_confirm_pw){#>{{settings.label_confirm_pw}}<#}else{#>' . esc_html__('Confirm Password','zen-login-authentication') . '<#}#> <span class="fauth-required">*</span></label><input type="password" class="fauth-field" placeholder="<# if(settings.placeholder_confirm_pw){#>{{settings.placeholder_confirm_pw}}<#}#>" disabled><button type="button" class="fauth-password-toggle"><# if(settings.toggle_show_text){#>{{settings.toggle_show_text}}<#}else{#>' . esc_html__('Show','zen-login-authentication') . '<#}#></button></p>';
+        echo '<p class="fauth-submit"><button type="button" class="fauth-button fauth-submit-button"><# if(settings.button_text){#>{{settings.button_text}}<#}else{#>' . esc_html__('Register','zen-login-authentication') . '<#}#></button></p>';
+        echo '</div><# if("yes"===settings.show_links){#><p class="fauth-links"><a href="#"><# if(settings.link_login_text){#>{{settings.link_login_text}}<#}else{#>' . esc_html__('Log In','zen-login-authentication') . '<#}#></a></p><#}#></div>';
+        $this->google_button_content_template();
         echo '</div><!-- /.fauth-form-wrap -->';
     }
 }
@@ -1299,11 +1316,11 @@ class ZENLOGAU_Elementor_Lost_Password_Widget extends ZENLOGAU_Elementor_Base_Wi
 
     protected function content_template(): void {
         echo '<div class="fauth-form-wrap">';
-        echo '<# var tag=settings.form_title_tag||"h3";if(settings.form_title_text){#><{{{tag}}} class="fauth-form-title">{{{settings.form_title_text}}}</{{{tag}}}><#}#>';
+        echo '<# var tag=settings.form_title_tag||"h3";if(settings.form_title_text){#><{{tag}} class="fauth-form-title">{{settings.form_title_text}}</{{tag}}><#}#>';
         echo '<div class="fauth fauth-form fauth-form-lostpassword"><div class="fauth-inner-form">';
-        echo '<p class="fauth-field-wrap"><label class="fauth-label"><# if(settings.label_user_login){#>{{{settings.label_user_login}}}<#}else{#>' . esc_html__('Username or Email','zen-login-authentication') . '<#}#></label><input type="text" class="fauth-field" placeholder="<# if(settings.placeholder_user_login){#>{{settings.placeholder_user_login}}<#}#>" disabled></p>';
-        echo '<p class="fauth-submit"><button type="button" class="fauth-button fauth-submit-button"><# if(settings.button_text){#>{{{settings.button_text}}}<#}else{#>' . esc_html__('Get New Password','zen-login-authentication') . '<#}#></button></p>';
-        echo '</div><# if("yes"===settings.show_links){#><p class="fauth-links"><a href="#"><# if(settings.link_login_text){#>{{{settings.link_login_text}}}<#}else{#>' . esc_html__('Log In','zen-login-authentication') . '<#}#></a></p><#}#></div>';
+        echo '<p class="fauth-field-wrap"><label class="fauth-label"><# if(settings.label_user_login){#>{{settings.label_user_login}}<#}else{#>' . esc_html__('Username or Email','zen-login-authentication') . '<#}#></label><input type="text" class="fauth-field" placeholder="<# if(settings.placeholder_user_login){#>{{settings.placeholder_user_login}}<#}#>" disabled></p>';
+        echo '<p class="fauth-submit"><button type="button" class="fauth-button fauth-submit-button"><# if(settings.button_text){#>{{settings.button_text}}<#}else{#>' . esc_html__('Get New Password','zen-login-authentication') . '<#}#></button></p>';
+        echo '</div><# if("yes"===settings.show_links){#><p class="fauth-links"><a href="#"><# if(settings.link_login_text){#>{{settings.link_login_text}}<#}else{#>' . esc_html__('Log In','zen-login-authentication') . '<#}#></a></p><#}#></div>';
         echo '</div><!-- /.fauth-form-wrap -->';
     }
 }
@@ -1445,24 +1462,24 @@ class ZENLOGAU_Elementor_Reset_Password_Widget extends ZENLOGAU_Elementor_Base_W
         // Backbone JS live preview — shows the invalid-key state (always in editor)
         // plus a form preview below it. All texts respond to control changes in real time.
         echo '<div class="fauth-form-wrap">';
-        echo '<# var tag=settings.form_title_tag||"h3";if(settings.form_title_text){#><{{{tag}}} class="fauth-form-title">{{{settings.form_title_text}}}</{{{tag}}}><#}#>';
+        echo '<# var tag=settings.form_title_tag||"h3";if(settings.form_title_text){#><{{tag}} class="fauth-form-title">{{settings.form_title_text}}</{{tag}}><#}#>';
 
         // Error message + link
         echo '<div class="fauth fauth-form fauth-form-resetpass">';
         echo '<ul class="fauth-errors" role="alert"><li class="fauth-error">';
-        echo '<# if(settings.invalid_key_message){#>{{{settings.invalid_key_message}}}<#}else{#>' . esc_html__( 'This password reset link is invalid or has expired. Please request a new one.', 'zen-login-authentication' ) . '<#}#>';
+        echo '<# if(settings.invalid_key_message){#>{{settings.invalid_key_message}}<#}else{#>' . esc_html__( 'This password reset link is invalid or has expired. Please request a new one.', 'zen-login-authentication' ) . '<#}#>';
         echo '</li></ul>';
         echo '<p class="fauth-links"><a href="#">';
-        echo '<# if(settings.link_request_text){#>{{{settings.link_request_text}}}<#}else{#>' . esc_html__( 'Request a new password reset link', 'zen-login-authentication' ) . '<#}#>';
+        echo '<# if(settings.link_request_text){#>{{settings.link_request_text}}<#}else{#>' . esc_html__( 'Request a new password reset link', 'zen-login-authentication' ) . '<#}#>';
         echo '</a></p></div>';
 
         // Form preview
         echo '<div class="fauth-editor-preview-wrap">'; // Fix #11
         echo '<p class="fauth-editor-preview-label">' . esc_html__( 'Form preview (visible only in editor):', 'zen-login-authentication' ) . '</p>';
         echo '<div class="fauth fauth-form fauth-form-resetpass fauth-form--preview"><div class="fauth-inner-form">';
-        echo '<p class="fauth-field-wrap fauth-field-wrap--password"><label class="fauth-label"><# if(settings.label_new_pw){#>{{{settings.label_new_pw}}}<#}else{#>' . esc_html__('New Password','zen-login-authentication') . '<#}#> <span class="fauth-required">*</span></label><input type="password" class="fauth-field" placeholder="<# if(settings.placeholder_new_pw){#>{{settings.placeholder_new_pw}}<#}#>" disabled><button type="button" class="fauth-password-toggle"><# if(settings.toggle_show_text){#>{{{settings.toggle_show_text}}}<#}else{#>' . esc_html__('Show','zen-login-authentication') . '<#}#></button></p>';
-        echo '<p class="fauth-field-wrap fauth-field-wrap--password"><label class="fauth-label"><# if(settings.label_confirm_pw){#>{{{settings.label_confirm_pw}}}<#}else{#>' . esc_html__('Confirm New Password','zen-login-authentication') . '<#}#> <span class="fauth-required">*</span></label><input type="password" class="fauth-field" placeholder="<# if(settings.placeholder_confirm_pw){#>{{settings.placeholder_confirm_pw}}<#}#>" disabled><button type="button" class="fauth-password-toggle"><# if(settings.toggle_show_text){#>{{{settings.toggle_show_text}}}<#}else{#>' . esc_html__('Show','zen-login-authentication') . '<#}#></button></p>';
-        echo '<p class="fauth-submit"><button type="button" class="fauth-button fauth-submit-button"><# if(settings.button_text){#>{{{settings.button_text}}}<#}else{#>' . esc_html__('Reset Password','zen-login-authentication') . '<#}#></button></p>';
+        echo '<p class="fauth-field-wrap fauth-field-wrap--password"><label class="fauth-label"><# if(settings.label_new_pw){#>{{settings.label_new_pw}}<#}else{#>' . esc_html__('New Password','zen-login-authentication') . '<#}#> <span class="fauth-required">*</span></label><input type="password" class="fauth-field" placeholder="<# if(settings.placeholder_new_pw){#>{{settings.placeholder_new_pw}}<#}#>" disabled><button type="button" class="fauth-password-toggle"><# if(settings.toggle_show_text){#>{{settings.toggle_show_text}}<#}else{#>' . esc_html__('Show','zen-login-authentication') . '<#}#></button></p>';
+        echo '<p class="fauth-field-wrap fauth-field-wrap--password"><label class="fauth-label"><# if(settings.label_confirm_pw){#>{{settings.label_confirm_pw}}<#}else{#>' . esc_html__('Confirm New Password','zen-login-authentication') . '<#}#> <span class="fauth-required">*</span></label><input type="password" class="fauth-field" placeholder="<# if(settings.placeholder_confirm_pw){#>{{settings.placeholder_confirm_pw}}<#}#>" disabled><button type="button" class="fauth-password-toggle"><# if(settings.toggle_show_text){#>{{settings.toggle_show_text}}<#}else{#>' . esc_html__('Show','zen-login-authentication') . '<#}#></button></p>';
+        echo '<p class="fauth-submit"><button type="button" class="fauth-button fauth-submit-button"><# if(settings.button_text){#>{{settings.button_text}}<#}else{#>' . esc_html__('Reset Password','zen-login-authentication') . '<#}#></button></p>';
         echo '</div></div></div>';
         echo '</div><!-- /.fauth-form-wrap -->';
     }
@@ -1867,16 +1884,16 @@ class ZENLOGAU_Elementor_Account_Widget extends ZENLOGAU_Elementor_Base_Widget {
 
     protected function content_template(): void {
         echo '<div class="fauth-form-wrap">';
-        echo '<# var tag=settings.form_title_tag||"h3";if(settings.form_title_text){#><{{{tag}}} class="fauth-form-title">{{{settings.form_title_text}}}</{{{tag}}}><#}#>';
+        echo '<# var tag=settings.form_title_tag||"h3";if(settings.form_title_text){#><{{tag}} class="fauth-form-title">{{settings.form_title_text}}</{{tag}}><#}#>';
         echo '<div class="fauth fauth-form fauth-form-account"><div class="fauth-inner-form">';
-        echo '<# if ( "yes" === settings.show_username ) { #><p class="fauth-field-wrap"><label class="fauth-label"><# if(settings.label_username){#>{{{settings.label_username}}}<#}else{#>' . esc_html__('Username','zen-login-authentication') . '<#}#></label><input type="text" class="fauth-field" value="username" disabled><span class="fauth-description">' . esc_html__('Usernames cannot be changed.','zen-login-authentication') . '</span></p><# } #>';
-        echo '<p class="fauth-field-wrap"><label class="fauth-label"><# if(settings.label_first_name){#>{{{settings.label_first_name}}}<#}else{#>' . esc_html__('First Name','zen-login-authentication') . '<#}#></label><input type="text" class="fauth-field" placeholder="<# if(settings.placeholder_first_name){#>{{settings.placeholder_first_name}}<#}#>" disabled></p>';
-        echo '<p class="fauth-field-wrap"><label class="fauth-label"><# if(settings.label_last_name){#>{{{settings.label_last_name}}}<#}else{#>' . esc_html__('Last Name','zen-login-authentication') . '<#}#></label><input type="text" class="fauth-field" placeholder="<# if(settings.placeholder_last_name){#>{{settings.placeholder_last_name}}<#}#>" disabled></p>';
-        echo '<p class="fauth-field-wrap"><label class="fauth-label"><# if(settings.label_display_name){#>{{{settings.label_display_name}}}<#}else{#>' . esc_html__('Display name publicly as','zen-login-authentication') . '<#}#> <span class="fauth-required">*</span></label><select class="fauth-field fauth-select" disabled><option>' . esc_html__('Your Name','zen-login-authentication') . '</option></select></p>';
-        echo '<p class="fauth-field-wrap"><label class="fauth-label"><# if(settings.label_email){#>{{{settings.label_email}}}<#}else{#>' . esc_html__('Email Address','zen-login-authentication') . '<#}#> <span class="fauth-required">*</span></label><input type="email" class="fauth-field" placeholder="<# if(settings.placeholder_email){#>{{settings.placeholder_email}}<#}#>" disabled></p>';
-        echo '<p class="fauth-field-wrap fauth-field-wrap--password"><label class="fauth-label"><# if(settings.label_password){#>{{{settings.label_password}}}<#}else{#>' . esc_html__('New Password','zen-login-authentication') . '<#}#></label><input type="password" class="fauth-field" placeholder="<# if(settings.placeholder_password){#>{{settings.placeholder_password}}<#}#>" disabled><button type="button" class="fauth-password-toggle"><# if(settings.toggle_show_text){#>{{{settings.toggle_show_text}}}<#}else{#>' . esc_html__('Show','zen-login-authentication') . '<#}#></button><span class="fauth-description"><# if(settings.password_hint){#>{{{settings.password_hint}}}<#}else{#>' . esc_html__('Leave blank to keep your current password.','zen-login-authentication') . '<#}#></span></p>';
-        echo '<p class="fauth-field-wrap fauth-field-wrap--password"><label class="fauth-label"><# if(settings.label_confirm_pw){#>{{{settings.label_confirm_pw}}}<#}else{#>' . esc_html__('Confirm New Password','zen-login-authentication') . '<#}#></label><input type="password" class="fauth-field" placeholder="<# if(settings.placeholder_confirm_pw){#>{{settings.placeholder_confirm_pw}}<#}#>" disabled><button type="button" class="fauth-password-toggle"><# if(settings.toggle_show_text){#>{{{settings.toggle_show_text}}}<#}else{#>' . esc_html__('Show','zen-login-authentication') . '<#}#></button></p>';
-        echo '<p class="fauth-submit"><button type="button" class="fauth-button fauth-submit-button"><# if(settings.button_text){#>{{{settings.button_text}}}<#}else{#>' . esc_html__('Save Changes','zen-login-authentication') . '<#}#></button></p>';
+        echo '<# if ( "yes" === settings.show_username ) { #><p class="fauth-field-wrap"><label class="fauth-label"><# if(settings.label_username){#>{{settings.label_username}}<#}else{#>' . esc_html__('Username','zen-login-authentication') . '<#}#></label><input type="text" class="fauth-field" value="username" disabled><span class="fauth-description">' . esc_html__('Usernames cannot be changed.','zen-login-authentication') . '</span></p><# } #>';
+        echo '<p class="fauth-field-wrap"><label class="fauth-label"><# if(settings.label_first_name){#>{{settings.label_first_name}}<#}else{#>' . esc_html__('First Name','zen-login-authentication') . '<#}#></label><input type="text" class="fauth-field" placeholder="<# if(settings.placeholder_first_name){#>{{settings.placeholder_first_name}}<#}#>" disabled></p>';
+        echo '<p class="fauth-field-wrap"><label class="fauth-label"><# if(settings.label_last_name){#>{{settings.label_last_name}}<#}else{#>' . esc_html__('Last Name','zen-login-authentication') . '<#}#></label><input type="text" class="fauth-field" placeholder="<# if(settings.placeholder_last_name){#>{{settings.placeholder_last_name}}<#}#>" disabled></p>';
+        echo '<p class="fauth-field-wrap"><label class="fauth-label"><# if(settings.label_display_name){#>{{settings.label_display_name}}<#}else{#>' . esc_html__('Display name publicly as','zen-login-authentication') . '<#}#> <span class="fauth-required">*</span></label><select class="fauth-field fauth-select" disabled><option>' . esc_html__('Your Name','zen-login-authentication') . '</option></select></p>';
+        echo '<p class="fauth-field-wrap"><label class="fauth-label"><# if(settings.label_email){#>{{settings.label_email}}<#}else{#>' . esc_html__('Email Address','zen-login-authentication') . '<#}#> <span class="fauth-required">*</span></label><input type="email" class="fauth-field" placeholder="<# if(settings.placeholder_email){#>{{settings.placeholder_email}}<#}#>" disabled></p>';
+        echo '<p class="fauth-field-wrap fauth-field-wrap--password"><label class="fauth-label"><# if(settings.label_password){#>{{settings.label_password}}<#}else{#>' . esc_html__('New Password','zen-login-authentication') . '<#}#></label><input type="password" class="fauth-field" placeholder="<# if(settings.placeholder_password){#>{{settings.placeholder_password}}<#}#>" disabled><button type="button" class="fauth-password-toggle"><# if(settings.toggle_show_text){#>{{settings.toggle_show_text}}<#}else{#>' . esc_html__('Show','zen-login-authentication') . '<#}#></button><span class="fauth-description"><# if(settings.password_hint){#>{{settings.password_hint}}<#}else{#>' . esc_html__('Leave blank to keep your current password.','zen-login-authentication') . '<#}#></span></p>';
+        echo '<p class="fauth-field-wrap fauth-field-wrap--password"><label class="fauth-label"><# if(settings.label_confirm_pw){#>{{settings.label_confirm_pw}}<#}else{#>' . esc_html__('Confirm New Password','zen-login-authentication') . '<#}#></label><input type="password" class="fauth-field" placeholder="<# if(settings.placeholder_confirm_pw){#>{{settings.placeholder_confirm_pw}}<#}#>" disabled><button type="button" class="fauth-password-toggle"><# if(settings.toggle_show_text){#>{{settings.toggle_show_text}}<#}else{#>' . esc_html__('Show','zen-login-authentication') . '<#}#></button></p>';
+        echo '<p class="fauth-submit"><button type="button" class="fauth-button fauth-submit-button"><# if(settings.button_text){#>{{settings.button_text}}<#}else{#>' . esc_html__('Save Changes','zen-login-authentication') . '<#}#></button></p>';
         echo '</div>'; // close .fauth-inner-form
         echo '<# if("yes"===settings.show_links){#><p class="fauth-links"><a href="#">' . esc_html__('Log Out','zen-login-authentication') . '</a> &bull; <a href="#">' . esc_html__('Sign out of all other devices','zen-login-authentication') . '</a></p><#}#>';
         // Editor previews of the dynamic Account sections. On the front end these

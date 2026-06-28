@@ -123,6 +123,7 @@ add_action( 'init', 'zenlogau_turnstile_register_script' );
 function zenlogau_turnstile_register_script(): void {
     // null version → no ?ver appended to Cloudflare's URL. Deferred so it runs
     // after the form markup is parsed and auto-renders every .cf-turnstile div.
+    // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion -- external Cloudflare endpoint; a local ?ver is meaningless and Cloudflare versions the API itself.
     wp_register_script( 'zenlogau-turnstile', ZENLOGAU_TURNSTILE_API_JS, [], null, [ 'strategy' => 'defer', 'in_footer' => false ] );
 }
 
@@ -204,7 +205,7 @@ function zenlogau_turnstile_should_check( string $form ): bool {
     if ( ! zenlogau_turnstile_active() || ! zenlogau_turnstile_protects( $form ) ) {
         return false;
     }
-    return 'POST' === strtoupper( (string) ( $_SERVER['REQUEST_METHOD'] ?? '' ) );
+    return 'POST' === strtoupper( sanitize_text_field( wp_unslash( $_SERVER['REQUEST_METHOD'] ?? '' ) ) );
 }
 
 /* -----------------------------------------------------------------------

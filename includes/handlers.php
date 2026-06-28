@@ -143,7 +143,7 @@ function zenlogau_resolve_login_redirect( WP_User $user, string $requested = '' 
     }
 
     /** This filter is documented in wp-login.php — keep other plugins working. */
-    $redirect_to = (string) apply_filters( 'login_redirect', $default, $requested, $user );
+    $redirect_to = (string) apply_filters( 'login_redirect', $default, $requested, $user ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- applying WordPress core's own login_redirect filter.
     $redirect_to = zenlogau_validate_redirect( $redirect_to );
 
     return '' !== $redirect_to ? $redirect_to : home_url();

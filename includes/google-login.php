@@ -226,13 +226,14 @@ function zenlogau_google_auth(): void {
     wp_set_auth_cookie( $user->ID, $remember );
 
     /** This action is documented in wp-includes/user.php */
-    do_action( 'wp_login', $user->user_login, $user );
+    do_action( 'wp_login', $user->user_login, $user ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- firing WordPress core's own wp_login hook.
     do_action( 'zenlogau_login_success', $user );
     do_action( 'zenlogau_google_login_success', $user );
 
     $requested   = (string) ( $stored['redirect_to'] ?? '' );
     // Runs through 'login_redirect', so the subscriber containment from
     // zenlogau_subscriber_login_redirect() applies exactly like password logins.
+    // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- applying WordPress core's own login_redirect filter.
     $redirect_to = (string) apply_filters( 'login_redirect', '' !== $requested ? $requested : home_url(), $requested, $user );
 
     wp_safe_redirect( '' !== $redirect_to ? $redirect_to : home_url() );

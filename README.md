@@ -262,10 +262,18 @@ zen-login-authentication/
 │   └── elementor/
 │       └── class-fauth-elementor-widgets.php   Elementor Widget_Base classes (4 widgets)
 └── languages/
-    └── .gitkeep
+    └── zen-login-authentication.pot
 ```
 
 ## Changelog
+
+### 2.1.2
+
+**Security & Review Hardening**
+
+- All Elementor editor-preview templates now escape interpolated field values (titles, labels, button/link/toggle text, passkey and Google button text). The previews previously used raw Backbone interpolation that could render unescaped HTML inside the builder — an editor-context XSS vector.
+- The Google sign-in button preview is built entirely from escaped, literal markup (removing a misleading "escaped during construction" suppression flagged in review).
+- Added late output escaping / input unslashing throughout per the WordPress Plugin Directory review (Cloudflare request-method check, new-device cookie). No functional changes — forms, passkeys, two-factor, and new-device alerts behave exactly as in 2.1.1.
 
 ### 2.1.1
 

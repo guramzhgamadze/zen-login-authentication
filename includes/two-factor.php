@@ -358,7 +358,7 @@ function zenlogau_2fa_handle_verify(): void {
     wp_set_auth_cookie( $uid, (bool) $pending['remember'] );
     wp_set_current_user( $uid );
     // Fire the standard hook so integrations and the activity log see the login.
-    do_action( 'wp_login', $user->user_login, $user );
+    do_action( 'wp_login', $user->user_login, $user ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- firing WordPress core's own wp_login hook.
     do_action( 'zenlogau_login_success', $user );
 
     $redirect = zenlogau_resolve_login_redirect( $user, (string) $pending['redirect'] );

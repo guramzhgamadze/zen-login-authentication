@@ -291,10 +291,8 @@ function zenlogau_get_device_cookie_token(): string {
     if ( empty( $_COOKIE[ ZENLOGAU_DEVICE_COOKIE ] ) ) {
         return '';
     }
-    $raw = wp_unslash( $_COOKIE[ ZENLOGAU_DEVICE_COOKIE ] ); // phpcs:ignore WordPress.Security.NonceVerification.NoNonceVerification -- opaque device id, sanitized to hex below.
-    if ( ! is_string( $raw ) ) {
-        return '';
-    }
+    // sanitize_text_field() always returns a string ('' for array/object cookies).
+    $raw = sanitize_text_field( wp_unslash( $_COOKIE[ ZENLOGAU_DEVICE_COOKIE ] ) ); // phpcs:ignore WordPress.Security.NonceVerification.NoNonceVerification -- opaque device id (no state change); further reduced to hex below.
     $raw = preg_replace( '/[^a-f0-9]/', '', strtolower( $raw ) );
     return is_string( $raw ) ? $raw : '';
 }

@@ -173,7 +173,7 @@ function zenlogau_enqueue_assets(): void {
      */
     zenlogau_maybe_add_inline_script();
 
-    do_action( 'login_enqueue_scripts' );
+    do_action( 'login_enqueue_scripts' ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- firing WordPress core's own login_enqueue_scripts hook.
 }
 
 /**
@@ -753,25 +753,25 @@ function zenlogau_exclude_from_cache(): void {
         LiteSpeed_Cache_API::no_cache( 'fauth-auth-page' );
     }
     // Modern LiteSpeed Cache 4.x+ API
-    do_action( 'litespeed_control_set_nocache', 'fauth auth page' );
+    do_action( 'litespeed_control_set_nocache', 'fauth auth page' ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- third-party LiteSpeed Cache hook; must match its exact name.
 
     // ── Super Page Cache ─────────────────────────────────────────────────
     // Super Page Cache checks for this constant to skip caching.
     if ( ! defined( 'DONOTCACHEPAGE' ) ) {
-        define( 'DONOTCACHEPAGE', true );
+        define( 'DONOTCACHEPAGE', true ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound -- cache-plugin signal constant; must match the exact name caches check.
     }
 
     // ── WP Rocket ────────────────────────────────────────────────────────
     if ( ! defined( 'DONOTROCKETOPTIMIZE' ) ) {
-        define( 'DONOTROCKETOPTIMIZE', true );
+        define( 'DONOTROCKETOPTIMIZE', true ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound -- WP Rocket signal constant; must match the exact name WP Rocket checks.
     }
 
     // ── W3 Total Cache ───────────────────────────────────────────────────
     if ( ! defined( 'DONOTCACHEOBJECT' ) ) {
-        define( 'DONOTCACHEOBJECT', true );
+        define( 'DONOTCACHEOBJECT', true ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound -- W3 Total Cache signal constant; must match the exact name W3TC checks.
     }
     if ( ! defined( 'DONOTMINIFY' ) ) {
-        define( 'DONOTMINIFY', true );
+        define( 'DONOTMINIFY', true ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound -- W3 Total Cache signal constant; must match the exact name W3TC checks.
     }
 
     // ── WP Super Cache ───────────────────────────────────────────────────
@@ -795,7 +795,7 @@ function zenlogau_purge_auth_page_cache(): void {
 
     // LiteSpeed Cache — purge by URL
     foreach ( $urls as $url ) {
-        do_action( 'litespeed_purge_url', $url );
+        do_action( 'litespeed_purge_url', $url ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- third-party LiteSpeed Cache hook; must match its exact name.
     }
 
     // Super Page Cache — purge all (no per-URL API in most versions)

@@ -417,7 +417,7 @@ function zenlogau_passkey_ajax_login_verify(): void {
     wp_set_current_user( $user->ID );
 
     /** This is documented in WordPress core as firing on every login. */
-    do_action( 'wp_login', $user->user_login, $user );
+    do_action( 'wp_login', $user->user_login, $user ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- firing WordPress core's own wp_login hook.
     do_action( 'zenlogau_passkey_login', $user->ID );
 
     $requested = zenlogau_validate_redirect( (string) zenlogau_get_request_value( 'redirect_to', 'post' ) );

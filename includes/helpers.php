@@ -56,7 +56,7 @@ function zenlogau_is_ajax_request(): bool {
 function zenlogau_validate_redirect( string $url ): string {
     return wp_validate_redirect(
         wp_sanitize_redirect( $url ),
-        apply_filters( 'wp_safe_redirect_fallback', admin_url(), 302 )
+        apply_filters( 'wp_safe_redirect_fallback', admin_url(), 302 ) // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- applying WordPress core's own wp_safe_redirect_fallback filter.
     );
 }
 

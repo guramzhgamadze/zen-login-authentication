@@ -4,7 +4,7 @@ Tags: login, registration, authentication, elementor, frontend
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 2.1.1
+Stable tag: 2.1.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -143,6 +143,12 @@ Only pages the plugin created that you never edited (no content, no Elementor da
 
 == Changelog ==
 
+= 2.1.2 =
+* Security/hardening: every Elementor editor-preview template now escapes interpolated field values (titles, labels, button/link text, passkey and Google button text). The editor preview previously used raw interpolation, which could render unescaped HTML inside the builder.
+* The Google sign-in button preview is now built entirely from escaped, literal markup — removing a misleading "escaped during construction" suppression flagged in review.
+* Added late output escaping / input unslashing throughout per the WordPress Plugin Directory review (Cloudflare request-method check, new-device cookie), and documented the unavoidable core-hook and cache-plugin signal names.
+* No functional changes — forms, passkeys, two-factor, and new-device alerts behave exactly as in 2.1.1.
+
 = 2.1.1 =
 * Redesigned login, registration, and account forms: a polished default card surface, a refined "security blue" palette, full-width primary buttons, and an outline secondary style — all still controllable from the Elementor toolbar.
 * The "Sign in with a passkey" button now has an icon and its own Normal/Hover style controls, and sits below the "or" divider with the other sign-in options.
@@ -237,11 +243,14 @@ Older versions: see the project's CHANGELOG / README on the plugin homepage.
 
 == Upgrade Notice ==
 
+= 2.1.2 =
+Security/review hardening: all Elementor editor-preview output is now properly escaped. No functional changes — recommended for everyone.
+
 = 2.0.0 =
 Adds opt-in two-factor authentication (TOTP) managed from the Account page, with QR enrollment and recovery codes. Existing logins are unaffected until a user turns it on for their own account.
 
 = 1.9.0 =
-Adds optional Cloudflare Turnstile bot protection and breached-password blocking, plus username-enumeration hardening that is ON by default (?author=N scans and the guest REST users listing are blocked, and login errors become generic). Review the new Security settings if you depend on author archives by numeric ID or on XML-RPC.
+Adds optional Cloudflare Turnstile and breached-password blocking, plus username-enumeration hardening (ON by default: ?author=N and guest REST user listings blocked, generic login errors). Review Security settings if you rely on numeric author archives or XML-RPC.
 
 = 1.8.1 =
 Internal housekeeping only — removed obsolete one-time migration code. No action needed.
