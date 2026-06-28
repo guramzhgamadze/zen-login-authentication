@@ -140,6 +140,10 @@ Only pages the plugin created that you never edited (no content, no Elementor da
 8. Settings &mdash; New-Device Login Alerts and Login Activity: configure new-device email alerts with an optional custom body, and set the activity-log retention window.
 9. Settings &mdash; Page Slugs: customise the URL slug for each auth action (Login, Logout, Register, Lost Password, Reset Pass, Account).
 10. Settings &mdash; Tools: clear the activity log and manage auth pages (view status, create missing pages, or delete auto-created pages).
+11. Front end &mdash; Log In form on a live page: username or email and password (with a Show/Hide toggle), Remember Me, the Log In button, and Register / Lost-password links &mdash; then, below the "or" divider, the "Sign in with a passkey" and "Continue with Google" buttons.
+12. Front end &mdash; Registration form: username, email, and password plus confirm-password (each with a Show/Hide toggle), the Register button, a Log In link, and "Continue with Google" below the divider.
+13. Front end &mdash; Lost Password form: request a reset link by username or email address, with a Log In link back to sign-in.
+14. Front end &mdash; Reset Password form: choose and confirm a new password (with Show/Hide toggles) from the emailed reset link.
 
 == Changelog ==
 
