@@ -214,6 +214,23 @@ function zenlogau_activity_record_lockout( $action, $ip = '', $attempts = 0 ): v
 }
 
 /* -----------------------------------------------------------------------
+ * Scheduled pruning — a reliable backstop to the opportunistic 1%-of-writes
+ * prune for low-traffic sites where writes (and thus opportunistic prunes) are
+ * rare. Both call the same LIMIT-bounded zenlogau_activity_prune().
+ * -------------------------------------------------------------------- */
+add_action( 'zenlogau_activity_prune_event', 'zenlogau_activity_prune' );
+add_action( 'init', 'zenlogau_activity_schedule_prune' );
+
+function zenlogau_activity_schedule_prune(): void {
+    if ( ! zenlogau_activity_logging_enabled() || zenlogau_activity_retention_days() <= 0 ) {
+        return;
+    }
+    if ( ! wp_next_scheduled( 'zenlogau_activity_prune_event' ) ) {
+        wp_schedule_event( time() + HOUR_IN_SECONDS, 'daily', 'zenlogau_activity_prune_event' );
+    }
+}
+
+/* -----------------------------------------------------------------------
  * Reading (dashboard)
  * -------------------------------------------------------------------- */
 

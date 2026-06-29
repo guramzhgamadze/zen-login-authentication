@@ -277,6 +277,8 @@ zen-login-authentication/
 - Changing the email address or password on the Account page now requires the current password (filterable for Google/passkey-only sites).
 - Added GDPR personal-data export and erasure (devices, passkeys, two-factor, Google link).
 - Bundled WebAuthn library hardened (direct-access guard + WordPress HTTP/filesystem/URL helpers); uninstall now clears plugin transients.
+- Admins can reset a locked-out user's two-factor authentication and passkeys from the user-edit screen.
+- Login-activity pruning also runs on a daily schedule (backstop for low-traffic sites).
 
 ### 2.1.2
 

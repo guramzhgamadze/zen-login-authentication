@@ -154,6 +154,8 @@ Only pages the plugin created that you never edited (no content, no Elementor da
 * Changing your email address or password on the Account page now requires your current password (filterable for sites whose users sign in only with Google or passkeys).
 * Added GDPR personal-data export and erasure support (Tools &rarr; Export/Erase Personal Data) covering devices, passkeys, two-factor, and Google links.
 * Bundled WebAuthn library: added direct-access protection and switched to WordPress HTTP/filesystem/URL helpers.
+* Administrators can reset a locked-out user's two-factor authentication and passkeys from the user-edit screen.
+* Login-activity pruning now also runs on a daily schedule (a reliable backstop on low-traffic sites).
 * Uninstall now also clears the plugin's transients.
 
 = 2.1.2 =

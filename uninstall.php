@@ -126,6 +126,7 @@ function zenlogau_uninstall_site( array $options, array $page_actions ): void {
 
     // Login-activity log table + its cached summary (v1.7.0).
     delete_transient( 'zenlogau_activity_summary' );
+    wp_clear_scheduled_hook( 'zenlogau_activity_prune_event' );
     // phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- dropping the plugin's own table at uninstall; the name derives from $wpdb->prefix (never user input) and no core API exists.
     $zenlogau_activity_table = $wpdb->prefix . 'zenlogau_activity';
     $wpdb->query( "DROP TABLE IF EXISTS {$zenlogau_activity_table}" );

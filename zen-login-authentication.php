@@ -114,6 +114,7 @@ if ( is_admin() ) {
     require ZENLOGAU_PATH . 'admin/settings.php';
     require ZENLOGAU_PATH . 'admin/hooks.php';
     require ZENLOGAU_PATH . 'admin/dashboard.php';
+    require ZENLOGAU_PATH . 'admin/user-security.php';
 }
 
 /* -----------------------------------------------------------------------
@@ -356,5 +357,6 @@ function zenlogau_activate(): void {
 }
 
 function zenlogau_deactivate(): void {
+    wp_clear_scheduled_hook( 'zenlogau_activity_prune_event' );
     zenlogau_flush_rewrite_rules();
 }

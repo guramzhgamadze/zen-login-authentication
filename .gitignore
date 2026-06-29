@@ -27,6 +27,10 @@ yarn.lock
 vendor/
 composer.lock
 
+# === PHPUnit ===
+.phpunit.result.cache
+.phpunit.cache/
+
 # === WordPress ===
 wp-config.php
 wp-content/uploads/
