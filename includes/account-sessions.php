@@ -156,12 +156,13 @@ function zenlogau_sessions_render_list( int $user_id ): void {
     foreach ( $sessions as $session ) {
         $ua    = isset( $session['ua'] ) ? (string) $session['ua'] : '';
         $ip    = isset( $session['ip'] ) ? (string) $session['ip'] : '';
-        $login = ! empty( $session['login'] ) ? wp_date( get_option( 'date_format' ), (int) $session['login'] ) : '';
+        $login   = ! empty( $session['login'] ) ? wp_date( get_option( 'date_format' ), (int) $session['login'] ) : '';
+        $browser = zenlogau_sessions_browser_label( $ua );
         // Identify the current session by matching its login time and user agent.
         $is_self = is_array( $current )
             && (int) ( $session['login'] ?? 0 ) === (int) ( $current['login'] ?? -1 )
             && ( $session['ua'] ?? '' ) === ( $current['ua'] ?? "\0" );
-        $meta = array_filter( [ $ip, $login ] );
+        $meta = array_filter( [ $browser, $ip, $login ] );
 
         echo '<li class="fauth-session-item">';
         echo '<span class="fauth-session-device">' . esc_html( zenlogau_sessions_device_label( $ua ) );
@@ -178,29 +179,43 @@ function zenlogau_sessions_render_list( int $user_id ): void {
 }
 
 /**
- * Best-effort friendly "Browser on OS" label from a user-agent string.
+ * Best-effort recognisable device name from a user-agent string. A website can't
+ * read the OS-given device name (privacy), so we lead with the platform — the
+ * closest thing to a name. The browser is shown separately in the meta line.
  */
 function zenlogau_sessions_device_label( string $ua ): string {
     if ( '' === $ua ) {
         return __( 'Unknown device', 'zen-login-authentication' );
     }
-    $browser = __( 'Browser', 'zen-login-authentication' );
+    // Order matters: iPhone/iPad UAs also contain "Mac OS X"; Android and
+    // Chromebook UAs also contain "Linux" — so the more specific tokens win.
+    $devices = [
+        'iPhone'   => __( 'iPhone', 'zen-login-authentication' ),
+        'iPad'     => __( 'iPad', 'zen-login-authentication' ),
+        'CrOS'     => __( 'Chromebook', 'zen-login-authentication' ),
+        'Android'  => __( 'Android device', 'zen-login-authentication' ),
+        'Mac OS X' => __( 'Mac', 'zen-login-authentication' ),
+        'Windows'  => __( 'Windows PC', 'zen-login-authentication' ),
+        'Linux'    => __( 'Linux PC', 'zen-login-authentication' ),
+    ];
+    foreach ( $devices as $needle => $name ) {
+        if ( false !== strpos( $ua, $needle ) ) {
+            return $name;
+        }
+    }
+    return __( 'Unknown device', 'zen-login-authentication' );
+}
+
+/**
+ * Best-effort browser name from a user-agent string (shown in the meta line).
+ */
+function zenlogau_sessions_browser_label( string $ua ): string {
+    // Order matters: Edge and Opera UAs also contain "Chrome"; Chrome's also
+    // contains "Safari" — so check the more specific tokens first.
     foreach ( [ 'Edg' => 'Edge', 'OPR' => 'Opera', 'Chrome' => 'Chrome', 'Firefox' => 'Firefox', 'Safari' => 'Safari' ] as $needle => $name ) {
         if ( false !== strpos( $ua, $needle ) ) {
-            $browser = $name;
-            break;
+            return $name;
         }
     }
-    $os = '';
-    foreach ( [ 'Windows' => 'Windows', 'Mac OS X' => 'macOS', 'iPhone' => 'iPhone', 'iPad' => 'iPad', 'Android' => 'Android', 'Linux' => 'Linux' ] as $needle => $name ) {
-        if ( false !== strpos( $ua, $needle ) ) {
-            $os = $name;
-            break;
-        }
-    }
-    if ( '' === $os ) {
-        return $browser;
-    }
-    /* translators: 1: browser name, 2: operating system. */
-    return sprintf( __( '%1$s on %2$s', 'zen-login-authentication' ), $browser, $os );
+    return '';
 }

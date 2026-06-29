@@ -1979,7 +1979,7 @@ class ZENLOGAU_Elementor_Account_Widget extends ZENLOGAU_Elementor_Base_Widget {
 
         echo '<div class="fauth fauth-sessions"><h3 class="fauth-sessions-title">' . esc_html__('Session Management','zen-login-authentication') . '</h3>';
         echo '<p class="fauth-sessions-sub">' . esc_html__('These are the devices currently signed in to your account.','zen-login-authentication') . '</p>';
-        echo '<ul class="fauth-session-items"><li class="fauth-session-item"><span class="fauth-session-device">' . esc_html__('Chrome on Windows','zen-login-authentication') . ' <span class="fauth-session-current">' . esc_html__('this device','zen-login-authentication') . '</span></span><span class="fauth-session-meta">192.0.2.1</span></li></ul>';
+        echo '<ul class="fauth-session-items"><li class="fauth-session-item"><span class="fauth-session-device">' . esc_html__('Windows PC','zen-login-authentication') . ' <span class="fauth-session-current">' . esc_html__('this device','zen-login-authentication') . '</span></span><span class="fauth-session-meta">' . esc_html__('Chrome','zen-login-authentication') . ' &middot; 192.0.2.1</span></li></ul>';
         echo '<p class="fauth-submit"><button type="button" class="fauth-button fauth-button-secondary">' . esc_html__('Log Out','zen-login-authentication') . '</button></p></div>';
 
         echo '</div>'; // close .fauth-form-account
