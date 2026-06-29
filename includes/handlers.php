@@ -685,10 +685,14 @@ function zenlogau_handle_account(): void {
     // PRG: redirect back to the page that hosted the form (the form self-posts
     // to it) so a refresh cannot resubmit, and so the re-rendered fields show
     // the freshly saved values instead of the stale pre-update ones.
+    // Flash the success notice via a one-time user transient rather than a URL
+    // parameter, so it shows once and does NOT re-appear when the page is
+    // refreshed (the redirect target carries no notice flag).
     $updated_flag = '' !== $action ? $action : '1';
-    $redirect     = zenlogau_validate_redirect( add_query_arg( 'zenlogau_updated', $updated_flag, remove_query_arg( 'zenlogau_updated' ) ) );
+    set_transient( 'zenlogau_acct_notice_' . $user->ID, $updated_flag, MINUTE_IN_SECONDS );
+    $redirect = zenlogau_validate_redirect( remove_query_arg( 'zenlogau_updated' ) );
     if ( '' === $redirect ) {
-        $redirect = add_query_arg( 'zenlogau_updated', $updated_flag, zenlogau_get_action_url( 'account' ) );
+        $redirect = zenlogau_get_action_url( 'account' );
     }
 
     if ( $is_ajax ) {
@@ -709,10 +713,14 @@ function zenlogau_account_maybe_show_updated_notice(): void {
     if ( ! is_user_logged_in() ) {
         return;
     }
-    $updated = isset( $_GET['zenlogau_updated'] ) && is_string( $_GET['zenlogau_updated'] ) ? sanitize_key( wp_unslash( $_GET['zenlogau_updated'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only display flag set by our own post-update redirect; shows a notice, changes no state.
-    if ( '' === $updated ) {
+    // Read the one-time flash set by zenlogau_handle_account(). Consuming it
+    // here means the notice shows once and never re-appears on refresh.
+    $key     = 'zenlogau_acct_notice_' . get_current_user_id();
+    $updated = get_transient( $key );
+    if ( false === $updated || '' === $updated ) {
         return;
     }
+    delete_transient( $key );
     $message = 'password' === $updated
         ? __( 'Your password has been updated.', 'zen-login-authentication' )
         : ( 'profile' === $updated

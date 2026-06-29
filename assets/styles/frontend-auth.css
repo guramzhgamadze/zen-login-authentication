@@ -637,12 +637,12 @@ select.fauth-field {
    .fauth-card blocks are the cards. Neutralise the form-level card surface in
    both the standalone and the Elementor-wrapped contexts. */
 .fauth-form-account,
-.fauth-form-wrap:has(.fauth-form-account){background:none;border:0;border-radius:0;padding:0;box-shadow:none}
+.fauth-form-wrap:has(.fauth-form-account){background:none!important;border:0!important;border-radius:0!important;padding:0!important;box-shadow:none!important}
 .fauth-form-account .fauth-inner-form{display:flex;flex-direction:column;gap:20px}
 
 .fauth-card{background:var(--fauth-card-bg);border:var(--fauth-card-border);border-radius:var(--fauth-card-radius);padding:var(--fauth-card-padding);box-shadow:var(--fauth-card-shadow)}
 .fauth-card-head{margin:0 0 18px}
-.fauth-card-title{margin:0 0 4px;font-size:1.15em;font-weight:700}
+.fauth-card-title{margin:0 0 4px;font-size:1.15em;font-weight:700;color:var(--fauth-title-color,#0f172a)}
 .fauth-card-sub{margin:0;color:#64748b;font-size:.92em;line-height:1.5}
 
 /* Two-column row (collapses on narrow screens) */
@@ -655,9 +655,16 @@ select.fauth-field {
 
 /* The security panels become matching cards instead of top-border sections. */
 .fauth-passkeys,.fauth-2fa,.fauth-sessions{margin:20px 0 0;padding:var(--fauth-card-padding);background:var(--fauth-card-bg);border:var(--fauth-card-border);border-radius:var(--fauth-card-radius);box-shadow:var(--fauth-card-shadow)}
-.fauth-2fa-title,.fauth-passkeys-title,.fauth-sessions-title{margin:0 0 4px;font-size:1.15em;font-weight:700}
+.fauth-2fa-title,.fauth-passkeys-title,.fauth-sessions-title{margin:0 0 4px;font-size:1.15em;font-weight:700;color:var(--fauth-title-color,#0f172a)}
 .fauth-2fa-sub,.fauth-sessions-sub,.fauth-passkeys-intro{margin:0 0 18px;color:#64748b;font-size:.92em;line-height:1.5}
 
 /* Session card: full-width stacked buttons like the mockup's security actions */
 .fauth-sessions .fauth-button{width:100%;margin:0 0 10px}
 .fauth-sessions .fauth-description{display:block;margin:0 0 4px;color:#64748b}
+
+/* Session Management — list of active devices */
+.fauth-session-items{list-style:none;margin:0 0 16px;padding:0;display:flex;flex-direction:column;gap:8px}
+.fauth-session-item{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:12px 14px;border:var(--fauth-card-border);border-radius:10px}
+.fauth-session-device{font-weight:600;color:var(--fauth-title-color,#0f172a)}
+.fauth-session-current{font-weight:400;font-size:.85em;color:var(--fauth-btn-bg,#0369a1);margin-left:4px}
+.fauth-session-meta{color:#64748b;font-size:.9em}

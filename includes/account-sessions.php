@@ -34,7 +34,9 @@ function zenlogau_sessions_render_card(): void {
 
     echo '<div class="fauth fauth-sessions">';
     echo '<h3 class="fauth-sessions-title">' . esc_html__( 'Session Management', 'zen-login-authentication' ) . '</h3>';
-    echo '<p class="fauth-sessions-sub">' . esc_html__( 'Manage your active sessions and sign out from your devices.', 'zen-login-authentication' ) . '</p>';
+    echo '<p class="fauth-sessions-sub">' . esc_html__( 'These are the devices currently signed in to your account.', 'zen-login-authentication' ) . '</p>';
+
+    zenlogau_sessions_render_list( get_current_user_id() );
 
     echo '<p class="fauth-submit"><a class="fauth-button fauth-button-secondary" href="' . esc_url( $logout_url ) . '">'
         . esc_html__( 'Log Out', 'zen-login-authentication' ) . '</a></p>';
@@ -64,9 +66,14 @@ function zenlogau_sessions_render_card(): void {
 add_action( 'zenlogau_before_form_account', 'zenlogau_sessions_notice' );
 
 function zenlogau_sessions_notice(): void {
-    if ( 'cleared' !== sanitize_key( zenlogau_get_request_value( 'zenlogau_sessions', 'get' ) ) ) {
+    if ( ! is_user_logged_in() ) {
         return;
     }
+    $key = 'zenlogau_sessions_notice_' . get_current_user_id();
+    if ( 'cleared' !== get_transient( $key ) ) {
+        return;
+    }
+    delete_transient( $key );
     echo '<div class="fauth"><ul class="fauth-messages" role="status"><li class="fauth-message">'
         . esc_html__( 'You have been signed out of all other devices.', 'zen-login-authentication' )
         . '</li></ul></div>';
@@ -102,13 +109,16 @@ function zenlogau_sessions_route(): void {
     wp_destroy_other_sessions();
     do_action( 'zenlogau_signed_out_other_sessions', get_current_user_id() );
 
-    // Return to the page the link was clicked from, flagged so the notice shows.
+    // Flash the confirmation via a one-time transient (consumed on display) so
+    // it shows once and does not survive a refresh.
+    set_transient( 'zenlogau_sessions_notice_' . get_current_user_id(), 'cleared', MINUTE_IN_SECONDS );
+
+    // Return to the page the link was clicked from.
     $redirect = zenlogau_validate_redirect( (string) wp_get_referer() );
     if ( '' === $redirect ) {
         $redirect = zenlogau_get_action_url( 'account' );
     }
     $redirect = remove_query_arg( [ 'zenlogau_sessions_action', '_wpnonce', 'zenlogau_sessions' ], $redirect );
-    $redirect = add_query_arg( 'zenlogau_sessions', 'cleared', $redirect );
 
     wp_safe_redirect( $redirect );
     exit;
@@ -126,4 +136,71 @@ function zenlogau_other_sessions_count( int $user_id ): int {
 
     // The current session is one of the stored tokens, so "others" = total − 1.
     return max( 0, $total - 1 );
+}
+
+/**
+ * Render the list of devices/sessions currently signed in to the account.
+ */
+function zenlogau_sessions_render_list( int $user_id ): void {
+    if ( ! class_exists( 'WP_Session_Tokens' ) ) {
+        return;
+    }
+    $manager  = WP_Session_Tokens::get_instance( $user_id );
+    $sessions = $manager->get_all();
+    if ( empty( $sessions ) ) {
+        return;
+    }
+    $current = $manager->get( wp_get_session_token() );
+
+    echo '<ul class="fauth-session-items">';
+    foreach ( $sessions as $session ) {
+        $ua    = isset( $session['ua'] ) ? (string) $session['ua'] : '';
+        $ip    = isset( $session['ip'] ) ? (string) $session['ip'] : '';
+        $login = ! empty( $session['login'] ) ? wp_date( get_option( 'date_format' ), (int) $session['login'] ) : '';
+        // Identify the current session by matching its login time and user agent.
+        $is_self = is_array( $current )
+            && (int) ( $session['login'] ?? 0 ) === (int) ( $current['login'] ?? -1 )
+            && ( $session['ua'] ?? '' ) === ( $current['ua'] ?? "\0" );
+        $meta = array_filter( [ $ip, $login ] );
+
+        echo '<li class="fauth-session-item">';
+        echo '<span class="fauth-session-device">' . esc_html( zenlogau_sessions_device_label( $ua ) );
+        if ( $is_self ) {
+            echo ' <span class="fauth-session-current">' . esc_html__( 'this device', 'zen-login-authentication' ) . '</span>';
+        }
+        echo '</span>';
+        if ( $meta ) {
+            echo '<span class="fauth-session-meta">' . esc_html( implode( ' · ', $meta ) ) . '</span>';
+        }
+        echo '</li>';
+    }
+    echo '</ul>';
+}
+
+/**
+ * Best-effort friendly "Browser on OS" label from a user-agent string.
+ */
+function zenlogau_sessions_device_label( string $ua ): string {
+    if ( '' === $ua ) {
+        return __( 'Unknown device', 'zen-login-authentication' );
+    }
+    $browser = __( 'Browser', 'zen-login-authentication' );
+    foreach ( [ 'Edg' => 'Edge', 'OPR' => 'Opera', 'Chrome' => 'Chrome', 'Firefox' => 'Firefox', 'Safari' => 'Safari' ] as $needle => $name ) {
+        if ( false !== strpos( $ua, $needle ) ) {
+            $browser = $name;
+            break;
+        }
+    }
+    $os = '';
+    foreach ( [ 'Windows' => 'Windows', 'Mac OS X' => 'macOS', 'iPhone' => 'iPhone', 'iPad' => 'iPad', 'Android' => 'Android', 'Linux' => 'Linux' ] as $needle => $name ) {
+        if ( false !== strpos( $ua, $needle ) ) {
+            $os = $name;
+            break;
+        }
+    }
+    if ( '' === $os ) {
+        return $browser;
+    }
+    /* translators: 1: browser name, 2: operating system. */
+    return sprintf( __( '%1$s on %2$s', 'zen-login-authentication' ), $browser, $os );
 }

@@ -4,7 +4,7 @@ Tags: login, registration, authentication, elementor, frontend
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 2.1.4
+Stable tag: 2.1.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -147,6 +147,9 @@ Only pages the plugin created that you never edited (no content, no Elementor da
 
 == Changelog ==
 
+= 2.1.5 =
+* Account restructure follow-ups: card headings use the plugin's own colour and have their own Elementor style controls (they no longer inherit the theme heading colour); removed a stray Log Out link; the Session Management card now lists the devices currently signed in; success notices clear after a refresh; and the Elementor editor preview matches the live card layout.
+
 = 2.1.4 =
 * Restructured the Account page into clear cards — Profile Information, Change Password, Passkeys, Two-Factor Authentication, and Session Management — with two-column profile fields and separate "Save Profile" and "Update Password" actions. Same colours, clearer layout.
 
@@ -260,6 +263,9 @@ Only pages the plugin created that you never edited (no content, no Elementor da
 Older versions: see the project's CHANGELOG / README on the plugin homepage.
 
 == Upgrade Notice ==
+
+= 2.1.5 =
+Polish for the new Account page: themeable card headings with Elementor controls, a device list under Session Management, and notices that clear on refresh.
 
 = 2.1.4 =
 The Account page is reorganised into clear cards (Profile, Password, Passkeys, Two-Factor, Sessions). No data or colour changes.

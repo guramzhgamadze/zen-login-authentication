@@ -475,9 +475,6 @@ add_filter( 'zenlogau_form_links_lostpassword', function ( $links ) {
     return $links;
 } );
 
-add_filter( 'zenlogau_form_links_account', function ( $links ) {
-    // wp_logout_url() is rewritten to the plugin's /logout/ URL (with nonce)
-    // by zenlogau_filter_logout_url(), so this stays correct on custom slugs.
-    $links[] = [ 'label' => __( 'Log Out', 'zen-login-authentication' ), 'url' => wp_logout_url() ];
-    return $links;
-} );
+// The account "Log Out" and "Sign out of other devices" actions now live in
+// the Session Management card (includes/account-sessions.php), so the account
+// form no longer renders a links row.

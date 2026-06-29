@@ -267,6 +267,12 @@ zen-login-authentication/
 
 ## Changelog
 
+### 2.1.5
+
+**Account restructure follow-ups**
+
+- Card headings use the plugin's own colour and have their own Elementor style controls (no longer inherit the theme heading colour); removed a stray Log Out link; the Session Management card lists devices currently signed in; success notices clear after refresh; and the Elementor editor preview matches the live card layout.
+
 ### 2.1.4
 
 **Account page restructure**

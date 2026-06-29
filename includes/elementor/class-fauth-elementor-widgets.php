@@ -1521,7 +1521,8 @@ class ZENLOGAU_Elementor_Account_Widget extends ZENLOGAU_Elementor_Base_Widget {
         $this->add_control( 'label_password', [ 'label' => esc_html__( 'New Password label', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'New Password', 'zen-login-authentication' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
         $this->add_control( 'label_confirm_pw', [ 'label' => esc_html__( 'Confirm Password label', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Confirm New Password', 'zen-login-authentication' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
         $this->add_control( 'password_hint', [ 'label' => esc_html__( 'Password hint text', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Leave blank to keep your current password.', 'zen-login-authentication' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
-        $this->add_control( 'button_text', [ 'label' => esc_html__( 'Button text', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Save Changes', 'zen-login-authentication' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
+        $this->add_control( 'button_text', [ 'label' => esc_html__( 'Save Profile button text', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Save Profile', 'zen-login-authentication' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
+        $this->add_control( 'update_password_text', [ 'label' => esc_html__( 'Update Password button text', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => '', 'placeholder' => esc_html__( 'Update Password', 'zen-login-authentication' ), 'label_block' => true, 'dynamic' => [ 'active' => true ] ] );
 
         // --- Field Placeholders ---
         $this->add_control( 'zenlogau_h_placeholders', [ 'label' => esc_html__( 'Field Placeholders', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
@@ -1550,6 +1551,51 @@ class ZENLOGAU_Elementor_Account_Widget extends ZENLOGAU_Elementor_Base_Widget {
         $this->register_strength_meter_style_controls();
         $this->register_2fa_style_controls();
         $this->register_passkeys_style_controls();
+        $this->register_account_cards_style_controls();
+    }
+
+    /**
+     * Style controls for the new Account card headings, descriptions, and card
+     * surfaces (Profile Information, Change Password, Session Management). Without
+     * these the headings inherit the theme's heading colour with no way to change
+     * them (Golden Rule #6).
+     */
+    protected function register_account_cards_style_controls(): void {
+        $this->start_controls_section( 'section_account_cards_style', [
+            'label' => esc_html__( 'Account Cards', 'zen-login-authentication' ),
+            'tab'   => \Elementor\Controls_Manager::TAB_STYLE,
+        ] );
+
+        $this->add_control( 'card_title_heading', [ 'label' => esc_html__( 'Card Headings', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::HEADING ] );
+        $this->add_control( 'card_title_color', [
+            'label'     => esc_html__( 'Heading Color', 'zen-login-authentication' ),
+            'type'      => \Elementor\Controls_Manager::COLOR,
+            'selectors' => [ '{{WRAPPER}} .fauth-card-title, {{WRAPPER}} .fauth-sessions-title' => 'color: {{VALUE}};' ],
+        ] );
+        $this->add_group_control( \Elementor\Group_Control_Typography::get_type(), [
+            'name'     => 'card_title_typography',
+            'selector' => '{{WRAPPER}} .fauth-card-title, {{WRAPPER}} .fauth-sessions-title',
+        ] );
+
+        $this->add_control( 'card_sub_heading', [ 'label' => esc_html__( 'Card Descriptions', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
+        $this->add_control( 'card_sub_color', [
+            'label'     => esc_html__( 'Description Color', 'zen-login-authentication' ),
+            'type'      => \Elementor\Controls_Manager::COLOR,
+            'selectors' => [ '{{WRAPPER}} .fauth-card-sub, {{WRAPPER}} .fauth-sessions-sub' => 'color: {{VALUE}};' ],
+        ] );
+
+        $this->add_control( 'card_surface_heading', [ 'label' => esc_html__( 'Card Surface', 'zen-login-authentication' ), 'type' => \Elementor\Controls_Manager::HEADING, 'separator' => 'before' ] );
+        $this->add_control( 'card_bg', [
+            'label'     => esc_html__( 'Background', 'zen-login-authentication' ),
+            'type'      => \Elementor\Controls_Manager::COLOR,
+            'selectors' => [ '{{WRAPPER}} .fauth-card, {{WRAPPER}} .fauth-sessions, {{WRAPPER}} .fauth-2fa, {{WRAPPER}} .fauth-passkeys' => 'background-color: {{VALUE}};' ],
+        ] );
+        $this->add_group_control( \Elementor\Group_Control_Border::get_type(), [
+            'name'     => 'card_border',
+            'selector' => '{{WRAPPER}} .fauth-card, {{WRAPPER}} .fauth-sessions, {{WRAPPER}} .fauth-2fa, {{WRAPPER}} .fauth-passkeys',
+        ] );
+
+        $this->end_controls_section();
     }
 
     /**
@@ -1861,7 +1907,8 @@ class ZENLOGAU_Elementor_Account_Widget extends ZENLOGAU_Elementor_Base_Widget {
             'label_password'           => [ 'pass1',        'label' ],
             'label_confirm_pw'         => [ 'pass2',        'label' ],
             'password_hint'            => [ 'pass1',        'description' ],
-            'button_text'              => [ 'submit',       'value' ],
+            'button_text'              => [ 'submit_profile',  'value' ],
+            'update_password_text'     => [ 'submit_password', 'value' ],
             'placeholder_first_name'   => [ 'first_name',   'placeholder' ],
             'placeholder_last_name'    => [ 'last_name',    'placeholder' ],
             'placeholder_email'        => [ 'user_email',   'placeholder' ],
@@ -1886,28 +1933,56 @@ class ZENLOGAU_Elementor_Account_Widget extends ZENLOGAU_Elementor_Base_Widget {
         echo '<div class="fauth-form-wrap">';
         echo '<# var tag=settings.form_title_tag||"h3";if(settings.form_title_text){#><{{tag}} class="fauth-form-title">{{settings.form_title_text}}</{{tag}}><#}#>';
         echo '<div class="fauth fauth-form fauth-form-account"><div class="fauth-inner-form">';
-        echo '<# if ( "yes" === settings.show_username ) { #><p class="fauth-field-wrap"><label class="fauth-label"><# if(settings.label_username){#>{{settings.label_username}}<#}else{#>' . esc_html__('Username','zen-login-authentication') . '<#}#></label><input type="text" class="fauth-field" value="username" disabled><span class="fauth-description">' . esc_html__('Usernames cannot be changed.','zen-login-authentication') . '</span></p><# } #>';
+
+        // ----- Profile Information card -----
+        echo '<div class="fauth-card fauth-card--profile"><div class="fauth-card-head">';
+        echo '<h3 class="fauth-card-title">' . esc_html__('Profile Information','zen-login-authentication') . '</h3>';
+        echo '<p class="fauth-card-sub">' . esc_html__('Update your account profile information and email address.','zen-login-authentication') . '</p></div>';
+        echo '<div class="fauth-card-body">';
+        echo '<div class="fauth-row">';
+        echo '<# if ( "yes" === settings.show_username ) { #><p class="fauth-field-wrap"><label class="fauth-label"><# if(settings.label_username){#>{{settings.label_username}}<#}else{#>' . esc_html__('Username','zen-login-authentication') . '<#}#></label><input type="text" class="fauth-field" value="username" disabled></p><# } #>';
+        echo '<p class="fauth-field-wrap"><label class="fauth-label"><# if(settings.label_email){#>{{settings.label_email}}<#}else{#>' . esc_html__('Email Address','zen-login-authentication') . '<#}#> <span class="fauth-required">*</span></label><input type="email" class="fauth-field" placeholder="<# if(settings.placeholder_email){#>{{settings.placeholder_email}}<#}#>" disabled></p>';
+        echo '</div>';
+        echo '<div class="fauth-row">';
         echo '<p class="fauth-field-wrap"><label class="fauth-label"><# if(settings.label_first_name){#>{{settings.label_first_name}}<#}else{#>' . esc_html__('First Name','zen-login-authentication') . '<#}#></label><input type="text" class="fauth-field" placeholder="<# if(settings.placeholder_first_name){#>{{settings.placeholder_first_name}}<#}#>" disabled></p>';
         echo '<p class="fauth-field-wrap"><label class="fauth-label"><# if(settings.label_last_name){#>{{settings.label_last_name}}<#}else{#>' . esc_html__('Last Name','zen-login-authentication') . '<#}#></label><input type="text" class="fauth-field" placeholder="<# if(settings.placeholder_last_name){#>{{settings.placeholder_last_name}}<#}#>" disabled></p>';
+        echo '</div>';
         echo '<p class="fauth-field-wrap"><label class="fauth-label"><# if(settings.label_display_name){#>{{settings.label_display_name}}<#}else{#>' . esc_html__('Display name publicly as','zen-login-authentication') . '<#}#> <span class="fauth-required">*</span></label><select class="fauth-field fauth-select" disabled><option>' . esc_html__('Your Name','zen-login-authentication') . '</option></select></p>';
-        echo '<p class="fauth-field-wrap"><label class="fauth-label"><# if(settings.label_email){#>{{settings.label_email}}<#}else{#>' . esc_html__('Email Address','zen-login-authentication') . '<#}#> <span class="fauth-required">*</span></label><input type="email" class="fauth-field" placeholder="<# if(settings.placeholder_email){#>{{settings.placeholder_email}}<#}#>" disabled></p>';
+        echo '<p class="fauth-submit"><button type="button" class="fauth-button fauth-submit-button fauth-button-inline"><# if(settings.button_text){#>{{settings.button_text}}<#}else{#>' . esc_html__('Save Profile','zen-login-authentication') . '<#}#></button></p>';
+        echo '</div></div>';
+
+        // ----- Change Password card -----
+        echo '<div class="fauth-card fauth-card--password"><div class="fauth-card-head">';
+        echo '<h3 class="fauth-card-title">' . esc_html__('Change Password','zen-login-authentication') . '</h3>';
+        echo '<p class="fauth-card-sub">' . esc_html__('Update your password to keep your account secure.','zen-login-authentication') . '</p></div>';
+        echo '<div class="fauth-card-body">';
         echo '<p class="fauth-field-wrap fauth-field-wrap--password"><label class="fauth-label"><# if(settings.label_password){#>{{settings.label_password}}<#}else{#>' . esc_html__('New Password','zen-login-authentication') . '<#}#></label><input type="password" class="fauth-field" placeholder="<# if(settings.placeholder_password){#>{{settings.placeholder_password}}<#}#>" disabled><button type="button" class="fauth-password-toggle"><# if(settings.toggle_show_text){#>{{settings.toggle_show_text}}<#}else{#>' . esc_html__('Show','zen-login-authentication') . '<#}#></button><span class="fauth-description"><# if(settings.password_hint){#>{{settings.password_hint}}<#}else{#>' . esc_html__('Leave blank to keep your current password.','zen-login-authentication') . '<#}#></span></p>';
         echo '<p class="fauth-field-wrap fauth-field-wrap--password"><label class="fauth-label"><# if(settings.label_confirm_pw){#>{{settings.label_confirm_pw}}<#}else{#>' . esc_html__('Confirm New Password','zen-login-authentication') . '<#}#></label><input type="password" class="fauth-field" placeholder="<# if(settings.placeholder_confirm_pw){#>{{settings.placeholder_confirm_pw}}<#}#>" disabled><button type="button" class="fauth-password-toggle"><# if(settings.toggle_show_text){#>{{settings.toggle_show_text}}<#}else{#>' . esc_html__('Show','zen-login-authentication') . '<#}#></button></p>';
-        echo '<p class="fauth-field-wrap fauth-field-wrap--password"><label class="fauth-label">' . esc_html__('Current Password','zen-login-authentication') . '</label><input type="password" class="fauth-field" disabled><button type="button" class="fauth-password-toggle">' . esc_html__('Show','zen-login-authentication') . '</button><span class="fauth-description">' . esc_html__('Required only to change your email address or password.','zen-login-authentication') . '</span></p>';
-        echo '<p class="fauth-submit"><button type="button" class="fauth-button fauth-submit-button"><# if(settings.button_text){#>{{settings.button_text}}<#}else{#>' . esc_html__('Save Changes','zen-login-authentication') . '<#}#></button></p>';
+        echo '<p class="fauth-field-wrap fauth-field-wrap--password"><label class="fauth-label">' . esc_html__('Current Password','zen-login-authentication') . '</label><input type="password" class="fauth-field" disabled><button type="button" class="fauth-password-toggle">' . esc_html__('Show','zen-login-authentication') . '</button><span class="fauth-description">' . esc_html__('Required to change your email address or password.','zen-login-authentication') . '</span></p>';
+        echo '<p class="fauth-submit"><button type="button" class="fauth-button fauth-submit-button fauth-button-inline"><# if(settings.update_password_text){#>{{settings.update_password_text}}<#}else{#>' . esc_html__('Update Password','zen-login-authentication') . '<#}#></button></p>';
+        echo '</div></div>';
+
         echo '</div>'; // close .fauth-inner-form
-        echo '<# if("yes"===settings.show_links){#><p class="fauth-links"><a href="#">' . esc_html__('Log Out','zen-login-authentication') . '</a> &bull; <a href="#">' . esc_html__('Sign out of all other devices','zen-login-authentication') . '</a></p><#}#>';
+
         // Editor previews of the dynamic Account sections. On the front end these
         // render server-side via hooks (they need a logged-in user / live state),
-        // so they're shown statically here so they appear in the editor and can be styled.
+        // so they're shown statically here as cards so they appear in the editor.
         echo '<div class="fauth fauth-passkeys"><h3 class="fauth-passkeys-title">' . esc_html__('Passkeys','zen-login-authentication') . '</h3>';
         echo '<p class="fauth-passkeys-intro">' . esc_html__('Sign in without a password using your fingerprint, face, screen lock, or a security key.','zen-login-authentication') . '</p>';
         echo '<div class="fauth-passkeys-list"><ul class="fauth-passkey-items"><li class="fauth-passkey-item"><span class="fauth-passkey-name">' . esc_html__('My device','zen-login-authentication') . '</span> <button type="button" class="fauth-link-button fauth-passkey-remove">' . esc_html__('Remove','zen-login-authentication') . '</button></li></ul></div>';
         echo '<p class="fauth-passkeys-actions"><button type="button" class="fauth-button fauth-submit-button fauth-passkey-add">' . esc_html__('Add a passkey','zen-login-authentication') . '</button></p></div>';
+
         echo '<div class="fauth fauth-2fa"><h3 class="fauth-2fa-title">' . esc_html__('Two-Factor Authentication','zen-login-authentication') . '</h3>';
-        echo '<p class="fauth-2fa-status">' . esc_html__('Add a second step at login with an authenticator app.','zen-login-authentication') . '</p>';
+        echo '<p class="fauth-2fa-sub">' . esc_html__('Add an extra layer of security to your account.','zen-login-authentication') . '</p>';
+        echo '<p class="fauth-2fa-status fauth-2fa-off">' . esc_html__('Two-factor authentication is off. Add a second step at login using an authenticator app.','zen-login-authentication') . '</p>';
         echo '<p class="fauth-submit"><button type="button" class="fauth-button fauth-submit-button">' . esc_html__('Set up two-factor authentication','zen-login-authentication') . '</button></p></div>';
-        echo '</div>'; // close .fauth-form
+
+        echo '<div class="fauth fauth-sessions"><h3 class="fauth-sessions-title">' . esc_html__('Session Management','zen-login-authentication') . '</h3>';
+        echo '<p class="fauth-sessions-sub">' . esc_html__('These are the devices currently signed in to your account.','zen-login-authentication') . '</p>';
+        echo '<ul class="fauth-session-items"><li class="fauth-session-item"><span class="fauth-session-device">' . esc_html__('Chrome on Windows','zen-login-authentication') . ' <span class="fauth-session-current">' . esc_html__('this device','zen-login-authentication') . '</span></span><span class="fauth-session-meta">192.0.2.1</span></li></ul>';
+        echo '<p class="fauth-submit"><button type="button" class="fauth-button fauth-button-secondary">' . esc_html__('Log Out','zen-login-authentication') . '</button></p></div>';
+
+        echo '</div>'; // close .fauth-form-account
         echo '</div><!-- /.fauth-form-wrap -->';
     }
 }
