@@ -19,33 +19,43 @@
 defined( 'ABSPATH' ) || exit;
 
 /* -----------------------------------------------------------------------
- * Action link — sits in the Account form's links row, after "Log Out"
+ * Session Management card — rendered after the account form, alongside the
+ * Passkeys and Two-Factor cards (priority 30, so it comes last).
  * -------------------------------------------------------------------- */
-add_filter( 'zenlogau_form_links_account', 'zenlogau_sessions_account_link', 20 );
+add_action( 'zenlogau_after_form_account', 'zenlogau_sessions_render_card', 30 );
 
-function zenlogau_sessions_account_link( $links ) {
+function zenlogau_sessions_render_card(): void {
     if ( ! is_user_logged_in() ) {
-        return $links;
-    }
-    // Only offer it when there is actually something to sign out.
-    if ( zenlogau_other_sessions_count( get_current_user_id() ) < 1 ) {
-        return $links;
+        return;
     }
 
-    $url = add_query_arg(
-        [
-            'zenlogau_sessions_action' => 'signout_others',
-            '_wpnonce'                 => wp_create_nonce( 'zenlogau_signout_others' ),
-        ],
-        zenlogau_get_action_url( 'account' )
-    );
+    $others     = zenlogau_other_sessions_count( get_current_user_id() );
+    $logout_url = add_query_arg( '_wpnonce', wp_create_nonce( 'log-out' ), zenlogau_get_action_url( 'logout' ) );
 
-    $links[] = [
-        'label' => __( 'Sign out of all other devices', 'zen-login-authentication' ),
-        'url'   => $url,
-    ];
+    echo '<div class="fauth fauth-sessions">';
+    echo '<h3 class="fauth-sessions-title">' . esc_html__( 'Session Management', 'zen-login-authentication' ) . '</h3>';
+    echo '<p class="fauth-sessions-sub">' . esc_html__( 'Manage your active sessions and sign out from your devices.', 'zen-login-authentication' ) . '</p>';
 
-    return $links;
+    echo '<p class="fauth-submit"><a class="fauth-button fauth-button-secondary" href="' . esc_url( $logout_url ) . '">'
+        . esc_html__( 'Log Out', 'zen-login-authentication' ) . '</a></p>';
+
+    // The "sign out everywhere else" action is offered only when there is
+    // actually another active session to end (its presence tells the user they
+    // are signed in elsewhere).
+    if ( $others > 0 ) {
+        $signout_url = add_query_arg(
+            [
+                'zenlogau_sessions_action' => 'signout_others',
+                '_wpnonce'                 => wp_create_nonce( 'zenlogau_signout_others' ),
+            ],
+            zenlogau_get_action_url( 'account' )
+        );
+        echo '<p class="fauth-submit"><a class="fauth-button fauth-button-secondary" href="' . esc_url( $signout_url ) . '">'
+            . esc_html__( 'Sign out of all other devices', 'zen-login-authentication' ) . '</a></p>';
+        echo '<p class="fauth-description">' . esc_html__( 'This signs you out everywhere except this device.', 'zen-login-authentication' ) . '</p>';
+    }
+
+    echo '</div>';
 }
 
 /* -----------------------------------------------------------------------

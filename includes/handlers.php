@@ -572,24 +572,38 @@ function zenlogau_handle_account(): void {
     $pass1        = zenlogau_get_request_value( 'pass1', 'post' );
     $pass2        = zenlogau_get_request_value( 'pass2', 'post' );
 
+    // The Account page has two cards with their own submit buttons — "Save
+    // Profile" and "Update Password" — each posting its section name so only
+    // that section is validated and saved. A submission with no section name
+    // (an AJAX serialize that dropped the clicked button, or an older cached
+    // single-button form) falls back to processing both, the prior behaviour.
+    $action      = sanitize_key( zenlogau_get_request_value( 'zenlogau_account_action', 'post' ) );
+    $do_profile  = ( 'profile' === $action || '' === $action );
+    $do_password = ( 'password' === $action || '' === $action );
+
     $errors = new WP_Error();
 
-    if ( '' === $display_name ) {
+    if ( $do_profile && '' === $display_name ) {
         $errors->add( 'empty_display_name', __( 'Please choose a display name.', 'zen-login-authentication' ) );
     }
 
-    if ( '' === $user_email || ! is_email( $user_email ) ) {
-        $errors->add( 'invalid_email', __( 'Please enter a valid email address.', 'zen-login-authentication' ) );
-    } else {
-        $email_owner = email_exists( $user_email );
-        if ( $email_owner && (int) $email_owner !== (int) $user->ID ) {
-            $errors->add( 'email_exists', __( 'That email address is already in use by another account.', 'zen-login-authentication' ) );
+    if ( $do_profile ) {
+        if ( '' === $user_email || ! is_email( $user_email ) ) {
+            $errors->add( 'invalid_email', __( 'Please enter a valid email address.', 'zen-login-authentication' ) );
+        } else {
+            $email_owner = email_exists( $user_email );
+            if ( $email_owner && (int) $email_owner !== (int) $user->ID ) {
+                $errors->add( 'email_exists', __( 'That email address is already in use by another account.', 'zen-login-authentication' ) );
+            }
         }
     }
 
     // Password change is optional — both fields blank means "keep current".
     // Same rules as the reset-password handler: match + minimum 8 characters.
-    $change_password = ( '' !== $pass1 || '' !== $pass2 );
+    $change_password = ( $do_password && ( '' !== $pass1 || '' !== $pass2 ) );
+    if ( 'password' === $action && ! $change_password ) {
+        $errors->add( 'empty_password', __( 'Please enter a new password to update it.', 'zen-login-authentication' ) );
+    }
     if ( $change_password ) {
         if ( $pass1 !== $pass2 ) {
             $errors->add( 'password_mismatch', __( 'Passwords do not match. Please try again.', 'zen-login-authentication' ) );
@@ -606,7 +620,7 @@ function zenlogau_handle_account(): void {
     // — closing the "change email → password-reset → takeover" path. Filterable
     // off for sites whose users sign in only via Google/passkeys and may not
     // know a password. (wp_update_user() also emails the OLD address on change.)
-    $email_changed   = ( '' !== $user_email && is_email( $user_email ) && $user_email !== $user->user_email );
+    $email_changed   = ( $do_profile && '' !== $user_email && is_email( $user_email ) && $user_email !== $user->user_email );
     $require_current = (bool) apply_filters( 'zenlogau_account_require_current_password', true, $user );
     if ( $require_current && ( $change_password || $email_changed ) ) {
         $current_password = (string) zenlogau_get_request_value( 'current_password', 'post' );
@@ -632,16 +646,16 @@ function zenlogau_handle_account(): void {
         return;
     }
 
-    $userdata = [
-        'ID'           => $user->ID,
+    $userdata = [ 'ID' => $user->ID ];
+    if ( $do_profile ) {
         // First/last may be empty — clearing them is allowed, exactly like
         // wp-admin/profile.php. The submitted display name is free text there
         // too (the dropdown is UI guidance, not a server-side whitelist).
-        'first_name'   => $first_name,
-        'last_name'    => $last_name,
-        'display_name' => $display_name,
-        'user_email'   => $user_email,
-    ];
+        $userdata['first_name']   = $first_name;
+        $userdata['last_name']    = $last_name;
+        $userdata['display_name'] = $display_name;
+        $userdata['user_email']   = $user_email;
+    }
     if ( $change_password ) {
         // wp_update_user() re-sets the auth cookie when the current user's own
         // password changes, so they stay logged in while every other session
@@ -671,9 +685,10 @@ function zenlogau_handle_account(): void {
     // PRG: redirect back to the page that hosted the form (the form self-posts
     // to it) so a refresh cannot resubmit, and so the re-rendered fields show
     // the freshly saved values instead of the stale pre-update ones.
-    $redirect = zenlogau_validate_redirect( add_query_arg( 'zenlogau_updated', '1', remove_query_arg( 'zenlogau_updated' ) ) );
+    $updated_flag = '' !== $action ? $action : '1';
+    $redirect     = zenlogau_validate_redirect( add_query_arg( 'zenlogau_updated', $updated_flag, remove_query_arg( 'zenlogau_updated' ) ) );
     if ( '' === $redirect ) {
-        $redirect = add_query_arg( 'zenlogau_updated', '1', zenlogau_get_action_url( 'account' ) );
+        $redirect = add_query_arg( 'zenlogau_updated', $updated_flag, zenlogau_get_action_url( 'account' ) );
     }
 
     if ( $is_ajax ) {
@@ -695,12 +710,17 @@ function zenlogau_account_maybe_show_updated_notice(): void {
         return;
     }
     $updated = isset( $_GET['zenlogau_updated'] ) && is_string( $_GET['zenlogau_updated'] ) ? sanitize_key( wp_unslash( $_GET['zenlogau_updated'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only display flag set by our own post-update redirect; shows a notice, changes no state.
-    if ( '1' !== $updated ) {
+    if ( '' === $updated ) {
         return;
     }
+    $message = 'password' === $updated
+        ? __( 'Your password has been updated.', 'zen-login-authentication' )
+        : ( 'profile' === $updated
+            ? __( 'Your profile has been updated.', 'zen-login-authentication' )
+            : __( 'Your account has been updated.', 'zen-login-authentication' ) );
     $form = zenlogau()->get_form( 'account' );
     if ( $form ) {
-        $form->add_message( 'account_updated', __( 'Your profile has been updated.', 'zen-login-authentication' ) );
+        $form->add_message( 'account_updated', $message );
     }
 }
 

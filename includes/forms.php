@@ -253,6 +253,16 @@ function zenlogau_register_account_form(): void {
         $user_email = $user->user_email;
     }
 
+    // ===== Profile Information card =====
+    $form->add_field( 'html_profile_open', [
+        'type'     => 'html',
+        'priority' => 1,
+        'html'     => '<div class="fauth-card fauth-card--profile"><div class="fauth-card-head">'
+            . '<h3 class="fauth-card-title">' . esc_html__( 'Profile Information', 'zen-login-authentication' ) . '</h3>'
+            . '<p class="fauth-card-sub">' . esc_html__( 'Update your account profile information and email address.', 'zen-login-authentication' ) . '</p>'
+            . '</div><div class="fauth-card-body"><div class="fauth-row">',
+    ] );
+
     // Read-only username, same as wp-admin's profile screen. Disabled inputs
     // are never submitted, so the handler cannot receive (or be tricked into
     // processing) a username change.
@@ -264,6 +274,22 @@ function zenlogau_register_account_form(): void {
         'attrs'       => [ 'disabled' => 'disabled', 'autocomplete' => 'username' ],
         'priority'    => 5,
         'description' => __( 'Usernames cannot be changed.', 'zen-login-authentication' ),
+    ] );
+
+    $form->add_field( 'user_email', [
+        'type'     => 'email',
+        'label'    => __( 'Email Address', 'zen-login-authentication' ),
+        'value'    => $user_email,
+        'id'       => 'user_email',
+        'attrs'    => [ 'autocomplete' => 'email' ],
+        'required' => true,
+        'priority' => 8,
+    ] );
+
+    $form->add_field( 'html_row_names', [
+        'type'     => 'html',
+        'priority' => 9,
+        'html'     => '</div><div class="fauth-row">',
     ] );
 
     $form->add_field( 'first_name', [
@@ -284,6 +310,12 @@ function zenlogau_register_account_form(): void {
         'priority' => 12,
     ] );
 
+    $form->add_field( 'html_row_close', [
+        'type'     => 'html',
+        'priority' => 13,
+        'html'     => '</div>',
+    ] );
+
     $form->add_field( 'display_name', [
         'type'     => 'select',
         'label'    => __( 'Display name publicly as', 'zen-login-authentication' ),
@@ -301,14 +333,29 @@ function zenlogau_register_account_form(): void {
         'priority' => 14,
     ] );
 
-    $form->add_field( 'user_email', [
-        'type'     => 'email',
-        'label'    => __( 'Email Address', 'zen-login-authentication' ),
-        'value'    => $user_email,
-        'id'       => 'user_email',
-        'attrs'    => [ 'autocomplete' => 'email' ],
-        'required' => true,
-        'priority' => 20,
+    $form->add_field( 'submit_profile', [
+        'type'         => 'submit',
+        'value'        => __( 'Save Profile', 'zen-login-authentication' ),
+        'submit_name'  => 'zenlogau_account_action',
+        'submit_value' => 'profile',
+        'button_class' => 'fauth-button-inline',
+        'priority'     => 16,
+    ] );
+
+    $form->add_field( 'html_profile_close', [
+        'type'     => 'html',
+        'priority' => 18,
+        'html'     => '</div></div>',
+    ] );
+
+    // ===== Change Password card =====
+    $form->add_field( 'html_password_open', [
+        'type'     => 'html',
+        'priority' => 28,
+        'html'     => '<div class="fauth-card fauth-card--password"><div class="fauth-card-head">'
+            . '<h3 class="fauth-card-title">' . esc_html__( 'Change Password', 'zen-login-authentication' ) . '</h3>'
+            . '<p class="fauth-card-sub">' . esc_html__( 'Update your password to keep your account secure.', 'zen-login-authentication' ) . '</p>'
+            . '</div><div class="fauth-card-body">',
     ] );
 
     // ids pass1/pass2 intentionally match the reset form: the password
@@ -319,16 +366,18 @@ function zenlogau_register_account_form(): void {
         'label'       => __( 'New Password', 'zen-login-authentication' ),
         'id'          => 'pass1',
         'attrs'       => [ 'autocomplete' => 'new-password' ],
+        'placeholder' => __( 'Enter new password', 'zen-login-authentication' ),
         'priority'    => 30,
         'description' => __( 'Leave blank to keep your current password.', 'zen-login-authentication' ),
     ] );
 
     $form->add_field( 'pass2', [
-        'type'     => 'password',
-        'label'    => __( 'Confirm New Password', 'zen-login-authentication' ),
-        'id'       => 'pass2',
-        'attrs'    => [ 'autocomplete' => 'new-password' ],
-        'priority' => 35,
+        'type'        => 'password',
+        'label'       => __( 'Confirm New Password', 'zen-login-authentication' ),
+        'id'          => 'pass2',
+        'attrs'       => [ 'autocomplete' => 'new-password' ],
+        'placeholder' => __( 'Confirm new password', 'zen-login-authentication' ),
+        'priority'    => 35,
     ] );
 
     // Re-authentication for sensitive changes. Only consulted server-side when
@@ -339,19 +388,30 @@ function zenlogau_register_account_form(): void {
         'label'       => __( 'Current Password', 'zen-login-authentication' ),
         'id'          => 'current_password',
         'attrs'       => [ 'autocomplete' => 'current-password' ],
+        'placeholder' => __( 'Enter current password', 'zen-login-authentication' ),
         'priority'    => 37,
-        'description' => __( 'Required only to change your email address or password.', 'zen-login-authentication' ),
+        'description' => __( 'Required to change your email address or password.', 'zen-login-authentication' ),
     ] );
 
+    $form->add_field( 'submit_password', [
+        'type'         => 'submit',
+        'value'        => __( 'Update Password', 'zen-login-authentication' ),
+        'submit_name'  => 'zenlogau_account_action',
+        'submit_value' => 'password',
+        'button_class' => 'fauth-button-inline',
+        'priority'     => 39,
+    ] );
+
+    $form->add_field( 'html_password_close', [
+        'type'     => 'html',
+        'priority' => 42,
+        'html'     => '</div></div>',
+    ] );
+
+    // Third-party additions render after both cards, still inside the form.
     $form->add_field( 'account_form_hook', [
         'type'     => 'action',
-        'priority' => 38,
-    ] );
-
-    $form->add_field( 'submit', [
-        'type'     => 'submit',
-        'value'    => __( 'Save Changes', 'zen-login-authentication' ),
-        'priority' => 40,
+        'priority' => 50,
     ] );
 
     zenlogau()->register_form( $form );

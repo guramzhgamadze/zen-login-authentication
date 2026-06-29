@@ -4,7 +4,7 @@ Tags: login, registration, authentication, elementor, frontend
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 2.1.3
+Stable tag: 2.1.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -147,6 +147,9 @@ Only pages the plugin created that you never edited (no content, no Elementor da
 
 == Changelog ==
 
+= 2.1.4 =
+* Restructured the Account page into clear cards — Profile Information, Change Password, Passkeys, Two-Factor Authentication, and Session Management — with two-column profile fields and separate "Save Profile" and "Update Password" actions. Same colours, clearer layout.
+
 = 2.1.3 =
 * Security hardening (post-audit): turning OFF two-factor authentication now requires a current authenticator or recovery code, and TOTP codes can no longer be replayed within their validity window.
 * Auto-login after registration now fires the standard login hook, so new-device alerts and the activity log capture it.
@@ -257,6 +260,9 @@ Only pages the plugin created that you never edited (no content, no Elementor da
 Older versions: see the project's CHANGELOG / README on the plugin homepage.
 
 == Upgrade Notice ==
+
+= 2.1.4 =
+The Account page is reorganised into clear cards (Profile, Password, Passkeys, Two-Factor, Sessions). No data or colour changes.
 
 = 2.1.3 =
 Security hardening from a full audit: 2FA-disable re-authentication, TOTP replay protection, passkey rate-limiting, account-change re-auth, and GDPR export/erasure. Recommended for everyone.

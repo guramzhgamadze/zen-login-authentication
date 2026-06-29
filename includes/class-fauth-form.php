@@ -253,11 +253,21 @@ class ZENLOGAU_Form {
             return;
         }
 
+        if ( 'html' === $type ) {
+            // Structural layout markup (card wrappers, section headings, 2-column
+            // rows) supplied by the form definition. wp_kses_post keeps it to safe
+            // presentation tags while still allowing the layout containers.
+            echo wp_kses_post( (string) ( $field['html'] ?? '' ) );
+            return;
+        }
+
         if ( 'submit' === $type ) {
-            echo '<p class="fauth-submit">'
-                . '<button type="submit" class="fauth-button fauth-submit-button">'
-                . esc_html( $value )
-                . '</button></p>';
+            $btn_class = ! empty( $field['button_class'] ) ? ' ' . (string) $field['button_class'] : '';
+            echo '<p class="fauth-submit"><button type="submit" class="fauth-button fauth-submit-button' . esc_attr( $btn_class ) . '"';
+            if ( ! empty( $field['submit_name'] ) ) {
+                echo ' name="' . esc_attr( (string) $field['submit_name'] ) . '" value="' . esc_attr( (string) ( $field['submit_value'] ?? '' ) ) . '"';
+            }
+            echo '>' . esc_html( $value ) . '</button></p>';
             return;
         }
 

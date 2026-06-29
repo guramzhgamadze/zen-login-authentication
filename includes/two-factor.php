@@ -490,6 +490,7 @@ function zenlogau_2fa_render_account_panel(): void {
 
     echo '<div class="fauth fauth-2fa">';
     echo '<h3 class="fauth-2fa-title">' . esc_html__( 'Two-Factor Authentication', 'zen-login-authentication' ) . '</h3>';
+    echo '<p class="fauth-2fa-sub">' . esc_html__( 'Add an extra layer of security to your account.', 'zen-login-authentication' ) . '</p>';
 
     if ( zenlogau_2fa_user_enabled( $uid ) ) {
         zenlogau_2fa_render_enabled_state( $uid );

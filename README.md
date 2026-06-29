@@ -267,6 +267,12 @@ zen-login-authentication/
 
 ## Changelog
 
+### 2.1.4
+
+**Account page restructure**
+
+- Reorganised the Account page into clear cards — Profile Information, Change Password, Passkeys, Two-Factor Authentication, and Session Management — with two-column profile fields and separate "Save Profile" / "Update Password" actions. Colours unchanged.
+
 ### 2.1.3
 
 **Security hardening (post-audit)**
