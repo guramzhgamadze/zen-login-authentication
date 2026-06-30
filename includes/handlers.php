@@ -529,6 +529,9 @@ function zenlogau_handle_resetpass(): void {
 
     zenlogau_rate_limit_clear( 'resetpass' );
     reset_password( $user, $pass1 );
+    // The user just chose a password they know — re-enable the current-password
+    // gate for any passwordless (Google/passkey-created) account.
+    zenlogau_mark_local_password_set( $user->ID );
     do_action( 'zenlogau_password_reset', $user );
 
     $redirect = add_query_arg( 'password', 'changed', zenlogau_get_action_url( 'login' ) );
@@ -539,6 +542,40 @@ function zenlogau_handle_resetpass(): void {
 
     wp_safe_redirect( $redirect );
     exit;
+}
+
+/**
+ * Whether a user has a local password they would actually know.
+ *
+ * Accounts created through Google sign-in get a random password the user never
+ * sees; such accounts are flagged with the zenlogau_no_local_password user meta
+ * at creation and the flag is cleared the moment they set a real password (via
+ * the Account form or a password reset). The Account form uses this to avoid
+ * demanding a "current password" from someone who cannot possibly have one,
+ * which would otherwise lock Google-only users out of editing their own account.
+ *
+ * @param WP_User $user
+ * @return bool True if the user knows a local password; false if passwordless.
+ */
+function zenlogau_user_has_local_password( WP_User $user ): bool {
+    $passwordless = '1' === (string) get_user_meta( $user->ID, 'zenlogau_no_local_password', true );
+    /**
+     * Filter the detected "has a local password" result.
+     *
+     * @param bool    $has_password
+     * @param WP_User $user
+     */
+    return (bool) apply_filters( 'zenlogau_user_has_local_password', ! $passwordless, $user );
+}
+
+/**
+ * Record that a user now has a local password they know (clears the passwordless
+ * flag). Call after any path that sets a user-chosen password.
+ *
+ * @param int $user_id
+ */
+function zenlogau_mark_local_password_set( int $user_id ): void {
+    delete_user_meta( $user_id, 'zenlogau_no_local_password' );
 }
 
 /* -----------------------------------------------------------------------
@@ -622,6 +659,13 @@ function zenlogau_handle_account(): void {
     // know a password. (wp_update_user() also emails the OLD address on change.)
     $email_changed   = ( $do_profile && '' !== $user_email && is_email( $user_email ) && $user_email !== $user->user_email );
     $require_current = (bool) apply_filters( 'zenlogau_account_require_current_password', true, $user );
+    // Automatically waive the requirement for accounts with no local password
+    // (created via Google/passkeys): they cannot supply a current password, so
+    // demanding one would lock them out of their own account. Setting a password
+    // here clears the flag below, after which the check applies normally.
+    if ( $require_current && ! zenlogau_user_has_local_password( $user ) ) {
+        $require_current = false;
+    }
     if ( $require_current && ( $change_password || $email_changed ) ) {
         $current_password = (string) zenlogau_get_request_value( 'current_password', 'post' );
         if ( '' === $current_password || ! wp_check_password( $current_password, $user->user_pass, $user->ID ) ) {
@@ -678,6 +722,11 @@ function zenlogau_handle_account(): void {
             zenlogau_send_ajax_error( [ 'errors' => $messages ] );
         }
         return;
+    }
+
+    if ( $change_password ) {
+        // They now know a local password — re-enable the current-password gate.
+        zenlogau_mark_local_password_set( $user->ID );
     }
 
     do_action( 'zenlogau_account_updated', $user->ID, $change_password );

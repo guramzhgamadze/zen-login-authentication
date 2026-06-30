@@ -267,6 +267,26 @@ zen-login-authentication/
 
 ## Changelog
 
+### 2.2.0
+
+**Security & account controls**
+
+- **Trust this device (2FA):** the two-factor login screen offers "Trust this device for 30 days." A trusted browser skips the code prompt on later logins — the password is always still required (the skip only ever applies to the *second* factor, after the password validates). The token is random, stored only as an HMAC hash with an expiry, bound to the user id, capped/pruned, and revoked when 2FA is turned off. Length and on/off are filterable (`zenlogau_2fa_trust_days`, `zenlogau_2fa_trusted_devices_enabled`).
+- **Per-account login throttle:** alongside the per-IP limiter, repeated failed logins for one username add a short, progressively longer delay (capped, default 3s). It is a *delay, not a lockout*, so it cannot be weaponised to lock a victim out, and it blunts credential-stuffing that rotates IPs. Filterable (`zenlogau_account_throttle_*`).
+- **OAuth-user password detection:** Google-created accounts (random password they never see) are flagged `zenlogau_no_local_password`; the Account form no longer demands a "current password" they cannot have, and the requirement re-applies automatically once they set one.
+- **Salt-rotation-safe encryption:** each ciphertext is tagged with a key fingerprint; previous salt material can be supplied via `zenlogau_crypto_fallback_materials` so secrets are decrypted and re-encrypted under the new key after a wp-config salt rotation instead of being lost. `zenlogau_crypto_maybe_reencrypt()` self-heals the Google secret on read.
+- **Faster Google lookups:** indexed reverse-lookup meta key instead of an unindexed `meta_value` scan on large sites (lazily migrates legacy links).
+- **Bundled WebAuthn library:** origin check now requires an exact domain or true subdomain (was a loose suffix match that could accept `notexample.com` for `example.com`); removed the unused `queryFidoMetaDataService()` routine that wrote PEM files to a caller-supplied folder (the wp.org review flag). Both patches are documented for re-application on library updates.
+- **Developer:** version-gated upgrades are now a `version => callback` map (`zenlogau_upgrade_steps()`).
+
+### 2.1.6
+
+**Account action links**
+
+- Session Management's "Log Out" and "Sign out of all other devices" are text action links again (not buttons), matching the plugin's other account links.
+- Added an **Action Links** style section to the Elementor Account widget so every text link — Log Out, Sign out of all other devices, Turn off two-factor authentication, Cancel, and Remove (passkey) — is styleable from the toolbar (colour, hover colour, typography, alignment). They all share the `.fauth-link-button` class.
+- Fixed the minified stylesheet missing the Session Management device-list styles (the device list is styled in production again).
+
 ### 2.1.5
 
 **Account restructure follow-ups**

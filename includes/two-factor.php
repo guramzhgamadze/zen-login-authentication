@@ -25,6 +25,7 @@ defined( 'ABSPATH' ) || exit;
 
 const ZENLOGAU_2FA_RECOVERY_COUNT = 10;
 const ZENLOGAU_2FA_LOGIN_TTL      = 600; // seconds a pending-login token lives
+const ZENLOGAU_2FA_TRUST_COOKIE   = 'zenlogau_2fa_trust'; // "trust this device" token cookie
 
 /* -----------------------------------------------------------------------
  * Feature toggle
@@ -83,7 +84,135 @@ function zenlogau_2fa_disable_user( int $user_id ): void {
     delete_user_meta( $user_id, 'zenlogau_2fa_enabled' );
     delete_user_meta( $user_id, 'zenlogau_2fa_recovery' );
     delete_user_meta( $user_id, 'zenlogau_2fa_last_step' );
+    // Turning 2FA off invalidates every "trusted device" so re-enabling later
+    // can't be silently skipped by a stale trust cookie.
+    zenlogau_2fa_forget_trusted_devices( $user_id );
     do_action( 'zenlogau_2fa_disabled', $user_id );
+}
+
+/* -----------------------------------------------------------------------
+ * "Trust this device for N days" (v2.2.0)
+ *
+ * After a successful challenge the user may mark the browser as trusted, which
+ * sets a long-lived cookie carrying a random token. The token's HMAC hash and
+ * expiry are stored in user meta; a future login from that browser skips the
+ * SECOND factor only (the password is always still required, since this runs on
+ * the authenticate filter after the password validates). The cookie is bound to
+ * the user id, so it can never satisfy 2FA for a different account, and every
+ * trusted device is revoked when 2FA is turned off. Encourages 2FA adoption by
+ * not prompting for a code on every single login from a personal device.
+ * -------------------------------------------------------------------- */
+
+/** Whether the trust-this-device option is offered. Default on; option + filter. */
+function zenlogau_2fa_trusted_enabled(): bool {
+    return (bool) apply_filters(
+        'zenlogau_2fa_trusted_devices_enabled',
+        (bool) get_option( 'zenlogau_2fa_trusted_devices', true )
+    );
+}
+
+/** How long a trusted device is remembered, in seconds (default 30 days). */
+function zenlogau_2fa_trust_ttl(): int {
+    $days = (int) apply_filters( 'zenlogau_2fa_trust_days', 30 );
+    return max( (int) DAY_IN_SECONDS, $days * DAY_IN_SECONDS );
+}
+
+/** Keyed hash of a trust token (never store the raw token). */
+function zenlogau_2fa_trust_hash( string $token ): string {
+    return hash_hmac( 'sha256', $token, wp_salt( 'auth' ) );
+}
+
+/**
+ * @return array<string,int> Map of tokenHash => expiry timestamp.
+ */
+function zenlogau_2fa_get_trusted_devices( int $user_id ): array {
+    $list = get_user_meta( $user_id, 'zenlogau_2fa_trusted', true );
+    return is_array( $list ) ? $list : [];
+}
+
+/** Save the trusted list, dropping expired entries and capping the count. */
+function zenlogau_2fa_store_trusted_devices( int $user_id, array $list ): void {
+    $now  = time();
+    $list = array_filter( $list, static fn( $exp ) => (int) $exp > $now );
+    arsort( $list ); // newest-expiring first
+    $limit = (int) apply_filters( 'zenlogau_2fa_trusted_devices_limit', 10 );
+    if ( $limit > 0 && count( $list ) > $limit ) {
+        $list = array_slice( $list, 0, $limit, true );
+    }
+    if ( empty( $list ) ) {
+        delete_user_meta( $user_id, 'zenlogau_2fa_trusted' );
+    } else {
+        update_user_meta( $user_id, 'zenlogau_2fa_trusted', $list );
+    }
+}
+
+function zenlogau_2fa_forget_trusted_devices( int $user_id ): void {
+    delete_user_meta( $user_id, 'zenlogau_2fa_trusted' );
+}
+
+/**
+ * Read + validate the trust cookie for a specific user. Returns true only if the
+ * cookie names this user and carries a non-expired, stored token hash.
+ */
+function zenlogau_2fa_is_trusted_device( int $user_id ): bool {
+    if ( ! zenlogau_2fa_trusted_enabled() ) {
+        return false;
+    }
+    // Read $_COOKIE directly (request_order "GP" excludes cookies from $_REQUEST).
+    if ( empty( $_COOKIE[ ZENLOGAU_2FA_TRUST_COOKIE ] ) ) {
+        return false;
+    }
+    $raw = sanitize_text_field( wp_unslash( $_COOKIE[ ZENLOGAU_2FA_TRUST_COOKIE ] ) ); // phpcs:ignore WordPress.Security.NonceVerification.NoNonceVerification -- opaque per-user trust token validated by HMAC-hash lookup below; not a state change.
+    if ( ! str_contains( $raw, ':' ) ) {
+        return false;
+    }
+    list( $cookie_uid, $token ) = explode( ':', $raw, 2 );
+    $token = preg_replace( '/[^a-f0-9]/', '', strtolower( (string) $token ) );
+    if ( (int) $cookie_uid !== $user_id || '' === (string) $token ) {
+        return false;
+    }
+
+    $devices = zenlogau_2fa_get_trusted_devices( $user_id );
+    $hash    = zenlogau_2fa_trust_hash( (string) $token );
+    if ( ! isset( $devices[ $hash ] ) ) {
+        return false;
+    }
+    if ( (int) $devices[ $hash ] <= time() ) {
+        // Expired — clean it up.
+        unset( $devices[ $hash ] );
+        zenlogau_2fa_store_trusted_devices( $user_id, $devices );
+        return false;
+    }
+    return true;
+}
+
+/**
+ * Issue a new trust token for the current browser: store its hash + expiry and
+ * set the cookie. Called after a successful challenge when the user opted in.
+ */
+function zenlogau_2fa_remember_device( int $user_id ): void {
+    if ( ! zenlogau_2fa_trusted_enabled() ) {
+        return;
+    }
+    $token   = bin2hex( random_bytes( 32 ) );
+    $expires = time() + zenlogau_2fa_trust_ttl();
+
+    $devices = zenlogau_2fa_get_trusted_devices( $user_id );
+    $devices[ zenlogau_2fa_trust_hash( $token ) ] = $expires;
+    zenlogau_2fa_store_trusted_devices( $user_id, $devices );
+
+    setcookie(
+        ZENLOGAU_2FA_TRUST_COOKIE,
+        $user_id . ':' . $token,
+        [
+            'expires'  => $expires,
+            'path'     => defined( 'COOKIEPATH' ) && COOKIEPATH ? COOKIEPATH : '/',
+            'domain'   => defined( 'COOKIE_DOMAIN' ) ? COOKIE_DOMAIN : '',
+            'secure'   => is_ssl(),
+            'httponly' => true,
+            'samesite' => 'Lax',
+        ]
+    );
 }
 
 /* -----------------------------------------------------------------------
@@ -225,6 +354,12 @@ function zenlogau_2fa_authenticate_guard( $user, $username, $password ) {
         return $user;
     }
 
+    // A previously trusted browser skips the SECOND factor only — the password
+    // above has already validated, so this never weakens the first factor.
+    if ( zenlogau_2fa_is_trusted_device( (int) $user->ID ) ) {
+        return $user;
+    }
+
     $remember = '' !== (string) zenlogau_get_request_value( 'rememberme', 'post' );
     $redirect = (string) zenlogau_get_request_value( 'redirect_to' );
     $token    = zenlogau_2fa_create_pending_login( (int) $user->ID, $remember, $redirect );
@@ -280,6 +415,19 @@ function zenlogau_2fa_challenge_form_html( string $token, bool $error ): string 
     echo '<input type="text" id="zenlogau-2fa-code" name="zenlogau_2fa_code" class="fauth-field" inputmode="numeric" autocomplete="one-time-code" autofocus pattern="[0-9A-Za-z\-]*" required>';
     echo '<span class="fauth-description">' . esc_html__( 'Open your authenticator app and enter the 6-digit code, or use a recovery code.', 'zen-login-authentication' ) . '</span>';
     echo '</p>';
+    if ( zenlogau_2fa_trusted_enabled() ) {
+        $trust_days = max( 1, (int) round( zenlogau_2fa_trust_ttl() / DAY_IN_SECONDS ) );
+        echo '<p class="fauth-field-wrap fauth-2fa-trust">';
+        echo '<label class="fauth-checkbox-label"><input type="checkbox" class="fauth-checkbox" name="zenlogau_2fa_trust_device" value="1"> ';
+        echo esc_html(
+            sprintf(
+                /* translators: %d: number of days the device stays trusted. */
+                _n( 'Trust this device for %d day', 'Trust this device for %d days', $trust_days, 'zen-login-authentication' ),
+                $trust_days
+            )
+        );
+        echo '</label></p>';
+    }
     echo '<p class="fauth-submit"><button type="submit" class="fauth-button fauth-submit-button">' . esc_html__( 'Verify', 'zen-login-authentication' ) . '</button></p>';
     echo '</form>';
     echo '</div>';
@@ -382,6 +530,11 @@ function zenlogau_2fa_handle_verify(): void {
     if ( ! $user instanceof WP_User ) {
         wp_safe_redirect( zenlogau_get_action_url( 'login' ) );
         exit;
+    }
+
+    // Remember this browser so future logins skip the second factor, if opted in.
+    if ( '' !== (string) zenlogau_get_request_value( 'zenlogau_2fa_trust_device', 'post' ) ) {
+        zenlogau_2fa_remember_device( $uid );
     }
 
     wp_set_auth_cookie( $uid, (bool) $pending['remember'] );

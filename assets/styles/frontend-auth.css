@@ -658,9 +658,11 @@ select.fauth-field {
 .fauth-2fa-title,.fauth-passkeys-title,.fauth-sessions-title{margin:0 0 4px;font-size:1.15em;font-weight:700;color:var(--fauth-title-color,#0f172a)}
 .fauth-2fa-sub,.fauth-sessions-sub,.fauth-passkeys-intro{margin:0 0 18px;color:#64748b;font-size:.92em;line-height:1.5}
 
-/* Session card: full-width stacked buttons like the mockup's security actions */
-.fauth-sessions .fauth-button{width:100%;margin:0 0 10px}
-.fauth-sessions .fauth-description{display:block;margin:0 0 4px;color:#64748b}
+/* Session card actions are inline text links (Log Out / Sign out of all other
+   devices), not buttons — they share the .fauth-link-button action-link style. */
+.fauth-sessions-links{margin-top:6px}
+.fauth-links-sep{color:#94a3b8}
+.fauth-sessions .fauth-description{display:block;margin:6px 0 4px;color:#64748b}
 
 /* Session Management — list of active devices */
 .fauth-session-items{list-style:none;margin:0 0 16px;padding:0;display:flex;flex-direction:column;gap:8px}

@@ -531,85 +531,16 @@ class WebAuthn {
         return true;
     }
 
-    /**
-     * Downloads root certificates from FIDO Alliance Metadata Service (MDS) to a specific folder
-     * https://fidoalliance.org/metadata/
-     * @param string $certFolder Folder path to save the certificates in PEM format.
-     * @param bool $deleteCerts delete certificates in the target folder before adding the new ones.
-     * @return int number of cetificates
-     * @throws WebAuthnException
+    /*
+     * PATCH (zen-login-authentication): the upstream public method
+     * queryFidoMetaDataService() was removed. It downloaded the FIDO Alliance
+     * Metadata Service blob and wrote PEM certificate files to a caller-supplied
+     * folder (file_put_contents to an arbitrary path). This plugin uses 'none'
+     * attestation and never calls it, so it was unreachable dead code — and the
+     * wp.org Plugin Directory review flagged the arbitrary file-write. Removed
+     * to clear the flag and drop the dormant write path. Re-remove on any
+     * library update if it reappears.
      */
-    public function queryFidoMetaDataService($certFolder, $deleteCerts=true) {
-        $url = 'https://mds.fidoalliance.org/';
-        // Use the WordPress HTTP API instead of raw cURL (this MDS path is only
-        // reached for full attestation; the plugin uses 'none', so it is unused).
-        $response = \wp_remote_get($url, array(
-            'timeout'    => 15,
-            'user-agent' => 'github.com/lbuchs/WebAuthn - A simple PHP WebAuthn server library',
-        ));
-        $raw = \is_wp_error($response) ? null : \wp_remote_retrieve_body($response);
-
-        $certFolder = \rtrim(\realpath($certFolder), '\\/');
-        if (!is_dir($certFolder)) {
-            throw new WebAuthnException('Invalid folder path for query FIDO Alliance Metadata Service');
-        }
-
-        if (!\is_string($raw)) {
-            throw new WebAuthnException('Unable to query FIDO Alliance Metadata Service');
-        }
-
-        $jwt = \explode('.', $raw);
-        if (\count($jwt) !== 3) {
-            throw new WebAuthnException('Invalid JWT from FIDO Alliance Metadata Service');
-        }
-
-        if ($deleteCerts) {
-            foreach (\scandir($certFolder) as $ca) {
-                if (\substr($ca, -4) === '.pem') {
-                    \wp_delete_file($certFolder . DIRECTORY_SEPARATOR . $ca);
-                }
-            }
-        }
-
-        list($header, $payload, $hash) = $jwt;
-        $payload = Binary\ByteBuffer::fromBase64Url($payload)->getJson();
-
-        $count = 0;
-        if (\is_object($payload) && \property_exists($payload, 'entries') && \is_array($payload->entries)) {
-            foreach ($payload->entries as $entry) {
-                if (\is_object($entry) && \property_exists($entry, 'metadataStatement') && \is_object($entry->metadataStatement)) {
-                    $description = $entry->metadataStatement->description ?? null;
-                    $attestationRootCertificates = $entry->metadataStatement->attestationRootCertificates ?? null;
-
-                    if ($description && $attestationRootCertificates) {
-
-                        // create filename
-                        $certFilename = \preg_replace('/[^a-z0-9]/i', '_', $description);
-                        $certFilename = \trim(\preg_replace('/\_{2,}/i', '_', $certFilename),'_') . '.pem';
-                        $certFilename = \strtolower($certFilename);
-
-                        // add certificate
-                        $certContent = $description . "\n";
-                        $certContent .= \str_repeat('-', \mb_strlen($description)) . "\n";
-
-                        foreach ($attestationRootCertificates as $attestationRootCertificate) {
-                            $attestationRootCertificate = \str_replace(["\n", "\r", ' '], '', \trim($attestationRootCertificate));
-                            $count++;
-                            $certContent .= "\n-----BEGIN CERTIFICATE-----\n";
-                            $certContent .= \chunk_split($attestationRootCertificate, 64, "\n");
-                            $certContent .= "-----END CERTIFICATE-----\n";
-                        }
-
-                        if (\file_put_contents($certFolder . DIRECTORY_SEPARATOR . $certFilename, $certContent) === false) {
-                            throw new WebAuthnException('unable to save certificate from FIDO Alliance Metadata Service');
-                        }
-                    }
-                }
-            }
-        }
-
-        return $count;
-    }
 
     // -----------------------------------------------
     // PRIVATE
@@ -635,11 +566,18 @@ class WebAuthn {
 
         // extract host from origin
         $host = \wp_parse_url($origin, PHP_URL_HOST);
-        $host = \trim($host, '.');
+        $host = \is_string($host) ? \strtolower(\trim($host, '.')) : '';
 
         // The RP ID must be equal to the origin's effective domain, or a registrable
         // domain suffix of the origin's effective domain.
-        return \preg_match('/' . \preg_quote($this->_rpId) . '$/i', $host) === 1;
+        //
+        // PATCH (zen-login-authentication): upstream used an unanchored suffix regex
+        // ('/' . preg_quote($rpId) . '$/i'), which also matches a different domain
+        // that merely ENDS with the rpId — e.g. rpId "example.com" would accept a
+        // credential from "notexample.com". Match only the exact host or a true
+        // subdomain ("*.example.com"). Re-apply this on any library update.
+        $rpId = \strtolower((string) $this->_rpId);
+        return $host === $rpId || \str_ends_with($host, '.' . $rpId);
     }
 
     /**

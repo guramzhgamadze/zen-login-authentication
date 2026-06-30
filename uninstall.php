@@ -42,6 +42,8 @@ $zenlogau_options = [
     'zenlogau_turnstile_register',
     'zenlogau_turnstile_lostpassword',
     'zenlogau_2fa_feature',
+    'zenlogau_2fa_trusted_devices',
+    'zenlogau_account_throttle',
     'zenlogau_new_device_email',
     'zenlogau_new_device_email_body',
     'zenlogau_passkeys_feature',
@@ -136,10 +138,21 @@ function zenlogau_uninstall_site( array $options, array $page_actions ): void {
     // every user; harmless to repeat per-site on multisite (users are global).
     delete_metadata( 'user', 0, 'zenlogau_google_sub', '', true );
 
-    // Two-factor authentication per-user data (v2.0.0).
-    foreach ( [ 'zenlogau_2fa_secret', 'zenlogau_2fa_pending_secret', 'zenlogau_2fa_enabled', 'zenlogau_2fa_recovery', 'zenlogau_2fa_last_step' ] as $zenlogau_2fa_meta ) {
+    // Indexed Google-sub reverse-lookup keys (v2.2.0): zenlogau_gsub_<hash>.
+    // The key embeds a per-sub hash, so a LIKE delete clears them all.
+    // phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- uninstall-time LIKE cleanup of the plugin's own user meta; no core API does prefix-based meta deletion.
+    $wpdb->query(
+        "DELETE FROM {$wpdb->usermeta} WHERE meta_key LIKE 'zenlogau\\_gsub\\_%'"
+    );
+    // phpcs:enable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
+
+    // Two-factor authentication per-user data (v2.0.0; +trusted devices v2.2.0).
+    foreach ( [ 'zenlogau_2fa_secret', 'zenlogau_2fa_pending_secret', 'zenlogau_2fa_enabled', 'zenlogau_2fa_recovery', 'zenlogau_2fa_last_step', 'zenlogau_2fa_trusted' ] as $zenlogau_2fa_meta ) {
         delete_metadata( 'user', 0, $zenlogau_2fa_meta, '', true );
     }
+
+    // "No local password" flag for Google-only accounts (v2.2.0).
+    delete_metadata( 'user', 0, 'zenlogau_no_local_password', '', true );
 
     // Known-device list for new-device login alerts (v2.1.0).
     delete_metadata( 'user', 0, 'zenlogau_known_devices', '', true );

@@ -3,7 +3,7 @@
  * Plugin Name:       Zen Login & Authentication
  * Plugin URI:        https://github.com/guramzhgamadze/zen-login-authentication
  * Description:       Secure, accessible frontend login, registration, and password recovery forms — with rate limiting, honeypot protection, AJAX support, and native Elementor widgets.
- * Version:           2.1.5
+ * Version:           2.2.0
  * Requires at least: 6.5
  * Requires PHP:      8.0
  * Author:            Guram Zhgamadze
@@ -68,7 +68,7 @@ if ( version_compare( get_bloginfo( 'version' ), '6.5', '<' ) ) {
     return;
 }
 
-define( 'ZENLOGAU_VERSION', '2.1.5' );
+define( 'ZENLOGAU_VERSION', '2.2.0' );
 define( 'ZENLOGAU_PATH',    plugin_dir_path( __FILE__ ) );
 define( 'ZENLOGAU_URL',     plugin_dir_url( __FILE__ ) );
 
@@ -152,30 +152,18 @@ function zenlogau_maybe_upgrade(): void {
     }
 
     /* -------------------------------------------------------------------
-     * v1.4.17: One-time database cleanup.
-     *
-     * 1. Delete orphaned zenlogau_slug_* options that don't belong to any
-     *    known action (e.g. zenlogau_slug_dashboard from earlier experiments).
-     * 2. Prune excessive post revisions on auth pages — keep latest 5,
-     *    delete the rest. On a busy Elementor site this can remove a few
-     *    hundred revisions and reclaim a meaningful chunk of wp_postmeta data
-     *    (each Elementor revision stores a full copy of _elementor_data).
-     *
-     * Both operations are idempotent and version-gated so they only run
-     * once during the upgrade from any earlier version to 1.4.17+.
+     * Version-gated upgrade steps. Each runs once, when upgrading FROM a version
+     * older than its key — never on a fresh '' install (already current). Add
+     * new one-off migrations to zenlogau_upgrade_steps() instead of growing an
+     * if/version_compare chain here. Keys must be listed in ascending order so
+     * the steps run oldest-first.
      * ---------------------------------------------------------------- */
-    if ( version_compare( $stored, '1.4.17', '<' ) && '' !== $stored ) {
-        zenlogau_upgrade_cleanup_1_4_17();
-    }
-
-    /* -------------------------------------------------------------------
-     * v1.6.0: the Account page (frontend profile editing) is new. Adopt or
-     * create it on upgraded sites — zenlogau_create_action_pages() is fully
-     * idempotent (existing pages are adopted by slug, stored IDs are kept),
-     * so the four original auth pages are untouched.
-     * ---------------------------------------------------------------- */
-    if ( version_compare( $stored, '1.6.0', '<' ) && '' !== $stored ) {
-        zenlogau_create_action_pages();
+    if ( '' !== $stored ) {
+        foreach ( zenlogau_upgrade_steps() as $version => $callback ) {
+            if ( version_compare( $stored, $version, '<' ) && is_callable( $callback ) ) {
+                call_user_func( $callback );
+            }
+        }
     }
 
     // v1.7.0: ensure the login-activity table exists (covers FTP updates and,
@@ -193,6 +181,28 @@ function zenlogau_maybe_upgrade(): void {
     // Purge cached 404s for auth pages from LiteSpeed Cache, Super Page Cache, etc.
     // Must run after init so zenlogau_get_action_url() can build correct URLs.
     add_action( 'init', 'zenlogau_purge_auth_page_cache', 100 );
+}
+
+/**
+ * Map of version => one-off upgrade callback, run by zenlogau_maybe_upgrade()
+ * when the site is upgrading from a version older than the key. List entries in
+ * ascending version order (they execute oldest-first). To add a future
+ * migration, append `'X.Y.Z' => 'zenlogau_upgrade_callback'` here and define the
+ * callback — no need to touch the upgrade loop itself.
+ *
+ *   1.4.17 — delete orphaned zenlogau_slug_* options + prune auth-page revisions
+ *            (each Elementor revision stores a full copy of _elementor_data).
+ *   1.6.0  — adopt-or-create the new Account page; fully idempotent (existing
+ *            pages are adopted by slug, stored IDs kept), so the four original
+ *            auth pages are untouched.
+ *
+ * @return array<string,string> Map of version => callback function name.
+ */
+function zenlogau_upgrade_steps(): array {
+    return [
+        '1.4.17' => 'zenlogau_upgrade_cleanup_1_4_17',
+        '1.6.0'  => 'zenlogau_create_action_pages',
+    ];
 }
 
 /**

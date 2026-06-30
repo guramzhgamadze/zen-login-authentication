@@ -47,9 +47,10 @@ function zenlogau_google_client_id(): string {
  *  2. the stored option, encrypted at rest (see includes/crypto.php).
  *
  * A plaintext value saved before the 1.5.0 storage hardening is re-encrypted
- * in place on first read. Note: rotating the wp-config.php salts invalidates
- * the ciphertext — the feature then reads as unconfigured until the secret is
- * re-entered.
+ * in place on first read. After a wp-config.php salt rotation the ciphertext is
+ * normally unrecoverable; supplying the previous salt material via the
+ * 'zenlogau_crypto_fallback_materials' filter lets it be decrypted and rewritten
+ * under the new key automatically on first read (see includes/crypto.php).
  */
 function zenlogau_google_client_secret(): string {
     if ( defined( 'ZENLOGAU_GOOGLE_CLIENT_SECRET' ) && '' !== constant( 'ZENLOGAU_GOOGLE_CLIENT_SECRET' ) ) {
@@ -60,6 +61,13 @@ function zenlogau_google_client_secret(): string {
         return '';
     }
     if ( zenlogau_crypto_is_encrypted( $stored ) ) {
+        // Self-heal after a salt rotation: if the value was encrypted under a
+        // previous (fallback) key, rewrite it under the current key in place.
+        $rotated = zenlogau_crypto_maybe_reencrypt( $stored );
+        if ( null !== $rotated ) {
+            update_option( 'zenlogau_google_client_secret', $rotated, false );
+            $stored = $rotated;
+        }
         return zenlogau_crypto_decrypt( $stored );
     }
     // Legacy plaintext — one-time in-place migration to the encrypted format.
@@ -324,6 +332,60 @@ function zenlogau_google_exchange_code( string $code ) {
  * -------------------------------------------------------------------- */
 
 /**
+ * Indexed reverse-lookup key for a Google subject id.
+ *
+ * The plain 'zenlogau_google_sub' meta is queried by meta_VALUE, which is not
+ * indexed in wp_usermeta — a full scan of every Google user on large sites. We
+ * additionally store the sub under a per-user meta_KEY that embeds a hash of the
+ * sub; meta_key IS indexed, so the reverse lookup becomes a fast index hit.
+ */
+function zenlogau_google_sub_index_key( string $sub ): string {
+    // 13 + 40 = 53 chars, well under the 191-char wp_usermeta meta_key index.
+    return 'zenlogau_gsub_' . substr( hash( 'sha256', $sub ), 0, 40 );
+}
+
+/**
+ * Link a Google subject id to a user: stores both the canonical meta (for
+ * export/erasure/back-compat) and the indexed reverse-lookup meta.
+ */
+function zenlogau_google_link_sub( int $user_id, string $sub ): void {
+    update_user_meta( $user_id, 'zenlogau_google_sub', $sub );
+    update_user_meta( $user_id, zenlogau_google_sub_index_key( $sub ), $sub );
+}
+
+/**
+ * Find the user linked to a Google subject id, fast. Uses the indexed reverse
+ * key first; if a pre-index link is found by the legacy meta_value scan, it is
+ * migrated to the indexed key on the spot.
+ *
+ * @return WP_User|null
+ */
+function zenlogau_google_user_by_sub( string $sub ): ?WP_User {
+    // Fast path: indexed meta_key lookup (unique per sub).
+    $found = get_users( [
+        'meta_key' => zenlogau_google_sub_index_key( $sub ), // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+        'number'   => 1,
+    ] );
+    if ( ! empty( $found ) && $found[0] instanceof WP_User ) {
+        return $found[0];
+    }
+
+    // Fallback: legacy meta_value scan for links created before the index, then
+    // migrate that user to the indexed key so the next lookup is fast.
+    $legacy = get_users( [
+        'meta_key'   => 'zenlogau_google_sub', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+        'meta_value' => $sub,                  // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+        'number'     => 1,
+    ] );
+    if ( ! empty( $legacy ) && $legacy[0] instanceof WP_User ) {
+        update_user_meta( $legacy[0]->ID, zenlogau_google_sub_index_key( $sub ), $sub );
+        return $legacy[0];
+    }
+
+    return null;
+}
+
+/**
  * Resolve the WP user for a set of validated Google claims:
  *  1. by stored Google account ID (zenlogau_google_sub user meta),
  *  2. by verified email — links the existing account,
@@ -335,18 +397,14 @@ function zenlogau_google_find_or_create_user( array $claims ) {
     $sub   = (string) $claims['sub'];
     $email = (string) $claims['email'];
 
-    $existing = get_users( [
-        'meta_key'   => 'zenlogau_google_sub', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
-        'meta_value' => $sub,              // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
-        'number'     => 1,
-    ] );
-    if ( ! empty( $existing ) && $existing[0] instanceof WP_User ) {
-        return $existing[0];
+    $existing = zenlogau_google_user_by_sub( $sub );
+    if ( $existing instanceof WP_User ) {
+        return $existing;
     }
 
     $user = get_user_by( 'email', $email );
     if ( $user instanceof WP_User ) {
-        update_user_meta( $user->ID, 'zenlogau_google_sub', $sub );
+        zenlogau_google_link_sub( $user->ID, $sub );
         return $user;
     }
 
@@ -382,7 +440,13 @@ function zenlogau_google_find_or_create_user( array $claims ) {
         return $user_id;
     }
 
-    update_user_meta( $user_id, 'zenlogau_google_sub', $sub );
+    zenlogau_google_link_sub( $user_id, $sub );
+
+    // Created with a random password the user never sees — mark the account as
+    // having no local password so the Account form doesn't demand a "current
+    // password" they cannot know (cleared the moment they set one). See
+    // zenlogau_user_has_local_password().
+    update_user_meta( $user_id, 'zenlogau_no_local_password', '1' );
 
     // Same front-end toolbar default as form registrations (see zenlogau_handle_register).
     if ( apply_filters( 'zenlogau_hide_admin_bar_on_register', true, $user_id ) ) {

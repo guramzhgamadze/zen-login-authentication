@@ -141,8 +141,18 @@ function zenlogau_privacy_eraser( $email_address, $page = 1 ): array {
             'zenlogau_2fa_enabled',
             'zenlogau_2fa_recovery',
             'zenlogau_2fa_last_step',
+            'zenlogau_2fa_trusted',
+            'zenlogau_no_local_password',
             'zenlogau_google_sub',
         ];
+
+        // The indexed Google-sub reverse-lookup key is derived from the sub, so
+        // resolve it before the canonical meta is deleted.
+        $google_sub = (string) get_user_meta( $user->ID, 'zenlogau_google_sub', true );
+        if ( '' !== $google_sub && function_exists( 'zenlogau_google_sub_index_key' ) ) {
+            $meta_keys[] = zenlogau_google_sub_index_key( $google_sub );
+        }
+
         foreach ( $meta_keys as $key ) {
             if ( metadata_exists( 'user', $user->ID, $key ) ) {
                 delete_user_meta( $user->ID, $key );

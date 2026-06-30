@@ -1552,6 +1552,7 @@ class ZENLOGAU_Elementor_Account_Widget extends ZENLOGAU_Elementor_Base_Widget {
         $this->register_2fa_style_controls();
         $this->register_passkeys_style_controls();
         $this->register_account_cards_style_controls();
+        $this->register_action_links_style_controls();
     }
 
     /**
@@ -1594,6 +1595,58 @@ class ZENLOGAU_Elementor_Account_Widget extends ZENLOGAU_Elementor_Base_Widget {
             'name'     => 'card_border',
             'selector' => '{{WRAPPER}} .fauth-card, {{WRAPPER}} .fauth-sessions, {{WRAPPER}} .fauth-2fa, {{WRAPPER}} .fauth-passkeys',
         ] );
+
+        $this->end_controls_section();
+    }
+
+    /**
+     * Style controls for the account page's ACTION LINKS — the text links that
+     * are NOT buttons: "Log Out" and "Sign out of all other devices" (Session
+     * Management), "Turn off two-factor authentication" / "Cancel" (2FA), and
+     * "Remove" (Passkeys). They all share the .fauth-link-button class, so one
+     * section styles every action link in one discoverable place (Golden Rule
+     * #6). The 2FA section keeps its own, more specific .fauth-2fa .fauth-link-button
+     * controls, which naturally win inside the 2FA card when both are set.
+     */
+    protected function register_action_links_style_controls(): void {
+        $this->start_controls_section( 'section_action_links_style', [
+            'label' => esc_html__( 'Action Links', 'zen-login-authentication' ),
+            'tab'   => \Elementor\Controls_Manager::TAB_STYLE,
+        ] );
+
+        // Alignment of the Session Management links row (Log Out / Sign out others).
+        $this->add_responsive_control( 'action_link_align', [
+            'label'     => esc_html__( 'Session Links Alignment', 'zen-login-authentication' ),
+            'type'      => \Elementor\Controls_Manager::CHOOSE,
+            'options'   => [
+                'left'   => [ 'title' => esc_html__( 'Left', 'zen-login-authentication' ),   'icon' => 'eicon-text-align-left' ],
+                'center' => [ 'title' => esc_html__( 'Center', 'zen-login-authentication' ), 'icon' => 'eicon-text-align-center' ],
+                'right'  => [ 'title' => esc_html__( 'Right', 'zen-login-authentication' ),  'icon' => 'eicon-text-align-right' ],
+            ],
+            'selectors' => [ '{{WRAPPER}} .fauth-sessions-links' => 'text-align: {{VALUE}};' ],
+        ] );
+
+        $this->add_group_control( \Elementor\Group_Control_Typography::get_type(), [
+            'name'     => 'action_link_typography',
+            'selector' => '{{WRAPPER}} .fauth-link-button',
+        ] );
+
+        $this->start_controls_tabs( 'action_link_tabs' );
+        $this->start_controls_tab( 'action_link_tab_normal', [ 'label' => esc_html__( 'Normal', 'zen-login-authentication' ) ] );
+        $this->add_control( 'action_link_color', [
+            'label'     => esc_html__( 'Text Color', 'zen-login-authentication' ),
+            'type'      => \Elementor\Controls_Manager::COLOR,
+            'selectors' => [ '{{WRAPPER}} .fauth-link-button' => 'color: {{VALUE}};' ],
+        ] );
+        $this->end_controls_tab();
+        $this->start_controls_tab( 'action_link_tab_hover', [ 'label' => esc_html__( 'Hover', 'zen-login-authentication' ) ] );
+        $this->add_control( 'action_link_color_h', [
+            'label'     => esc_html__( 'Text Color', 'zen-login-authentication' ),
+            'type'      => \Elementor\Controls_Manager::COLOR,
+            'selectors' => [ '{{WRAPPER}} .fauth-link-button:hover, {{WRAPPER}} .fauth-link-button:focus' => 'color: {{VALUE}};' ],
+        ] );
+        $this->end_controls_tab();
+        $this->end_controls_tabs();
 
         $this->end_controls_section();
     }
@@ -1980,7 +2033,7 @@ class ZENLOGAU_Elementor_Account_Widget extends ZENLOGAU_Elementor_Base_Widget {
         echo '<div class="fauth fauth-sessions"><h3 class="fauth-sessions-title">' . esc_html__('Session Management','zen-login-authentication') . '</h3>';
         echo '<p class="fauth-sessions-sub">' . esc_html__('These are the devices currently signed in to your account.','zen-login-authentication') . '</p>';
         echo '<ul class="fauth-session-items"><li class="fauth-session-item"><span class="fauth-session-device">' . esc_html__('Windows PC','zen-login-authentication') . ' <span class="fauth-session-current">' . esc_html__('this device','zen-login-authentication') . '</span></span><span class="fauth-session-meta">' . esc_html__('Chrome','zen-login-authentication') . ' &middot; 192.0.2.1</span></li></ul>';
-        echo '<p class="fauth-submit"><button type="button" class="fauth-button fauth-button-secondary">' . esc_html__('Log Out','zen-login-authentication') . '</button></p></div>';
+        echo '<p class="fauth-links fauth-sessions-links"><a class="fauth-link-button fauth-session-action">' . esc_html__('Log Out','zen-login-authentication') . '</a><span class="fauth-links-sep" aria-hidden="true"> &middot; </span><a class="fauth-link-button fauth-session-action">' . esc_html__('Sign out of all other devices','zen-login-authentication') . '</a></p></div>';
 
         echo '</div>'; // close .fauth-form-account
         echo '</div><!-- /.fauth-form-wrap -->';

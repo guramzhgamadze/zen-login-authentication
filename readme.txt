@@ -4,7 +4,7 @@ Tags: login, registration, authentication, elementor, frontend
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 2.1.5
+Stable tag: 2.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -147,6 +147,20 @@ Only pages the plugin created that you never edited (no content, no Elementor da
 
 == Changelog ==
 
+= 2.2.0 =
+* New: "Trust this device for 30 days" option on the two-factor login screen — a trusted browser skips the code prompt on future logins (the password is always still required). Trusted devices are cleared whenever two-factor is turned off. Toggle it under Settings (on by default); the trusted length is filterable.
+* New: per-account login throttle (Settings, on by default). Alongside the existing per-IP limiter, repeated failed logins for the same username now add a short, progressively longer delay. It is a delay, not a lockout, so it can never be used to lock a real user out, and it slows password-guessing that rotates IP addresses.
+* Improved: accounts created with Google sign-in are no longer asked for a "current password" they never set when editing their profile — the requirement adapts automatically and re-applies once they set a password.
+* Improved: encrypted secrets now survive a wp-config.php salt rotation. Each value is tagged with its key, and the previous salt material can be supplied via a filter so secrets are decrypted and re-encrypted under the new key instead of being lost.
+* Improved: faster Google-account lookups on large sites (indexed reverse lookup instead of a full user-meta scan).
+* Security: bundled WebAuthn library — tightened the passkey origin check (an exact domain or true subdomain match, not a loose suffix) and removed an unused metadata-service routine that wrote files to an arbitrary folder.
+* Developer: simpler version-gated upgrade routine (a version → callback map).
+
+= 2.1.6 =
+* Session Management: "Log Out" and "Sign out of all other devices" are now text action links again (matching the other account links) instead of buttons.
+* Elementor: added an "Action Links" style section to the Account widget so the text links — Log Out, Sign out of all other devices, Turn off two-factor authentication, Cancel, and Remove (passkey) — can be styled (colour, hover colour, typography, and alignment) from the toolbar.
+* Fixed the production stylesheet missing the Session Management device-list styles.
+
 = 2.1.5 =
 * Account restructure follow-ups: card headings use the plugin's own colour and have their own Elementor style controls (they no longer inherit the theme heading colour); removed a stray Log Out link; the Session Management card now lists the devices currently signed in; success notices clear after a refresh; and the Elementor editor preview matches the live card layout.
 
@@ -263,6 +277,12 @@ Only pages the plugin created that you never edited (no content, no Elementor da
 Older versions: see the project's CHANGELOG / README on the plugin homepage.
 
 == Upgrade Notice ==
+
+= 2.2.0 =
+Adds "trust this device" for two-factor logins, a per-account login throttle, salt-rotation-safe secret storage, and smoother account editing for Google users. Recommended for everyone.
+
+= 2.1.6 =
+Session Management actions are text links again, and every account action link is now styleable from the Elementor toolbar.
 
 = 2.1.5 =
 Polish for the new Account page: themeable card headings with Elementor controls, a device list under Session Management, and notices that clear on refresh.

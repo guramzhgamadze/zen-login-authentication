@@ -38,12 +38,10 @@ function zenlogau_sessions_render_card(): void {
 
     zenlogau_sessions_render_list( get_current_user_id() );
 
-    echo '<p class="fauth-submit"><a class="fauth-button fauth-button-secondary" href="' . esc_url( $logout_url ) . '">'
-        . esc_html__( 'Log Out', 'zen-login-authentication' ) . '</a></p>';
-
     // The "sign out everywhere else" action is offered only when there is
     // actually another active session to end (its presence tells the user they
     // are signed in elsewhere).
+    $signout_url = '';
     if ( $others > 0 ) {
         $signout_url = add_query_arg(
             [
@@ -52,8 +50,22 @@ function zenlogau_sessions_render_card(): void {
             ],
             zenlogau_get_action_url( 'account' )
         );
-        echo '<p class="fauth-submit"><a class="fauth-button fauth-button-secondary" href="' . esc_url( $signout_url ) . '">'
-            . esc_html__( 'Sign out of all other devices', 'zen-login-authentication' ) . '</a></p>';
+    }
+
+    // Log Out / Sign-out-others render as ACTION LINKS (not buttons). They share
+    // the plugin's .fauth-link-button class so they inherit link styling and are
+    // covered by the Elementor "Action Links" style controls; .fauth-session-action
+    // lets those controls target the session links specifically.
+    echo '<p class="fauth-links fauth-sessions-links">';
+    echo '<a class="fauth-link-button fauth-session-action" href="' . esc_url( $logout_url ) . '">'
+        . esc_html__( 'Log Out', 'zen-login-authentication' ) . '</a>';
+    if ( '' !== $signout_url ) {
+        echo '<span class="fauth-links-sep" aria-hidden="true"> &middot; </span>';
+        echo '<a class="fauth-link-button fauth-session-action" href="' . esc_url( $signout_url ) . '">'
+            . esc_html__( 'Sign out of all other devices', 'zen-login-authentication' ) . '</a>';
+    }
+    echo '</p>';
+    if ( '' !== $signout_url ) {
         echo '<p class="fauth-description">' . esc_html__( 'This signs you out everywhere except this device.', 'zen-login-authentication' ) . '</p>';
     }
 
@@ -152,17 +164,33 @@ function zenlogau_sessions_render_list( int $user_id ): void {
     }
     $current = $manager->get( wp_get_session_token() );
 
-    echo '<ul class="fauth-session-items">';
+    // Collapse repeated logins from the same device/browser: key by user agent
+    // and keep only the most recent session for each, so the list shows one row
+    // per device instead of one per login.
+    $by_device = [];
     foreach ( $sessions as $session ) {
-        $ua    = isset( $session['ua'] ) ? (string) $session['ua'] : '';
-        $ip    = isset( $session['ip'] ) ? (string) $session['ip'] : '';
+        $ua  = isset( $session['ua'] ) ? (string) $session['ua'] : '';
+        $key = '' !== $ua ? $ua : '__unknown__';
+        if ( ! isset( $by_device[ $key ] ) || (int) ( $session['login'] ?? 0 ) > (int) ( $by_device[ $key ]['login'] ?? 0 ) ) {
+            $by_device[ $key ] = $session;
+        }
+    }
+    // Most recently used device first.
+    uasort( $by_device, static function ( $a, $b ): int {
+        return (int) ( $b['login'] ?? 0 ) <=> (int) ( $a['login'] ?? 0 );
+    } );
+
+    $current_ua = is_array( $current ) ? (string) ( $current['ua'] ?? "\0" ) : "\0";
+
+    echo '<ul class="fauth-session-items">';
+    foreach ( $by_device as $session ) {
+        $ua      = isset( $session['ua'] ) ? (string) $session['ua'] : '';
+        $ip      = isset( $session['ip'] ) ? (string) $session['ip'] : '';
         $login   = ! empty( $session['login'] ) ? wp_date( get_option( 'date_format' ), (int) $session['login'] ) : '';
         $browser = zenlogau_sessions_browser_label( $ua );
-        // Identify the current session by matching its login time and user agent.
-        $is_self = is_array( $current )
-            && (int) ( $session['login'] ?? 0 ) === (int) ( $current['login'] ?? -1 )
-            && ( $session['ua'] ?? '' ) === ( $current['ua'] ?? "\0" );
-        $meta = array_filter( [ $browser, $ip, $login ] );
+        // The current device is the group whose user agent matches this session.
+        $is_self = ( $ua === $current_ua );
+        $meta    = array_filter( [ $browser, $ip, $login ] );
 
         echo '<li class="fauth-session-item">';
         echo '<span class="fauth-session-device">' . esc_html( zenlogau_sessions_device_label( $ua ) );

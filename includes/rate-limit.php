@@ -222,3 +222,111 @@ function zenlogau_rate_limit_bump( $action ) {
 
     return $attempts;
 }
+
+/* =======================================================================
+ * Per-account progressive throttle (v2.2.0)
+ *
+ * The IP limiter above buckets on the client IP, so an attacker who rotates IP
+ * addresses can keep guessing a single account's password without ever tripping
+ * it. This adds a SECOND, account-keyed defence: after a few failed logins for
+ * the same username, each further failed attempt is delayed by a short,
+ * progressively longer pause.
+ *
+ * It is deliberately a DELAY, not a lockout — the real owner is never blocked.
+ * A correct password succeeds with no delay and clears the counter, so it cannot
+ * be weaponised to lock a victim out (unlike a hard per-account lock). The delay
+ * is capped (default 3s) so it slows credential-stuffing without letting an
+ * attacker tie up PHP workers. Both ends are filterable; set the option/filter
+ * to false to disable entirely.
+ * ==================================================================== */
+
+/**
+ * Whether the per-account throttle is on. Default: on. Option + filter.
+ */
+function zenlogau_account_throttle_enabled(): bool {
+    return (bool) apply_filters(
+        'zenlogau_account_throttle_enabled',
+        (bool) get_option( 'zenlogau_account_throttle', true )
+    );
+}
+
+/**
+ * Transient key for an account's recent failed-login counter.
+ */
+function zenlogau_account_throttle_key( string $username ): string {
+    $norm = strtolower( trim( $username ) );
+    // nosemgrep: php.lang.security.weak-crypto.weak-crypto -- non-security hash: builds a transient cache key from the username, not a security boundary; a collision only merges two accounts' throttle counters, granting no bypass.
+    return 'zenlogau_acct_thr_' . md5( $norm );
+}
+
+/**
+ * Failed attempts allowed for an account before any delay kicks in.
+ */
+function zenlogau_account_throttle_free_attempts(): int {
+    return max( 0, (int) apply_filters( 'zenlogau_account_throttle_free_attempts', 3 ) );
+}
+
+/**
+ * Maximum per-attempt delay, in seconds (the cap). Kept small on purpose.
+ */
+function zenlogau_account_throttle_max_delay(): int {
+    return max( 0, (int) apply_filters( 'zenlogau_account_throttle_max_delay', 3 ) );
+}
+
+/**
+ * Window (seconds) over which an account's failures accumulate.
+ */
+function zenlogau_account_throttle_window(): int {
+    return max( (int) MINUTE_IN_SECONDS, (int) apply_filters( 'zenlogau_account_throttle_window', 15 * MINUTE_IN_SECONDS ) );
+}
+
+/**
+ * Progressive delay for the Nth failure: 0 while within the free allowance, then
+ * 1, 2, 3 … seconds, capped at the max. Linear growth keeps it bounded.
+ */
+function zenlogau_account_throttle_delay_for( int $count ): int {
+    $free = zenlogau_account_throttle_free_attempts();
+    if ( $count <= $free ) {
+        return 0;
+    }
+    return (int) min( zenlogau_account_throttle_max_delay(), $count - $free );
+}
+
+add_action( 'wp_login_failed', 'zenlogau_account_throttle_on_failed', 5, 1 );
+
+/**
+ * Record a failed login for the account and apply the progressive delay. Fires
+ * on every failed login path (the plugin's forms, wp-login.php, wp_signon).
+ *
+ * @param string $username The attempted username/email.
+ */
+function zenlogau_account_throttle_on_failed( $username ): void {
+    $username = (string) $username;
+    if ( '' === $username || ! zenlogau_account_throttle_enabled() ) {
+        return;
+    }
+
+    $key   = zenlogau_account_throttle_key( $username );
+    $count = (int) get_transient( $key ) + 1;
+    set_transient( $key, $count, zenlogau_account_throttle_window() );
+
+    $delay = zenlogau_account_throttle_delay_for( $count );
+    if ( $delay > 0 ) {
+        // Bounded pause that only ever delays a FAILURE response; a correct
+        // password takes the success path (wp_login) and is never delayed.
+        sleep( $delay ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.system_calls_sleep, Squiz.PHP.DiscouragedFunctions, WordPress.PHP.NoSilencedErrors -- intentional anti-brute-force throttle, capped at a few seconds and only on repeated failures for one account.
+    }
+}
+
+add_action( 'wp_login', 'zenlogau_account_throttle_clear_on_login', 5, 1 );
+
+/**
+ * Clear an account's failure counter after a successful login.
+ *
+ * @param string $user_login The user that logged in.
+ */
+function zenlogau_account_throttle_clear_on_login( $user_login ): void {
+    if ( zenlogau_account_throttle_enabled() ) {
+        delete_transient( zenlogau_account_throttle_key( (string) $user_login ) );
+    }
+}

@@ -24,6 +24,14 @@ if ( ! function_exists( 'wp_salt' ) ) {
         return 'test-wp-salt-fallback';
     }
 }
+// crypto.php's key-rotation path reads optional fallback key material through a
+// filter; with no WordPress loaded, this no-op stub returns the value unchanged
+// (so the candidate-key set is just the current key).
+if ( ! function_exists( 'apply_filters' ) ) {
+    function apply_filters( $tag, $value ) { // phpcs:ignore
+        return $value;
+    }
+}
 
 require dirname( __DIR__ ) . '/includes/totp.php';
 require dirname( __DIR__ ) . '/includes/crypto.php';

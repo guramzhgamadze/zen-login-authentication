@@ -68,6 +68,9 @@ function zenlogau_admin_register_settings(): void {
     }
     register_setting( 'zen-login-authentication', 'zenlogau_lostpassword_count_all', [ 'sanitize_callback' => 'absint', 'type' => 'integer', 'autoload' => false ] );
 
+    // Per-account progressive login throttle (v2.2.0). Default on.
+    register_setting( 'zen-login-authentication', 'zenlogau_account_throttle', [ 'sanitize_callback' => 'absint', 'type' => 'integer', 'autoload' => false ] );
+
     // Subscriber post-login redirect: page slug/path or full URL; empty = site home.
     register_setting( 'zen-login-authentication', 'zenlogau_subscriber_redirect', [ 'sanitize_callback' => 'zenlogau_sanitize_redirect_target', 'type' => 'string', 'autoload' => false ] );
 
@@ -110,6 +113,8 @@ function zenlogau_admin_register_settings(): void {
 
     // Two-factor authentication (v2.0.0). Per-user opt-in; this is the master switch.
     register_setting( 'zen-login-authentication', 'zenlogau_2fa_feature', [ 'sanitize_callback' => 'absint', 'type' => 'integer', 'autoload' => false ] );
+    // "Trust this device" for two-factor logins (v2.2.0). Default on.
+    register_setting( 'zen-login-authentication', 'zenlogau_2fa_trusted_devices', [ 'sanitize_callback' => 'absint', 'type' => 'integer', 'autoload' => false ] );
 
     // New-device login email alerts (v2.1.0). Default on.
     register_setting( 'zen-login-authentication', 'zenlogau_new_device_email', [ 'sanitize_callback' => 'absint', 'type' => 'integer', 'autoload' => false ] );
@@ -370,6 +375,18 @@ function zenlogau_admin_settings_page(): void {
                         <div class="fauth-hint"><?php esc_html_e( 'Count every submission, not just failed ones. Prevents an attacker from spamming reset emails to a known-valid address.', 'zen-login-authentication' ); ?></div>
                     </div>
                 </div>
+
+                <div class="fauth-row">
+                    <div class="fauth-row-label"><?php esc_html_e( 'Per-account login throttle', 'zen-login-authentication' ); ?></div>
+                    <div class="fauth-row-field">
+                        <label class="fauth-toggle">
+                            <input type="hidden" name="zenlogau_account_throttle" value="0">
+                            <input type="checkbox" name="zenlogau_account_throttle" value="1" <?php checked( (bool) get_option( 'zenlogau_account_throttle', true ) ); ?>>
+                            <span class="fauth-toggle-slider"></span>
+                        </label>
+                        <div class="fauth-hint"><?php esc_html_e( 'In addition to the per-IP limit above, add a short, progressively longer delay after repeated failed logins for the SAME username. This slows password-guessing that rotates IP addresses. It is a delay, not a lockout, so it can never lock a real user out — a correct password is never delayed.', 'zen-login-authentication' ); ?></div>
+                    </div>
+                </div>
             </div>
 
             <!-- Security Hardening (v1.9.0) -->
@@ -501,6 +518,18 @@ function zenlogau_admin_settings_page(): void {
                             <span class="fauth-toggle-slider"></span>
                         </label>
                         <div class="fauth-hint"><?php esc_html_e( 'When on, an "Two-Factor Authentication" section appears on the Account form so users can enroll. Turning this off stops the login challenge for everyone (existing enrollments are kept and resume if you turn it back on).', 'zen-login-authentication' ); ?></div>
+                    </div>
+                </div>
+
+                <div class="fauth-row">
+                    <div class="fauth-row-label"><?php esc_html_e( 'Allow "trust this device"', 'zen-login-authentication' ); ?></div>
+                    <div class="fauth-row-field">
+                        <label class="fauth-toggle">
+                            <input type="hidden" name="zenlogau_2fa_trusted_devices" value="0">
+                            <input type="checkbox" name="zenlogau_2fa_trusted_devices" value="1" <?php checked( (bool) get_option( 'zenlogau_2fa_trusted_devices', true ) ); ?>>
+                            <span class="fauth-toggle-slider"></span>
+                        </label>
+                        <div class="fauth-hint"><?php esc_html_e( 'Show a "Trust this device for 30 days" checkbox on the two-factor login screen. A trusted browser skips the code prompt on later logins — the password is always still required. Trusted devices are cleared whenever a user turns two-factor off.', 'zen-login-authentication' ); ?></div>
                     </div>
                 </div>
             </div>
