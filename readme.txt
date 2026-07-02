@@ -4,7 +4,7 @@ Tags: login, registration, authentication, elementor, frontend
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 2.2.0
+Stable tag: 2.2.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -147,6 +147,10 @@ Only pages the plugin created that you never edited (no content, no Elementor da
 
 == Changelog ==
 
+= 2.2.1 =
+* Security: passkey sign-in now requires user verification (a PIN, fingerprint, or face) by default. A passkey login bypasses both the password and two-factor step, so it must be a real second factor — this closes a gap where a presence-only authenticator could complete a sign-in. Filterable for sites that must support PIN-less security keys.
+* Hardening: the plugin's login, registration, password, and account pages now send X-Frame-Options and X-Content-Type-Options headers (anti-clickjacking + MIME-sniffing protection), matching wp-login.php. The frame policy is filterable.
+
 = 2.2.0 =
 * New: "Trust this device for 30 days" option on the two-factor login screen — a trusted browser skips the code prompt on future logins (the password is always still required). Trusted devices are cleared whenever two-factor is turned off. Toggle it under Settings (on by default); the trusted length is filterable.
 * New: per-account login throttle (Settings, on by default). Alongside the existing per-IP limiter, repeated failed logins for the same username now add a short, progressively longer delay. It is a delay, not a lockout, so it can never be used to lock a real user out, and it slows password-guessing that rotates IP addresses.
@@ -277,6 +281,9 @@ Only pages the plugin created that you never edited (no content, no Elementor da
 Older versions: see the project's CHANGELOG / README on the plugin homepage.
 
 == Upgrade Notice ==
+
+= 2.2.1 =
+Security: passkey logins now require user verification by default (closes a possession-only sign-in gap), and the auth pages send anti-clickjacking + MIME-sniffing headers. Recommended for everyone.
 
 = 2.2.0 =
 Adds "trust this device" for two-factor logins, a per-account login throttle, salt-rotation-safe secret storage, and smoother account editing for Google users. Recommended for everyone.

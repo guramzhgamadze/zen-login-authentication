@@ -739,6 +739,18 @@ function zenlogau_exclude_from_cache(): void {
         header( 'Cache-Control: no-store, no-cache, must-revalidate, max-age=0' );
         header( 'Pragma: no-cache' );
         header( 'Expires: Thu, 01 Jan 1970 00:00:00 GMT' );
+
+        // Clickjacking + MIME-sniffing protection. These pages carry the
+        // login / registration / password fields, so — exactly like
+        // wp-login.php — they should not be framable cross-origin and the
+        // browser must not MIME-sniff the response. SAMEORIGIN (not DENY) still
+        // allows a same-site embed; filter to '' to permit cross-origin framing
+        // for sites that deliberately embed the forms elsewhere.
+        $zenlogau_frame = (string) apply_filters( 'zenlogau_frame_options', 'SAMEORIGIN' );
+        if ( '' !== $zenlogau_frame ) {
+            header( 'X-Frame-Options: ' . $zenlogau_frame );
+        }
+        header( 'X-Content-Type-Options: nosniff' );
     }
 
     // ── LiteSpeed Cache ──────────────────────────────────────────────────

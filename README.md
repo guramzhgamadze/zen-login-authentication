@@ -267,6 +267,13 @@ zen-login-authentication/
 
 ## Changelog
 
+### 2.2.1
+
+**Security hardening (found via dynamic scanning + code review)**
+
+- **Passkey user verification is now required by default.** A passkey sign-in bypasses both the password and any two-factor step, so it must itself be multi-factor. Previously `processGet()` accepted an assertion without user verification, so a presence-only/PIN-less authenticator could complete a login — undermining the "passkeys are inherently MFA" invariant. UV is now required on registration, the login challenge, and the client-side request, all behind the `zenlogau_passkey_require_user_verification` filter (set false only to support presence-only keys, accepting the weaker guarantee).
+- **Anti-clickjacking + MIME-sniffing headers on the auth pages.** The plugin's login/registration/password/account pages now send `X-Frame-Options: SAMEORIGIN` (filterable via `zenlogau_frame_options`) and `X-Content-Type-Options: nosniff`, matching wp-login.php. Scoped to the plugin's own pages so it never overrides theme/site headers elsewhere.
+
 ### 2.2.0
 
 **Security & account controls**

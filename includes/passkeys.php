@@ -185,6 +185,21 @@ function zenlogau_passkey_enqueue(): void {
 /* -----------------------------------------------------------------------
  * AJAX: registration — step 1, options
  * -------------------------------------------------------------------- */
+/**
+ * Whether a passkey must perform user verification (biometric / PIN / screen
+ * lock), not just user presence (a bare tap).
+ *
+ * A passkey sign-in deliberately bypasses BOTH the password and the two-factor
+ * step (a passkey is treated as already multi-factor). That claim only holds if
+ * the authenticator actually verifies the user — so UV is required by default.
+ * Filter to false only if you must support presence-only authenticators (e.g.
+ * older PIN-less security keys), accepting that such a passkey is then a single
+ * (possession) factor.
+ */
+function zenlogau_passkey_require_uv(): bool {
+    return (bool) apply_filters( 'zenlogau_passkey_require_user_verification', true );
+}
+
 add_action( 'wp_ajax_zenlogau_passkey_register_options', 'zenlogau_passkey_ajax_register_options' );
 
 function zenlogau_passkey_ajax_register_options(): void {
@@ -209,9 +224,9 @@ function zenlogau_passkey_ajax_register_options(): void {
             $user->user_login,
             $user->display_name,
             ZENLOGAU_PASSKEY_REG_TTL,
-            true,        // resident / discoverable key (passkey)
-            'preferred', // user verification
-            null,        // allow both platform and cross-platform authenticators
+            true,                                                        // resident / discoverable key (passkey)
+            zenlogau_passkey_require_uv() ? 'required' : 'preferred',    // user verification
+            null,                                                        // allow both platform and cross-platform authenticators
             $exclude
         );
     } catch ( \Throwable $e ) {
@@ -255,9 +270,9 @@ function zenlogau_passkey_ajax_register_verify(): void {
             $client_data,
             $attestation,
             (string) $challenge,
-            false, // user verification required
-            true,  // user present required
-            false  // do not fail on root mismatch (none attestation has no root)
+            zenlogau_passkey_require_uv(), // user verification required
+            true,                          // user present required
+            false                          // do not fail on root mismatch (none attestation has no root)
         );
     } catch ( \Throwable $e ) {
         wp_send_json_error( [ 'message' => __( 'The passkey could not be verified.', 'zen-login-authentication' ) ], 400 );
@@ -319,7 +334,7 @@ function zenlogau_passkey_ajax_login_options(): void {
             [],
             ZENLOGAU_PASSKEY_LOGIN_TTL,
             true, true, true, true, true,
-            'preferred'
+            zenlogau_passkey_require_uv() ? 'required' : 'preferred'
         );
         $challenge = zenlogau_passkey_webauthn_challenge_from( $args );
     } catch ( \Throwable $e ) {
@@ -410,8 +425,8 @@ function zenlogau_passkey_ajax_login_verify(): void {
             (string) $passkeys[ $cred_key ]['key'],
             $challenge,
             $prev_counter > 0 ? $prev_counter : null,
-            false, // require user verification
-            true   // require user present
+            zenlogau_passkey_require_uv(), // require user verification
+            true                           // require user present
         );
     } catch ( \Throwable $e ) {
         zenlogau_rate_limit_bump( 'login' );
