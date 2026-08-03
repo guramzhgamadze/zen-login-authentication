@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zen Login & Authentication — Frontend Login &amp; Registration for WordPress</title>
+<meta name="description" content="Secure, accessible frontend login, registration, and password recovery forms for WordPress with Elementor support, two-factor authentication (TOTP), Cloudflare Turnstile, breached-password blocking, rate limiting, and honeypot protection.">
+<link rel="canonical" href="https://guramzhgamadze.github.io/zen-login-authentication/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Zen Login &amp; Authentication — Frontend Login &amp; Registration for WordPress">
+<meta property="og:description" content="Secure, accessible frontend login, registration, and password recovery forms for WordPress with Elementor support, two-factor authentication, passkeys, and rate limiting.">
+<meta property="og:url" content="https://guramzhgamadze.github.io/zen-login-authentication/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0c0f14;
+  --surface:#141820;
+  --surface-2:#1a1f2b;
+  --border:#252b3a;
+  --text:#e2e4e9;
+  --text-dim:#8b90a0;
+  --accent:#3b82f6;
+  --accent-soft:rgba(59,130,246,.12);
+  --green:#22c55e;
+  --green-soft:rgba(34,197,94,.12);
+  --orange:#f59e0b;
+  --orange-soft:rgba(245,158,11,.12);
+  --red:#ef4444;
+  --red-soft:rgba(239,68,68,.12);
+  --purple:#a855f7;
+  --radius:10px;
+  --font:'DM Sans',system-ui,sans-serif;
+  --mono:'JetBrains Mono',monospace;
+}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--font);
+  background:var(--bg);
+  color:var(--text);
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+.container{max-width:1080px;margin:0 auto;padding:0 24px}
+
+/* ---- HERO ---- */
+.hero{
+  padding:100px 0 80px;
+  text-align:center;
+  position:relative;
+}
+.hero::before{
+  content:'';position:absolute;top:-120px;left:50%;transform:translateX(-50%);
+  width:600px;height:600px;
+  background:radial-gradient(circle,rgba(59,130,246,.08) 0%,transparent 70%);
+  pointer-events:none;
+}
+.badge{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:.8rem;font-weight:500;letter-spacing:.04em;text-transform:uppercase;
+  background:var(--accent-soft);color:var(--accent);
+  padding:6px 14px;border-radius:20px;margin-bottom:24px;
+}
+.badge .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+h1{
+  font-size:clamp(2.2rem,5vw,3.6rem);
+  font-weight:700;line-height:1.15;
+  letter-spacing:-.03em;
+  margin-bottom:20px;
+}
+h1 span{
+  background:linear-gradient(135deg,var(--accent),var(--purple));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.subtitle{
+  font-size:1.15rem;color:var(--text-dim);
+  max-width:580px;margin:0 auto 36px;
+}
+.hero-actions{display:flex;justify-content:center;gap:12px;flex-wrap:wrap}
+.btn{
+  display:inline-flex;align-items:center;gap:8px;
+  font-family:var(--font);font-size:.95rem;font-weight:600;
+  padding:12px 24px;border-radius:8px;
+  border:none;cursor:pointer;transition:all .2s;
+}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:#2563eb;text-decoration:none}
+.btn-secondary{background:var(--surface-2);color:var(--text);border:1px solid var(--border)}
+.btn-secondary:hover{border-color:var(--accent);text-decoration:none}
+
+/* ---- FEATURES GRID ---- */
+.features{padding:60px 0 80px}
+.section-label{
+  font-size:.8rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;
+  color:var(--accent);margin-bottom:12px;text-align:center;
+}
+.section-title{
+  font-size:clamp(1.6rem,3vw,2.2rem);font-weight:700;
+  text-align:center;margin-bottom:48px;letter-spacing:-.02em;
+}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px}
+.card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:28px;transition:border-color .2s;
+}
+.card:hover{border-color:var(--accent)}
+.card-icon{
+  width:40px;height:40px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.15rem;margin-bottom:16px;
+}
+.card-icon.blue{background:var(--accent-soft);color:var(--accent)}
+.card-icon.green{background:var(--green-soft);color:var(--green)}
+.card-icon.orange{background:var(--orange-soft);color:var(--orange)}
+.card-icon.red{background:var(--red-soft);color:var(--red)}
+.card h3{font-size:1.05rem;font-weight:600;margin-bottom:8px}
+.card p{font-size:.9rem;color:var(--text-dim);line-height:1.6}
+
+/* ---- WIDGETS TABLE ---- */
+.widgets-section{padding:40px 0 80px}
+.table-wrap{
+  overflow-x:auto;border:1px solid var(--border);
+  border-radius:var(--radius);background:var(--surface);
+}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th{
+  text-align:left;font-weight:600;font-size:.75rem;
+  text-transform:uppercase;letter-spacing:.06em;color:var(--text-dim);
+  padding:14px 20px;border-bottom:1px solid var(--border);
+  background:var(--surface-2);
+}
+td{padding:14px 20px;border-bottom:1px solid var(--border);vertical-align:top}
+tr:last-child td{border-bottom:none}
+td code{
+  font-family:var(--mono);font-size:.82rem;
+  background:var(--accent-soft);color:var(--accent);
+  padding:2px 7px;border-radius:4px;
+}
+
+/* ---- CODE BLOCK ---- */
+.install-section{padding:40px 0 80px}
+.code-block{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:24px 28px;overflow-x:auto;
+  font-family:var(--mono);font-size:.85rem;line-height:1.8;
+  color:var(--text-dim);
+}
+.code-block .comment{color:#5c6370}
+.code-block .cmd{color:var(--green)}
+
+/* ---- REQUIREMENTS ---- */
+.reqs{
+  display:flex;gap:16px;justify-content:center;flex-wrap:wrap;
+  margin-top:48px;
+}
+.req-pill{
+  display:flex;align-items:center;gap:8px;
+  background:var(--surface);border:1px solid var(--border);border-radius:8px;
+  padding:10px 18px;font-size:.85rem;font-weight:500;
+}
+.req-pill .label{color:var(--text-dim)}
+
+/* ---- FOOTER ---- */
+footer{
+  text-align:center;padding:40px 0;
+  border-top:1px solid var(--border);
+  font-size:.85rem;color:var(--text-dim);
+}
+footer a{color:var(--text-dim)}
+footer a:hover{color:var(--accent)}
+
+/* ---- RESPONSIVE ---- */
+@media(max-width:640px){
+  .hero{padding:60px 0 40px}
+  .grid{grid-template-columns:1fr}
+  .reqs{flex-direction:column;align-items:center}
+}
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="container">
+    <div class="badge"><span class="dot"></span> WordPress Plugin</div>
+    <h1>Zen Login & Authentication for<br><span>WordPress &amp; Elementor</span></h1>
+    <p class="subtitle">Secure, accessible login, registration, and password recovery forms that live on your actual site — not wp-login.php.</p>
+    <div class="hero-actions">
+      <a href="https://wordpress.org/plugins/zen-login-authentication/" class="btn btn-primary">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Get it on WordPress.org
+      </a>
+      <a href="https://github.com/guramzhgamadze/zen-login-authentication" class="btn btn-secondary">
+        <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+        View on GitHub
+      </a>
+    </div>
+
+    <div class="reqs">
+      <div class="req-pill"><span class="label">WordPress</span> 6.5+</div>
+      <div class="req-pill"><span class="label">PHP</span> 8.0+</div>
+      <div class="req-pill"><span class="label">Elementor</span> Optional</div>
+      <div class="req-pill"><span class="label">License</span> GPL-2.0</div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT'S NEW -->
+<section class="features" id="whats-new">
+  <div class="container">
+    <div class="section-label">What's New</div>
+    <div class="section-title">Version 2.2.3 &mdash; Review Housekeeping</div>
+    <div class="grid">
+
+      <div class="card">
+        <div class="card-icon blue">&#128273;</div>
+        <h3>Passkeys (WebAuthn)</h3>
+        <p>Passwordless sign-in with Face ID, a fingerprint, Windows Hello, or a security key — registered from the Account page. Phishing-resistant and inherently multi-factor, so it skips the password and any 2FA step. Verified locally by the bundled lbuchs/WebAuthn library, no external request. Requires HTTPS.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon orange">&#128276;</div>
+        <h3>New-device login alerts</h3>
+        <p>Emails the account owner the first time their account is signed in from an unrecognised device — like the "new sign-in" alerts from Google or GitHub. Sent with your site's own email, no external service, with a styled, mobile-friendly, customisable body. On by default.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon green">&#127912;</div>
+        <h3>Redesigned forms</h3>
+        <p>A polished default card, a refined security-blue palette, full-width primary buttons, and clean input focus — and every visual property is still fully controllable from the Elementor toolbar.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features" id="features">
+  <div class="container">
+    <div class="section-label">Features</div>
+    <div class="section-title">Everything you need, nothing you don't</div>
+    <div class="grid">
+
+      <div class="card">
+        <div class="card-icon blue">&#128274;</div>
+        <h3>Complete Auth Flow</h3>
+        <p>Login, registration, lost password, and password reset — all handled on your frontend with proper nonce verification and WordPress hook compatibility.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon green">&#9889;</div>
+        <h3>Elementor Widgets</h3>
+        <p>Five native Widget_Base widgets — login, registration, lost password, reset password, and account — with full Elementor style controls, V4 compatibility, dynamic content flagging, and Theme Builder integration via real WordPress pages.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon orange">&#128737;</div>
+        <h3>Rate Limiting</h3>
+        <p>Per-form lockout with individual thresholds — set login=5, register=10, lost-password=3, or disable per form. Spoof-resistant client IP detection (real socket address by default; Cloudflare header is opt-in). Optional "count all submissions" mode closes the email-spam loophole on lost-password requests.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon red">&#128375;</div>
+        <h3>Honeypot Protection</h3>
+        <p>Rotating hidden field (hourly key rotation via HMAC) catches bots. Trapped submissions get a fake success response — bots never know they failed.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon blue">&#128241;</div>
+        <h3>Two-Factor Authentication</h3>
+        <p>Opt-in TOTP 2FA per user, set up from the Account page with a locally rendered QR and one-time recovery codes. Enforced across the plugin's forms, AJAX, and wp-login.php; REST/XML-RPC application passwords and Google sign-in are exempt.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon green">&#128273;</div>
+        <h3>Passkeys (WebAuthn)</h3>
+        <p>Optional passwordless sign-in with Face ID, a fingerprint, Windows Hello, or a security key — registered from the Account page and verified locally with no external request. Phishing-resistant and multi-factor, so it skips the password and any 2FA step. Requires HTTPS.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon orange">&#128276;</div>
+        <h3>New-Device Login Alerts</h3>
+        <p>Email the account owner the first time their account is signed in from an unrecognised device, using your site's own email — no external service. Styled, mobile-friendly, and customisable. On by default.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon orange">&#129302;</div>
+        <h3>Cloudflare Turnstile</h3>
+        <p>Optional privacy-first bot challenge on login, registration, and lost-password — with server-side verification and an encrypted secret key. Works on the plugin's forms and wp-login.php.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon red">&#128273;</div>
+        <h3>Breached-Password Blocking</h3>
+        <p>Optionally reject leaked passwords via the Have I Been Pwned range API using k-anonymity — only a 5-character hash prefix is sent, never the password. Fails open if the service is down.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon green">&#128272;</div>
+        <h3>Anti-Enumeration &amp; XML-RPC</h3>
+        <p>Blocks author-scan URLs and the guest REST user listing, makes login errors generic so usernames can't be confirmed, and offers an optional XML-RPC lockdown. On by default where it's safe.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon blue">&#128268;</div>
+        <h3>AJAX Forms</h3>
+        <p>Optional no-reload form submission. Inline error display, loading spinners, and automatic redirect on success — all configurable from the admin panel.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon green">&#127760;</div>
+        <h3>URL Rewriting</h3>
+        <p>All wp-login.php links across your entire site — login_url, logout_url, lostpassword_url, site_url — are transparently rewritten to your frontend pages.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon orange">&#128101;</div>
+        <h3>Multisite Ready</h3>
+        <p>Network activation support. Per-site settings, signup/activation URL rewriting, and automatic option seeding for new sub-sites via wp_initialize_site.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon red">&#9851;</div>
+        <h3>3rd-Party Compatible</h3>
+        <p>Two-factor auth and Turnstile are built in — and the plugin still fires the standard WordPress hooks (login_form, register_form, etc.), so other 2FA, CAPTCHA, and social-login plugins render their fields inside your forms too. MCP Bridge and OAuth flows are exempted from URL rewriting.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon blue">&#9855;</div>
+        <h3>Accessible</h3>
+        <p>ARIA roles, aria-required, aria-live regions for errors, focus-visible outlines, and translatable password-strength labels. Clean, semantic HTML throughout.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon green">&#128257;</div>
+        <h3>Cache-Aware</h3>
+        <p>Automatically excludes auth pages from LiteSpeed Cache, Super Page Cache, WP Rocket, W3 Total Cache, and WP Super Cache. Purges stale 404s on plugin update. Sends no-store HTTP headers as a universal fallback.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon orange">&#128204;</div>
+        <h3>Smart Redirects</h3>
+        <p>Runs the standard login_redirect filter on every login, so membership/LMS plugins are respected. Subscribers are kept out of wp-admin (sent to a destination you set), while admins keep their normal flow. Fully honours ?redirect_to=.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon blue">&#128100;</div>
+        <h3>Account Management</h3>
+        <p>Logged-in users edit their first/last name, public display name, email, and password from the frontend — a real /account/ page, an Elementor widget, and a classic widget. Guests are bounced to login and returned after signing in.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon green">&#128202;</div>
+        <h3>Login Activity Dashboard</h3>
+        <p>A dashboard widget summarising successful logins, failed attempts, and lockouts over the past week, with top failed usernames and most-blocked IPs. Anonymised IPs, auto-pruned history, and a per-widget on/off panel in Settings.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- WIDGETS TABLE -->
+<section class="widgets-section" id="widgets">
+  <div class="container">
+    <div class="section-label">Elementor Widgets</div>
+    <div class="section-title">Drag, drop, done</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Widget</th>
+            <th>Panel Name</th>
+            <th>Key Controls</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>fauth-login</code></td>
+            <td>Login Form</td>
+            <td>Custom labels, placeholders, toggle text, link URLs, redirect URL, remember me. Honors ?redirect_to= from URL.</td>
+          </tr>
+          <tr>
+            <td><code>fauth-register</code></td>
+            <td>Registration Form</td>
+            <td>Custom labels, placeholders, toggle text, link URL, redirect URL, strength meter</td>
+          </tr>
+          <tr>
+            <td><code>fauth-lost-password</code></td>
+            <td>Lost Password Form</td>
+            <td>Custom label, placeholder, link URL, redirect URL</td>
+          </tr>
+          <tr>
+            <td><code>fauth-reset-password</code></td>
+            <td>Reset Password Form</td>
+            <td>Custom labels, placeholders, toggle text, invalid-link message, request-link URL</td>
+          </tr>
+          <tr>
+            <td><code>fauth-account</code></td>
+            <td>Account Form</td>
+            <td>First/last name, live "Display name publicly as" dropdown, email, optional password change, and two-factor setup (QR + recovery codes). Logged-in users only.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- INSTALL -->
+<section class="install-section" id="install">
+  <div class="container">
+    <div class="section-label">Quick Start</div>
+    <div class="section-title">Up and running in 60 seconds</div>
+    <div class="code-block">
+      <span class="comment"># Upload and activate</span><br>
+      <span class="cmd">wp plugin install zen-login-authentication.zip --activate</span><br><br>
+      <span class="comment"># Rewrite rules flush automatically on first load (v1.4.16+)</span><br>
+      <span class="comment"># Run manually if needed:</span><br>
+      <span class="cmd">wp rewrite flush</span><br><br>
+      <span class="comment"># Auth pages are created automatically on activation</span><br>
+      <span class="comment"># (existing pages with matching slugs are adopted, not duplicated)</span><br><br>
+      <span class="comment"># Optional: enable AJAX forms and user-chosen passwords</span><br>
+      <span class="cmd">wp option update zenlogau_use_ajax 1</span><br>
+      <span class="cmd">wp option update zenlogau_user_passwords 1</span><br><br>
+      <span class="comment"># Optional: set the subscriber post-login destination</span><br>
+      <span class="comment"># (Settings &rarr; Zen Login & Authentication — slug or URL — or via filter:)</span><br>
+      <span class="cmd">add_filter( 'zenlogau_subscriber_redirect', fn() => home_url( '/dashboard/' ) );</span><br><br>
+      <span class="comment"># Optional security: breached-password checks + XML-RPC lockdown</span><br>
+      <span class="comment"># (two-factor auth is on by default; each user enrols on the Account page)</span><br>
+      <span class="cmd">wp option update zenlogau_block_breached 1</span><br>
+      <span class="cmd">wp option update zenlogau_disable_xmlrpc 1</span><br><br>
+      <span class="comment"># That's it. Visit /login/ on your site.</span>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <p>Zen Login & Authentication is free and open-source software released under the <a href="https://www.gnu.org/licenses/gpl-2.0.html">GPL-2.0</a> license.</p>
+  </div>
+</footer>
+
+</body>
+</html>
