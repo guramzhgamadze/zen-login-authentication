@@ -11,7 +11,7 @@ page-builder layout, with full Theme Builder compatibility.
 - **WordPress.org:** https://wordpress.org/plugins/zen-login-authentication/
 - **Requires:** WordPress 6.5+ · PHP 8.0+ · Elementor optional
 - **Licence:** GPL-2.0-or-later
-- **Current version:** 2.2.3
+- **Current version:** 2.2.4
 
 The plugin works with no configuration and adds no tracking or phone-home behaviour. Every feature
 that contacts an external service is opt-in, so out of the box it makes no external calls at all.
@@ -309,6 +309,21 @@ Auth pages are automatically excluded from caching, and stale entries are purged
 ---
 
 ## Changelog
+
+### 2.2.4
+Every heading, description, button and link on the Account page can now be rewritten from the
+Elementor panel — a new **Account Sections** group covering the Profile Information and Change
+Password cards, the Current Password label and hint, Passkeys (heading, description, empty state,
+Add button, Remove link), Two-Factor Authentication (heading, description, turned-off message,
+set-up button) and Session Management (heading, description, sign-out note, Log Out and
+"Sign out of all other devices"). Leave a field blank to keep the translated default. Added
+responsive alignment controls for card headings, card descriptions and the sign-out note.
+
+Fixed a long-standing bug where the Profile Information and Change Password headings ignored any
+custom text: their markup was assembled while the form was being registered, before an override
+could be applied. Also removed Latin-style letter-spacing from the sign-in divider for caseless
+scripts (Georgian, Hebrew, Arabic, Thai, CJK), which only loosened the word. Refreshed the
+translation template so translators on translate.wordpress.org get every new string.
 
 ### 2.2.3
 The rate limiter's companion "lockout start" transient is now built as a fully prefixed literal
