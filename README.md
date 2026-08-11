@@ -11,7 +11,7 @@ page-builder layout, with full Theme Builder compatibility.
 - **WordPress.org:** https://wordpress.org/plugins/zen-login-authentication/
 - **Requires:** WordPress 6.5+ · PHP 8.0+ · Elementor optional
 - **Licence:** GPL-2.0-or-later
-- **Current version:** 2.2.4
+- **Current version:** 2.2.5
 
 The plugin works with no configuration and adds no tracking or phone-home behaviour. Every feature
 that contacts an external service is opt-in, so out of the box it makes no external calls at all.
@@ -309,6 +309,18 @@ Auth pages are automatically excluded from caching, and stale entries are purged
 ---
 
 ## Changelog
+
+### 2.2.5
+Fixes the Account widget's **Form Container** controls — Background, Padding, Border, Border Radius
+and Box Shadow all had no effect. The stylesheet rule that stops the account layout drawing a card
+around its own cards used `!important`, which overrode the CSS Elementor generates. It now relies on
+ordinary specificity, so the extra card is still suppressed by default while every control works.
+
+**Card Headings** and **Card Descriptions** alignment now also align the Two-Factor Authentication
+and Passkeys headings and descriptions, so the whole page is set from one place; the separate
+heading-alignment controls in those sections were removed as redundant. The Passkeys **Remove** link
+gains typography, and its colour settings are now scoped so the general Action Links styling can no
+longer override them.
 
 ### 2.2.4
 Every heading, description, button and link on the Account page can now be rewritten from the
