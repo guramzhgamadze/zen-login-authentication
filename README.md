@@ -11,7 +11,7 @@ page-builder layout, with full Theme Builder compatibility.
 - **WordPress.org:** https://wordpress.org/plugins/zen-login-authentication/
 - **Requires:** WordPress 6.5+ · PHP 8.0+ · Elementor optional
 - **Licence:** GPL-2.0-or-later
-- **Current version:** 2.2.5
+- **Current version:** 2.3.0
 
 The plugin works with no configuration and adds no tracking or phone-home behaviour. Every feature
 that contacts an external service is opt-in, so out of the box it makes no external calls at all.
@@ -309,6 +309,18 @@ Auth pages are automatically excluded from caching, and stale entries are purged
 ---
 
 ## Changelog
+
+### 2.3.0
+The **Subscriber redirect** setting now accepts more than one destination &mdash; one per line. The
+first line is still the default, so an existing single-line setting behaves exactly as before; every
+other line names a page a subscriber is also allowed to be sent to when a link asks for it. A site
+with two kinds of subscriber (a teacher dashboard and a venue dashboard, say) could not be described
+by a single value before &mdash; everyone was funnelled to the same page whichever one they were
+heading for.
+
+Also fixes a subscriber who was **already signed in** and followed a sign-in link being dropped on
+the redirect page instead of the page the link asked for. New filter `zenlogau_subscriber_redirects`
+for adding destinations in code.
 
 ### 2.2.5
 Fixes the Account widget's **Form Container** controls — Background, Padding, Border, Border Radius
