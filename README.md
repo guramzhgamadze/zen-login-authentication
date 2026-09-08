@@ -11,7 +11,7 @@ page-builder layout, with full Theme Builder compatibility.
 - **WordPress.org:** https://wordpress.org/plugins/zen-login-authentication/
 - **Requires:** WordPress 6.5+ · PHP 8.0+ · Elementor optional
 - **Licence:** GPL-2.0-or-later
-- **Current version:** 2.3.0
+- **Current version:** 2.3.1
 
 The plugin works with no configuration and adds no tracking or phone-home behaviour. Every feature
 that contacts an external service is opt-in, so out of the box it makes no external calls at all.
@@ -309,6 +309,15 @@ Auth pages are automatically excluded from caching, and stale entries are purged
 ---
 
 ## Changelog
+
+### 2.3.1
+Fixes the new-device alert email. It previously told the recipient to "sign out of other devices
+from your account page", which names nothing they can actually click; it now quotes the real link:
+*click “Sign out of all other devices” on your account page*. The Georgian translation of that
+same sentence was grammatically broken — it used a past-tense verb where an instruction was needed —
+and has been rewritten, with the quoted link text matching the account page exactly.
+
+Also tested and marked compatible with **WordPress 7.1**.
 
 ### 2.3.0
 The **Subscriber redirect** setting now accepts more than one destination &mdash; one per line. The
