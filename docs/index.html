@@ -216,8 +216,20 @@ footer a:hover{color:var(--accent)}
 <section class="features" id="whats-new">
   <div class="container">
     <div class="section-label">What's New</div>
-    <div class="section-title">Version 2.3.1 &mdash; Smarter Subscriber Redirects</div>
+    <div class="section-title">Version 2.3.2 &mdash; Honest Login Counts</div>
     <div class="grid">
+
+      <div class="card">
+        <div class="card-icon green">&#128202;</div>
+        <h3>Two-factor sign-ins are no longer counted as failures</h3>
+        <p>Signing in to an account with two-factor authentication was recorded as a <strong>failed</strong> login. The password had been accepted &mdash; the sign-in was simply waiting for the code &mdash; but handing it to that second step looked like a failure to the rest of the plugin. The Login Activity dashboard filled with failures for people who signed in perfectly normally, and the per-account throttle counted them too, so a few ordinary sign-ins in a row began adding a delay. Only genuine failures are counted now &mdash; and a <em>wrong</em> code, which really is one, is finally counted too.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon blue">&#9889;</div>
+        <h3>The Two-Factor panel updates without reloading</h3>
+        <p>Setting up two-factor authentication, confirming the code, regenerating recovery codes, cancelling, and turning it off now update the Account page in place, so your new recovery codes appear right where you are instead of after a full page reload. Without JavaScript the panel works exactly as it always did. The QR-code library is also fetched only when a QR code actually needs drawing, rather than on every Account page view.</p>
+      </div>
 
       <div class="card">
         <div class="card-icon green">&#128682;</div>

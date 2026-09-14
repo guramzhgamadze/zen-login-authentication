@@ -11,7 +11,7 @@ page-builder layout, with full Theme Builder compatibility.
 - **WordPress.org:** https://wordpress.org/plugins/zen-login-authentication/
 - **Requires:** WordPress 6.5+ · PHP 8.0+ · Elementor optional
 - **Licence:** GPL-2.0-or-later
-- **Current version:** 2.3.1
+- **Current version:** 2.3.2
 
 The plugin works with no configuration and adds no tracking or phone-home behaviour. Every feature
 that contacts an external service is opt-in, so out of the box it makes no external calls at all.
@@ -309,6 +309,21 @@ Auth pages are automatically excluded from caching, and stale entries are purged
 ---
 
 ## Changelog
+
+### 2.3.2
+Signing in to an account that has two-factor authentication was being recorded as a **failed**
+login. The password had been accepted — the sign-in was simply waiting for the code — but the
+hand-off to that second step looked like a failure to the rest of the plugin, so the Login
+Activity dashboard filled with failures for people who signed in perfectly normally, and the
+per-account throttle counted them too: a few ordinary sign-ins in a row and it started adding a
+delay. Only genuine failures are counted now. The opposite case is fixed as well — entering the
+**wrong** two-factor code, which really is a failed attempt, was not recorded anywhere and now is.
+
+The **Two-Factor Authentication panel on the Account page no longer reloads the page**. Setting it
+up, confirming the code, regenerating recovery codes, cancelling, and turning it off all update
+the panel in place, so new recovery codes appear right where you are instead of after a full
+reload. Without JavaScript the panel behaves exactly as it always did. The QR-code library is now
+fetched only when a QR code actually needs drawing, rather than on every Account page view.
 
 ### 2.3.1
 Fixes the new-device alert email. It previously told the recipient to "sign out of other devices
