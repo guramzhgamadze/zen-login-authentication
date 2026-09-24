@@ -216,8 +216,20 @@ footer a:hover{color:var(--accent)}
 <section class="features" id="whats-new">
   <div class="container">
     <div class="section-label">What's New</div>
-    <div class="section-title">Version 2.3.2 &mdash; Honest Login Counts</div>
+    <div class="section-title">Version 2.3.3 &mdash; Author Pages That Keep a Secret</div>
     <div class="grid">
+
+      <div class="card">
+        <div class="card-icon green">&#128373;</div>
+        <h3>Author pages no longer confirm login names</h3>
+        <p>WordPress gives every account a page at <code>/author/&lt;name&gt;/</code> &mdash; the name being its login &mdash; and shows it even when the account has published nothing, while a made-up name gets &ldquo;not found&rdquo;. That let anyone confirm login names one guess at a time, administrators included. The new <strong>Hide empty author pages</strong> setting makes an account with nothing published answer logged-out visitors exactly like a name that doesn&rsquo;t exist &mdash; page, feeds, headers and all. Authors who publish keep their pages.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon blue">&#128279;</div>
+        <h3>An author address that isn&rsquo;t your login</h3>
+        <p>WordPress builds every author page&rsquo;s address from the login, and gives you no way to change it &mdash; so anyone who publishes shows their login to every visitor. A new <strong>Author URL</strong> field on the profile screen sets a different address, refuses anything that contains the login, and the Security Hardening screen lists who still needs one.</p>
+      </div>
 
       <div class="card">
         <div class="card-icon green">&#128202;</div>

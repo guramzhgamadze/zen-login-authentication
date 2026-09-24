@@ -11,7 +11,7 @@ page-builder layout, with full Theme Builder compatibility.
 - **WordPress.org:** https://wordpress.org/plugins/zen-login-authentication/
 - **Requires:** WordPress 6.5+ · PHP 8.0+ · Elementor optional
 - **Licence:** GPL-2.0-or-later
-- **Current version:** 2.3.2
+- **Current version:** 2.3.3
 
 The plugin works with no configuration and adds no tracking or phone-home behaviour. Every feature
 that contacts an external service is opt-in, so out of the box it makes no external calls at all.
@@ -309,6 +309,27 @@ Auth pages are automatically excluded from caching, and stale entries are purged
 ---
 
 ## Changelog
+
+### 2.3.3
+New **Hide empty author pages** setting, under Security Hardening. WordPress gives every account a
+page at `/author/<name>/` — where the name is its login, lowercased — and shows it even when the
+account has published nothing, while a made-up name gets “not found”. So anyone could confirm
+login names one guess at a time, administrators included, even with `?author=N` scans and the REST
+user list already blocked. With the setting on, logged-out visitors get exactly the same answer for
+an account that has published nothing as for a name that doesn't exist — the page, its RSS, Atom
+and RDF feeds, and every other way of asking — down to the status, headers and page content.
+Authors who publish keep their pages, and logged-in users see everything as before.
+
+The setting starts in the same state as **Block username enumeration**, so a site that had turned
+that off keeps its author pages public. Turn it off if your site links to the author pages of people
+who don't publish, such as team profiles.
+
+Authors who **do** publish keep their pages — but WordPress builds each page's address from the
+author's login, and has no screen to change it, so the address itself shows the login to every
+visitor. A new **Author URL** field on the profile screen sets a different address. It refuses
+anything containing the login, and the Security Hardening screen lists which publishing authors
+still need one. Changing an address moves the page; the old one stops working and is not
+redirected, because a redirect would confirm the old name.
 
 ### 2.3.2
 Signing in to an account that has two-factor authentication was being recorded as a **failed**
